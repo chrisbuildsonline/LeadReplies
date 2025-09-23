@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplyLeads.com - AI Social Media Lead Generation Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand': {
+                            50: '#E3F2FD',
+                            100: '#BBDEFB',
+                            500: '#1976D2',
+                            600: '#1565C0',
+                            700: '#0D47A1',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- @COMPONENT: AppLayout [main application shell] -->
+    <div class="flex h-screen bg-gray-50">
+        <!-- @COMPONENT: Sidebar [navigation and brand] -->
+        <div class="w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+            <!-- Brand Header -->
+            <div class="flex items-center px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-reply text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-gray-900" data-bind="app.name">ReplyLeads</h1>
+                        <p class="text-xs text-gray-500">AI Lead Generation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="#dashboard" class="flex items-center px-3 py-2 text-sm font-medium text-brand-600 bg-brand-50 rounded-lg">
+                    <i class="fas fa-chart-line w-5 h-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#campaigns" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-bullhorn w-5 h-5 mr-3"></i>
+                    Campaigns
+                </a>
+                <a href="#accounts" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-users w-5 h-5 mr-3"></i>
+                    Social Accounts
+                </a>
+                <a href="#replies" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-comments w-5 h-5 mr-3"></i>
+                    AI Replies
+                </a>
+                <a href="#leads" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-user-plus w-5 h-5 mr-3"></i>
+                    Leads
+                </a>
+                <a href="#analytics" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+                    Analytics
+                </a>
+                
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Account</p>
+                    <a href="#settings" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-cog w-5 h-5 mr-3"></i>
+                        Settings
+                    </a>
+                    <a href="#billing" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-credit-card w-5 h-5 mr-3"></i>
+                        Billing
+                    </a>
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="border-t border-gray-200 p-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-sm font-medium" data-bind="user.initials">JD</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate" data-bind="user.name">John Doe</p>
+                        <p class="text-xs text-gray-500 truncate" data-bind="user.plan">Pro Plan</p>
+                    </div>
+                    <button class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-chevron-up text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [dashboard content area] -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p class="text-gray-600 text-sm">Monitor your AI lead generation performance</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Time Filter -->
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                            <option>All-time</option>
+                            <option>Last 30 days</option>
+                            <option>Last 7 days</option>
+                            <option>Today</option>
+                        </select>
+                        
+                        <button class="bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-plus text-sm"></i>
+                            <span>New Campaign</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Content -->
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- Key Metrics Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Active Social Accounts -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-medium">Active Accounts</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-mock="true">24<span class="text-lg text-gray-500">/50</span></p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center mt-4 text-sm">
+                            <i class="fas fa-arrow-up text-green-500 text-xs mr-1"></i>
+                            <span class="text-green-600 font-medium" data-mock="true">+12%</span>
+                            <span class="text-gray-500 ml-2">vs last month</span>
+                        </div>
+                    </div>
+
+                    <!-- Replies Generated -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-medium">AI Replies</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-mock="true">1,847</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-robot text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center mt-4 text-sm">
+                            <i class="fas fa-arrow-up text-green-500 text-xs mr-1"></i>
+                            <span class="text-green-600 font-medium" data-mock="true">+34%</span>
+                            <span class="text-gray-500 ml-2">vs last month</span>
+                        </div>
+                    </div>
+
+                    <!-- Leads Generated -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-medium">Leads Generated</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-mock="true">342</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-plus text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center mt-4 text-sm">
+                            <i class="fas fa-arrow-up text-green-500 text-xs mr-1"></i>
+                            <span class="text-green-600 font-medium" data-mock="true">+28%</span>
+                            <span class="text-gray-500 ml-2">vs last month</span>
+                        </div>
+                    </div>
+
+                    <!-- Conversion Rate -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-medium">Conversion Rate</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-mock="true">18.5%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center mt-4 text-sm">
+                            <i class="fas fa-arrow-up text-green-500 text-xs mr-1"></i>
+                            <span class="text-green-600 font-medium" data-mock="true">+5.2%</span>
+                            <span class="text-gray-500 ml-2">vs last month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Analytics Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Activity Chart -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Lead Generation Activity</h3>
+                                <p class="text-sm text-gray-600">Leads generated over time across all platforms</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 text-xs font-medium text-brand-600 bg-brand-50 rounded-full">Weekly</button>
+                                <button class="px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-full">Monthly</button>
+                            </div>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Platform Breakdown -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Platform Performance</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-twitter text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Twitter/X</p>
+                                        <p class="text-sm text-gray-600" data-mock="true">156 leads</p>
+                                    </div>
+                                </div>
+                                <span class="text-green-600 font-medium" data-mock="true">45.6%</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-reddit text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Reddit</p>
+                                        <p class="text-sm text-gray-600" data-mock="true">124 leads</p>
+                                    </div>
+                                </div>
+                                <span class="text-green-600 font-medium" data-mock="true">36.3%</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-quora text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Quora</p>
+                                        <p class="text-sm text-gray-600" data-mock="true">62 leads</p>
+                                    </div>
+                                </div>
+                                <span class="text-green-600 font-medium" data-mock="true">18.1%</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <button class="w-full bg-brand-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors flex items-center justify-center space-x-2">
+                                <i class="fas fa-plus text-sm"></i>
+                                <span>Buy New Account ($5)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campaign Performance & Top Keywords -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Active Campaigns -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Active Campaigns</h3>
+                            <button class="text-brand-500 hover:text-brand-600 text-sm font-medium">View All</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: campaigns.map(campaign => ( -->
+                            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors" data-mock="true">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-rocket text-white text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-900">AI Chatbot SaaS</p>
+                                            <p class="text-sm text-gray-600">Keywords: chatbot, AI assistant, automation</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center space-x-4">
+                                        <span class="text-sm text-gray-600">84 replies</span>
+                                        <span class="text-sm text-green-600 font-medium">23 leads</span>
+                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-semibold text-gray-900">27.4%</p>
+                                    <p class="text-sm text-gray-600">Conv. Rate</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors" data-mock="true">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-shopping-cart text-white text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-900">E-commerce Analytics</p>
+                                            <p class="text-sm text-gray-600">Keywords: analytics, tracking, e-commerce</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center space-x-4">
+                                        <span class="text-sm text-gray-600">67 replies</span>
+                                        <span class="text-sm text-green-600 font-medium">19 leads</span>
+                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-semibold text-gray-900">28.4%</p>
+                                    <p class="text-sm text-gray-600">Conv. Rate</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors" data-mock="true">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-mobile-alt text-white text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-900">Mobile App Development</p>
+                                            <p class="text-sm text-gray-600">Keywords: mobile app, development, iOS</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center space-x-4">
+                                        <span class="text-sm text-gray-600">52 replies</span>
+                                        <span class="text-sm text-green-600 font-medium">11 leads</span>
+                                        <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Paused</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-semibold text-gray-900">21.2%</p>
+                                    <p class="text-sm text-gray-600">Conv. Rate</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Top Performing Keywords -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Top Keywords</h3>
+                            <button class="text-brand-500 hover:text-brand-600 text-sm font-medium">Manage</button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between" data-mock="true">
+                                <div>
+                                    <p class="font-medium text-gray-900">chatbot</p>
+                                    <p class="text-sm text-gray-600">127 mentions found</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-brand-500 h-2 rounded-full" style="width: 89%"></div>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-900 mt-1">89% match</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between" data-mock="true">
+                                <div>
+                                    <p class="font-medium text-gray-900">automation</p>
+                                    <p class="text-sm text-gray-600">94 mentions found</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-brand-500 h-2 rounded-full" style="width: 76%"></div>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-900 mt-1">76% match</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between" data-mock="true">
+                                <div>
+                                    <p class="font-medium text-gray-900">analytics</p>
+                                    <p class="text-sm text-gray-600">81 mentions found</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-brand-500 h-2 rounded-full" style="width: 72%"></div>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-900 mt-1">72% match</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between" data-mock="true">
+                                <div>
+                                    <p class="font-medium text-gray-900">e-commerce</p>
+                                    <p class="text-sm text-gray-600">67 mentions found</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-brand-500 h-2 rounded-full" style="width: 68%"></div>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-900 mt-1">68% match</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between" data-mock="true">
+                                <div>
+                                    <p class="font-medium text-gray-900">mobile app</p>
+                                    <p class="text-sm text-gray-600">53 mentions found</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-brand-500 h-2 rounded-full" style="width: 61%"></div>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-900 mt-1">61% match</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <button class="w-full border border-brand-500 text-brand-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-brand-50 transition-colors">
+                                Add New Keywords
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity & Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recent AI Replies -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent AI Replies</h3>
+                            <button class="text-brand-500 hover:text-brand-600 text-sm font-medium">View All</button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg" data-mock="true">
+                                <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fab fa-twitter text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <p class="font-medium text-gray-900">@techfounder</p>
+                                        <span class="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">Posted</span>
+                                        <span class="text-xs text-gray-500">2 mins ago</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700">"Looking for a good chatbot solution..." → AI suggested our product naturally with helpful context.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg" data-mock="true">
+                                <div class="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fab fa-reddit text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <p class="font-medium text-gray-900">r/entrepreneur</p>
+                                        <span class="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">Posted</span>
+                                        <span class="text-xs text-gray-500">8 mins ago</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700">"Best analytics tools for small business?" → Provided comprehensive answer mentioning our solution.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg" data-mock="true">
+                                <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fab fa-quora text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <p class="font-medium text-gray-900">Business Strategy</p>
+                                        <span class="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+                                        <span class="text-xs text-gray-500">15 mins ago</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700">"How to automate customer service?" → AI crafted detailed response awaiting your approval.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Management -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Social Account Store</h3>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">$5 each</span>
+                        </div>
+
+                        <!-- Account Types -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 border-2 border-dashed border-gray-200 rounded-lg hover:border-brand-300 transition-colors cursor-pointer" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-twitter text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Twitter/X Account</p>
+                                        <p class="text-sm text-gray-600">High engagement, 1K+ followers</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">$5</p>
+                                    <button class="text-xs bg-brand-500 text-white px-3 py-1 rounded-full hover:bg-brand-600 transition-colors">Buy Now</button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border-2 border-dashed border-gray-200 rounded-lg hover:border-brand-300 transition-colors cursor-pointer" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-reddit text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Reddit Account</p>
+                                        <p class="text-sm text-gray-600">5+ year old, good karma</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">$5</p>
+                                    <button class="text-xs bg-brand-500 text-white px-3 py-1 rounded-full hover:bg-brand-600 transition-colors">Buy Now</button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border-2 border-dashed border-gray-200 rounded-lg hover:border-brand-300 transition-colors cursor-pointer" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-quora text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Quora Account</p>
+                                        <p class="text-sm text-gray-600">Established profile, active</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">$5</p>
+                                    <button class="text-xs bg-brand-500 text-white px-3 py-1 rounded-full hover:bg-brand-600 transition-colors">Buy Now</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-info-circle text-brand-500"></i>
+                                <p class="text-sm text-brand-700 font-medium">Account Usage Tips</p>
+                            </div>
+                            <ul class="text-sm text-brand-600 mt-2 space-y-1">
+                                <li>• Rotate accounts to avoid detection</li>
+                                <li>• Each account comes with posting history</li>
+                                <li>• Automatic IP rotation included</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <!-- Modal for Account Purchase (Hidden by default) -->
+    <!-- @COMPONENT: PurchaseModal [account purchasing interface] -->
+    <div id="purchaseModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-brand-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-shopping-cart text-brand-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Purchase Social Account
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    You're about to purchase a verified social media account for $5. This account will be added to your dashboard and can be used immediately for AI reply campaigns.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 sm:ml-3 sm:w-auto sm:text-sm" data-event="click:handlePurchase">
+                        Purchase $5
+                    </button>
+                    <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" data-event="click:closeModal">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: PurchaseModal -->
+
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, or state management
+            
+            // Chart.js initialization for activity chart
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            const activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Leads Generated',
+                        data: [12, 19, 15, 25, 32, 28, 35, 42, 38, 45, 52, 48],
+                        borderColor: '#1976D2',
+                        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#1976D2',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Modal functionality (non-functional placeholder)
+            const modal = document.getElementById('purchaseModal');
+            const buyButtons = document.querySelectorAll('[data-event*="click:handlePurchase"]');
+            
+            // TODO: Implement modal open/close functionality
+            // TODO: Implement purchase flow with payment processing
+            // TODO: Implement account management functionality
+            // TODO: Implement real-time updates for metrics
+            // TODO: Implement campaign creation and management
+            // TODO: Implement AI reply approval system
+            
+        })();
+    </script>
+</body>
+</html>

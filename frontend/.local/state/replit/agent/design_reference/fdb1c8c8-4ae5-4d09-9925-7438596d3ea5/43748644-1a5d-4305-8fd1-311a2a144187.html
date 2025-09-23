@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplyLeads Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'twitter': '#1DA1F2',
+                        'reddit': '#FF4500',
+                        'quora': '#B92B27',
+                        'tesla-gray': '#393c41',
+                        'tesla-light': '#f7f8fa'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-tesla-light font-inter">
+    <!-- @COMPONENT: Layout Container -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- @COMPONENT: Sidebar Navigation -->
+        <div class="w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+            <!-- Logo Section -->
+            <div class="px-6 py-6 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gradient-to-r from-twitter to-reddit rounded-lg flex items-center justify-center text-white font-bold text-sm mr-3">
+                        RL
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">ReplyLeads</h1>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-twitter bg-blue-50 rounded-lg" data-bind="activeNav">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-users mr-3"></i>
+                    Account Manager
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-bullhorn mr-3"></i>
+                    Campaigns
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-reply mr-3"></i>
+                    AI Replies
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-chart-bar mr-3"></i>
+                    Analytics
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-shopping-cart mr-3"></i>
+                    Buy Accounts
+                </a>
+                
+                <div class="pt-4 mt-4 border-t border-gray-200">
+                    <h3 class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Support</h3>
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg mt-1">
+                        <i class="fas fa-question-circle mr-3"></i>
+                        Help Center
+                    </a>
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-twitter hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-cog mr-3"></i>
+                        Settings
+                    </a>
+                </div>
+            </nav>
+        </div>
+        <!-- @END_COMPONENT: Sidebar Navigation -->
+        
+        <!-- @COMPONENT: Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <div class="flex items-center space-x-2">
+                            <!-- Timeframe Filter -->
+                            <select class="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-twitter focus:border-transparent">
+                                <option data-bind="timeframe">Timeframe: All-time</option>
+                                <option>Last 30 days</option>
+                                <option>Last 7 days</option>
+                                <option>Today</option>
+                            </select>
+                            
+                            <!-- Platform Filter -->
+                            <select class="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-twitter focus:border-transparent">
+                                <option data-bind="platform">Platform: All</option>
+                                <option>Twitter</option>
+                                <option>Reddit</option>
+                                <option>Quora</option>
+                            </select>
+                            
+                            <!-- Campaign Filter -->
+                            <select class="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-twitter focus:border-transparent">
+                                <option data-bind="campaign">Campaign: All</option>
+                                <option>SaaS Tools</option>
+                                <option>Marketing</option>
+                                <option>Tech Support</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="px-4 py-2 bg-twitter text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors" data-event="click:downloadReport">
+                            <i class="fas fa-download mr-2"></i>
+                            Download Report
+                        </button>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700" data-bind="user.name">John Doe</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Dashboard Content -->
+            <main class="flex-1 overflow-y-auto p-6">
+                
+                <!-- Key Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Active Accounts Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Active Accounts</p>
+                                <div class="flex items-end space-x-1 mt-1">
+                                    <span class="text-3xl font-bold text-gray-900" data-bind="metrics.activeAccounts">12</span>
+                                    <span class="text-sm text-gray-500" data-mock="true">/15</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-8 bg-twitter rounded-sm"></div>
+                                <div class="w-2 h-6 bg-reddit rounded-sm"></div>
+                                <div class="w-2 h-4 bg-quora rounded-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Replies Generated Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Replies Generated</p>
+                                <div class="flex items-end space-x-2 mt-1">
+                                    <span class="text-3xl font-bold text-gray-900" data-bind="metrics.repliesGenerated">2,847</span>
+                                    <span class="text-sm text-green-600 font-medium">↗ +12%</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-reply text-green-600 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conversion Rate Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Conversion Rate</p>
+                                <div class="flex items-end space-x-2 mt-1">
+                                    <span class="text-3xl font-bold text-gray-900" data-bind="metrics.conversionRate">8.4%</span>
+                                    <span class="text-sm text-green-600 font-medium">↗ +2.1%</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-line text-blue-600 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Leads Generated Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Leads Generated</p>
+                                <div class="flex items-end space-x-2 mt-1">
+                                    <span class="text-3xl font-bold text-gray-900" data-bind="metrics.leadsGenerated">239</span>
+                                    <span class="text-sm text-green-600 font-medium">↗ +18%</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-plus text-purple-600 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Chart and Platform Performance -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Activity Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Reply Activity</h3>
+                            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1">
+                                <option>Last 30 days</option>
+                                <option>Last 7 days</option>
+                                <option>Today</option>
+                            </select>
+                        </div>
+                        <canvas id="activityChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Platform Performance -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Platform Performance</h3>
+                        <div class="space-y-4">
+                            <!-- Twitter Performance -->
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-twitter rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-twitter text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Twitter</p>
+                                        <p class="text-sm text-gray-500">1,247 replies</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">142 leads</p>
+                                    <p class="text-sm text-green-600">11.4% rate</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Reddit Performance -->
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-reddit rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-reddit text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Reddit</p>
+                                        <p class="text-sm text-gray-500">891 replies</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">67 leads</p>
+                                    <p class="text-sm text-green-600">7.5% rate</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Quora Performance -->
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-quora rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-quora text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Quora</p>
+                                        <p class="text-sm text-gray-500">709 replies</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">30 leads</p>
+                                    <p class="text-sm text-yellow-600">4.2% rate</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Campaign Performance and Account Manager -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Top Performing Campaigns -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Top Performing Campaigns</h3>
+                        <div class="space-y-4">
+                            <!-- @MAP: campaigns.map(campaign => ( -->
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center space-x-4">
+                                    <!-- Modern web development campaign icon -->
+                                    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Code development" class="w-12 h-12 rounded-lg object-cover" data-mock="true" />
+                                    <div>
+                                        <p class="font-medium text-gray-900" data-bind="campaign.name">Web Development Tools</p>
+                                        <p class="text-sm text-gray-500">Keywords: "web developer", "frontend tools"</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">89 leads</p>
+                                    <p class="text-sm text-green-600">↗ +15.2%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center space-x-4">
+                                    <!-- Marketing analytics dashboard -->
+                                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Marketing analytics" class="w-12 h-12 rounded-lg object-cover" data-mock="true" />
+                                    <div>
+                                        <p class="font-medium text-gray-900" data-bind="campaign.name">Marketing Analytics</p>
+                                        <p class="text-sm text-gray-500">Keywords: "analytics", "marketing data"</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">67 leads</p>
+                                    <p class="text-sm text-green-600">↗ +8.7%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center space-x-4">
+                                    <!-- Customer support software -->
+                                    <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Customer support" class="w-12 h-12 rounded-lg object-cover" data-mock="true" />
+                                    <div>
+                                        <p class="font-medium text-gray-900" data-bind="campaign.name">Customer Support Tools</p>
+                                        <p class="text-sm text-gray-500">Keywords: "customer service", "support"</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">43 leads</p>
+                                    <p class="text-sm text-yellow-600">→ -2.1%</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                        
+                        <button class="w-full mt-4 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:viewAllCampaigns">
+                            View All Campaigns
+                        </button>
+                    </div>
+                    
+                    <!-- Account Status & Buy Accounts -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Account Manager</h3>
+                        
+                        <!-- Current Accounts -->
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fab fa-twitter text-twitter"></i>
+                                    <span class="text-sm font-medium">Twitter</span>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
+                                </div>
+                                <span class="text-xs text-gray-500">5 accounts</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fab fa-reddit text-reddit"></i>
+                                    <span class="text-sm font-medium">Reddit</span>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
+                                </div>
+                                <span class="text-xs text-gray-500">4 accounts</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fab fa-quora text-quora"></i>
+                                    <span class="text-sm font-medium">Quora</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Limited</span>
+                                </div>
+                                <span class="text-xs text-gray-500">3 accounts</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Buy More Accounts -->
+                        <div class="border-t border-gray-200 pt-4">
+                            <h4 class="font-medium text-gray-900 mb-3">Buy More Accounts</h4>
+                            <div class="space-y-2">
+                                <a href="https://gumroad.com" target="_blank" class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fab fa-twitter text-twitter"></i>
+                                        <span class="text-sm font-medium">Twitter Accounts</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900">$5 each</span>
+                                </a>
+                                
+                                <a href="https://gumroad.com" target="_blank" class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fab fa-reddit text-reddit"></i>
+                                        <span class="text-sm font-medium">Reddit Accounts</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900">$5 each</span>
+                                </a>
+                                
+                                <a href="https://gumroad.com" target="_blank" class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fab fa-quora text-quora"></i>
+                                        <span class="text-sm font-medium">Quora Accounts</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900">$5 each</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent AI Replies and Performance -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recent AI Generated Replies -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent AI Replies</h3>
+                            <button class="text-sm text-twitter hover:text-blue-600 font-medium" data-event="click:viewAllReplies">View All</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: recentReplies.map(reply => ( -->
+                            <div class="p-4 border border-gray-100 rounded-lg" data-mock="true">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fab fa-twitter text-twitter mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-sm font-medium text-gray-900">@tech_discussion</span>
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Posted</span>
+                                            <span class="text-xs text-gray-500">2h ago</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700 mb-2">"For web developers looking for better tools, I'd recommend checking out our platform. It's helped me streamline my workflow significantly."</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span>💬 12 replies</span>
+                                            <span>👍 24 likes</span>
+                                            <span>🔄 8 shares</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-100 rounded-lg" data-mock="true">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fab fa-reddit text-reddit mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-sm font-medium text-gray-900">r/webdev</span>
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Posted</span>
+                                            <span class="text-xs text-gray-500">4h ago</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700 mb-2">"I've been using this analytics tool for a few months now and it's been game-changing for tracking our marketing performance."</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span>💬 8 replies</span>
+                                            <span>⬆️ 45 upvotes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-100 rounded-lg" data-mock="true">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fab fa-quora text-quora mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-sm font-medium text-gray-900">Customer Support Question</span>
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Pending</span>
+                                            <span class="text-xs text-gray-500">6h ago</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700 mb-2">"Based on my experience with customer support tools, I'd suggest looking into solutions that offer real-time chat and ticket management."</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span>👁️ 127 views</span>
+                                            <span>👍 3 upvotes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                    
+                    <!-- Keyword Performance -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Keyword Performance</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 mb-3">Top Performing Keywords</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <span class="text-sm font-medium text-gray-900">"web developer tools"</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-green-600 font-medium">32 leads</span>
+                                            <span class="text-xs text-green-600">94% success</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <span class="text-sm font-medium text-gray-900">"marketing analytics"</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-green-600 font-medium">28 leads</span>
+                                            <span class="text-xs text-green-600">89% success</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <span class="text-sm font-medium text-gray-900">"customer support"</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-blue-600 font-medium">19 leads</span>
+                                            <span class="text-xs text-blue-600">76% success</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4">
+                                <h4 class="text-sm font-medium text-gray-900 mb-3">Keywords Needing Attention</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <span class="text-sm font-medium text-gray-900">"project management"</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-yellow-600 font-medium">8 leads</span>
+                                            <span class="text-xs text-yellow-600">45% success</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                                        <span class="text-sm font-medium text-gray-900">"social media tools"</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-red-600 font-medium">4 leads</span>
+                                            <span class="text-xs text-red-600">28% success</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-4 px-4 py-2 bg-twitter text-white rounded-lg hover:bg-blue-600 transition-colors" data-event="click:optimizeKeywords">
+                            <i class="fas fa-magic mr-2"></i>
+                            Optimize Keywords with AI
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <!-- @END_COMPONENT: Main Content Area -->
+    </div>
+    <!-- @END_COMPONENT: Layout Container -->
+
+    <script>
+        // TODO: Implement business logic, API calls, or state management
+        (function() {
+            // Initialize Activity Chart
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Replies Generated',
+                        data: [120, 180, 150, 220, 280, 320, 350, 380, 290, 420, 450, 500],
+                        borderColor: '#1DA1F2',
+                        backgroundColor: 'rgba(29, 161, 242, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Simulate real-time updates (for demo purposes)
+            function updateMetrics() {
+                const elements = document.querySelectorAll('[data-bind]');
+                elements.forEach(element => {
+                    if (element.getAttribute('data-bind') === 'metrics.repliesGenerated') {
+                        const currentValue = parseInt(element.textContent.replace(',', ''));
+                        element.textContent = (currentValue + Math.floor(Math.random() * 5)).toLocaleString();
+                    }
+                });
+            }
+            
+            // Update metrics every 30 seconds (for demo)
+            setInterval(updateMetrics, 30000);
+            
+            // Add click handlers for external links
+            document.querySelectorAll('a[href*="gumroad"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // TODO: Track analytics for account purchases
+                    console.log('Account purchase link clicked:', this.textContent);
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -8,3 +8,15 @@ vite.config.ts.*
 .history
 venv
 .history
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+venv/
+env/
+.venv/
+.env/
+.env
+.env.local

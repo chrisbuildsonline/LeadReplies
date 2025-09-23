@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplyLeads - AI Social Media Automation Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'twitter': '#1DA1F2',
+                        'reddit': '#FF4500', 
+                        'quora': '#B92B27',
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- @COMPONENT: MainLayout [dashboard layout with sidebar and main content] -->
+    <div class="flex h-screen">
+        <!-- @COMPONENT: Sidebar [navigation and branding] -->
+        <div class="w-64 bg-white shadow-lg flex flex-col">
+            <!-- Logo Section -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-reply text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">ReplyLeads</h1>
+                        <p class="text-sm text-gray-500">AI Automation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-blue-600 bg-blue-50 rounded-lg font-medium">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Campaigns</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Platforms</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Account Store</span>
+                </a>
+            </nav>
+
+            <!-- Bottom Section -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-900 mb-1">Upgrade to Pro</h3>
+                    <p class="text-sm text-gray-600 mb-3">Get unlimited campaigns and premium accounts</p>
+                    <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700">
+                        Upgrade
+                    </button>
+                </div>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg mt-4">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [dashboard main content area] -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <div class="bg-white shadow-sm border-b border-gray-200 px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Hello, Sarah! 👋</h1>
+                        <p class="text-gray-600">Your AI is working hard promoting your SaaS across social platforms</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-500">Last updated: 2 minutes ago</span>
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                            <!-- Stock photo of a professional woman smiling -->
+                            <img src="https://pixabay.com/get/gae600fe62e16f9532bc544ca6bd28cf0c2a83a108efec54a8d22128c948629b2657637f190814046803aab3953d70136109d6480ad5e55c973604986288beadd_1280.jpg" alt="Profile picture" class="w-10 h-10 rounded-full object-cover">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <!-- Key Metrics Row -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <!-- @COMPONENT: MetricCard [displays key performance metrics] -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-reply text-emerald-600 text-xl"></i>
+                            </div>
+                            <span class="text-2xl">📈</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900" data-bind="metrics.totalReplies">2,847</h3>
+                        <p class="text-gray-600">AI Replies Posted</p>
+                        <div class="flex items-center mt-2">
+                            <span class="text-emerald-600 text-sm font-medium">+12%</span>
+                            <span class="text-gray-500 text-sm ml-1">vs last week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bullseye text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="text-2xl">🎯</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900" data-bind="metrics.productsPromoted">127</h3>
+                        <p class="text-gray-600">Products Promoted</p>
+                        <div class="flex items-center mt-2">
+                            <span class="text-blue-600 text-sm font-medium">+8%</span>
+                            <span class="text-gray-500 text-sm ml-1">vs last week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-mouse-pointer text-amber-600 text-xl"></i>
+                            </div>
+                            <span class="text-2xl">⚡</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900" data-bind="metrics.ctrRate">4.2%</h3>
+                        <p class="text-gray-600">Click-through Rate</p>
+                        <div class="flex items-center mt-2">
+                            <span class="text-amber-600 text-sm font-medium">+0.3%</span>
+                            <span class="text-gray-500 text-sm ml-1">vs last week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="text-2xl">🔥</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900" data-bind="metrics.engagement">89%</h3>
+                        <p class="text-gray-600">Engagement Rate</p>
+                        <div class="flex items-center mt-2">
+                            <span class="text-purple-600 text-sm font-medium">+5%</span>
+                            <span class="text-gray-500 text-sm ml-1">vs last week</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: MetricCard -->
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Column - Performance & Campaigns -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <!-- Platform Status Cards -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Platform Performance</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- @COMPONENT: PlatformCard [shows individual platform metrics] -->
+                                <div class="border-2 border-twitter/20 rounded-lg p-4 bg-gradient-to-br from-twitter/5 to-blue-50">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <i class="fab fa-x-twitter text-gray-900 text-2xl"></i>
+                                        <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium">Active</span>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">X (Twitter)</h3>
+                                    <p class="text-sm text-gray-600 mb-2">1,247 replies posted</p>
+                                    <div class="flex items-center text-sm">
+                                        <div class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-600">3 accounts connected</span>
+                                    </div>
+                                </div>
+
+                                <div class="border-2 border-reddit/20 rounded-lg p-4 bg-gradient-to-br from-reddit/5 to-orange-50">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <i class="fab fa-reddit text-reddit text-2xl"></i>
+                                        <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium">Active</span>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Reddit</h3>
+                                    <p class="text-sm text-gray-600 mb-2">892 comments posted</p>
+                                    <div class="flex items-center text-sm">
+                                        <div class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-600">2 accounts connected</span>
+                                    </div>
+                                </div>
+
+                                <div class="border-2 border-quora/20 rounded-lg p-4 bg-gradient-to-br from-quora/5 to-red-50">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <i class="fab fa-quora text-quora text-2xl"></i>
+                                        <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium">Active</span>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Quora</h3>
+                                    <p class="text-sm text-gray-600 mb-2">708 answers posted</p>
+                                    <div class="flex items-center text-sm">
+                                        <div class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-600">4 accounts connected</span>
+                                    </div>
+                                </div>
+                                <!-- @END_COMPONENT: PlatformCard -->
+                            </div>
+                        </div>
+
+                        <!-- Performance Chart -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900">Reply Activity</h2>
+                                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option>Last 7 days</option>
+                                    <option>Last 30 days</option>
+                                    <option>Last 90 days</option>
+                                </select>
+                            </div>
+                            <!-- Chart placeholder with sample data visualization -->
+                            <div class="h-64 flex items-end space-x-2 px-4 py-4 bg-gray-50 rounded-lg">
+                                <!-- @FUNCTIONALITY: This chart should implement real-time activity data using Chart.js or similar -->
+                                <div class="flex-1 bg-blue-200 rounded-t" style="height: 40%"></div>
+                                <div class="flex-1 bg-blue-300 rounded-t" style="height: 65%"></div>
+                                <div class="flex-1 bg-blue-400 rounded-t" style="height: 35%"></div>
+                                <div class="flex-1 bg-blue-500 rounded-t" style="height: 80%"></div>
+                                <div class="flex-1 bg-blue-600 rounded-t" style="height: 55%"></div>
+                                <div class="flex-1 bg-blue-700 rounded-t" style="height: 90%"></div>
+                                <div class="flex-1 bg-blue-800 rounded-t" style="height: 70%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-500 mt-2">
+                                <span>Mon</span>
+                                <span>Tue</span>
+                                <span>Wed</span>
+                                <span>Thu</span>
+                                <span>Fri</span>
+                                <span>Sat</span>
+                                <span>Sun</span>
+                            </div>
+                        </div>
+
+                        <!-- Active Campaigns -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900">Active Campaigns</h2>
+                                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                                    <i class="fas fa-plus mr-2"></i>New Campaign
+                                </button>
+                            </div>
+                            
+                            <!-- @COMPONENT: CampaignTable [shows active automation campaigns] -->
+                            <div class="space-y-4">
+                                <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                            <span class="font-medium text-gray-900">SaaS Project Management Tool</span>
+                                        </div>
+                                        <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium">Active</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-gray-500">Keywords:</span>
+                                            <p class="font-medium">project management, team collaboration, task tracking</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-500">Platforms:</span>
+                                            <div class="flex space-x-2 mt-1">
+                                                <i class="fab fa-x-twitter text-gray-600"></i>
+                                                <i class="fab fa-reddit text-reddit"></i>
+                                                <i class="fab fa-quora text-quora"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-500">Performance:</span>
+                                            <p class="font-medium">127 replies, 4.2% CTR</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
+                                            <span class="font-medium text-gray-900">E-commerce Analytics Platform</span>
+                                        </div>
+                                        <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">Paused</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-gray-500">Keywords:</span>
+                                            <p class="font-medium">ecommerce analytics, sales tracking, conversion optimization</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-500">Platforms:</span>
+                                            <div class="flex space-x-2 mt-1">
+                                                <i class="fab fa-x-twitter text-gray-600"></i>
+                                                <i class="fab fa-quora text-quora"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-500">Performance:</span>
+                                            <p class="font-medium">89 replies, 3.8% CTR</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: CampaignTable -->
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Activity Feed & Account Store -->
+                    <div class="space-y-8">
+                        <!-- Account Store -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">Account Store</h2>
+                            <p class="text-gray-600 text-sm mb-6">Premium aged accounts for better engagement rates</p>
+                            
+                            <!-- @COMPONENT: AccountStore [social account purchasing interface] -->
+                            <div class="space-y-4">
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fab fa-x-twitter text-gray-900 text-lg"></i>
+                                            <span class="font-medium">X (Twitter) Account</span>
+                                        </div>
+                                        <span class="text-lg font-bold text-emerald-600">$5</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-3">6mo old, 200+ followers, verified email</p>
+                                    <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700" data-event="click:purchaseAccount">
+                                        Purchase Account
+                                    </button>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fab fa-reddit text-reddit text-lg"></i>
+                                            <span class="font-medium">Reddit Account</span>
+                                        </div>
+                                        <span class="text-lg font-bold text-emerald-600">$5</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-3">1yr old, 500+ karma, active history</p>
+                                    <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700" data-event="click:purchaseAccount">
+                                        Purchase Account
+                                    </button>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fab fa-quora text-quora text-lg"></i>
+                                            <span class="font-medium">Quora Account</span>
+                                        </div>
+                                        <span class="text-lg font-bold text-emerald-600">$5</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-3">8mo old, 100+ answers, good reputation</p>
+                                    <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700" data-event="click:purchaseAccount">
+                                        Purchase Account
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: AccountStore -->
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Recent AI Replies</h2>
+                            
+                            <!-- @COMPONENT: ActivityFeed [shows recent automated replies] -->
+                            <div class="space-y-4">
+                                <!-- @MAP: recentReplies.map(reply => ( -->
+                                <div class="flex space-x-3" data-mock="true">
+                                    <i class="fab fa-x-twitter text-gray-600 text-lg mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <p class="text-sm text-gray-700">"I've been using ProjectFlow for similar needs - it has great team collaboration features and intuitive task tracking. Worth checking out!"</p>
+                                        </div>
+                                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                            <span>2 minutes ago</span>
+                                            <span>•</span>
+                                            <span>3 upvotes</span>
+                                            <span>•</span>
+                                            <span>@sarah_tech_lead</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex space-x-3" data-mock="true">
+                                    <i class="fab fa-reddit text-reddit text-lg mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <p class="text-sm text-gray-700">"For analytics, I'd recommend looking into ShopInsights. It's specifically built for e-commerce and has really good conversion tracking."</p>
+                                        </div>
+                                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                            <span>12 minutes ago</span>
+                                            <span>•</span>
+                                            <span>5 upvotes</span>
+                                            <span>•</span>
+                                            <span>r/ecommerce</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex space-x-3" data-mock="true">
+                                    <i class="fab fa-quora text-quora text-lg mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <p class="text-sm text-gray-700">"Based on my experience, TaskManager Pro handles team collaboration really well. The interface is clean and the reporting features are comprehensive."</p>
+                                        </div>
+                                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                            <span>1 hour ago</span>
+                                            <span>•</span>
+                                            <span>8 upvotes</span>
+                                            <span>•</span>
+                                            <span>Business Management</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex space-x-3" data-mock="true">
+                                    <i class="fab fa-x-twitter text-gray-600 text-lg mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <p class="text-sm text-gray-700">"Have you tried DataTrack? It's fantastic for small businesses looking to understand their sales patterns better. Simple setup too."</p>
+                                        </div>
+                                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                            <span>2 hours ago</span>
+                                            <span>•</span>
+                                            <span>12 upvotes</span>
+                                            <span>•</span>
+                                            <span>@marketing_mike</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                            <!-- @END_COMPONENT: ActivityFeed -->
+                            
+                            <div class="text-center mt-6">
+                                <button class="text-blue-600 text-sm font-medium hover:text-blue-700">
+                                    View all activity <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">Today's Performance</h2>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Replies sent</span>
+                                    <span class="font-semibold text-gray-900">47</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Clicks generated</span>
+                                    <span class="font-semibold text-gray-900">23</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Engagement rate</span>
+                                    <span class="font-semibold text-emerald-600">6.2%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Keywords tracked</span>
+                                    <span class="font-semibold text-gray-900">15</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Initialize dashboard interactions
+            function initializeDashboard() {
+                // Handle account purchase buttons
+                document.querySelectorAll('[data-event^="click:purchaseAccount"]').forEach(button => {
+                    button.addEventListener('click', function() {
+                        // TODO: Implement account purchase modal and payment processing
+                        alert('Account purchase feature would be implemented here');
+                    });
+                });
+
+                // Handle campaign management
+                document.querySelectorAll('[data-event^="click:handleSubmit"]').forEach(button => {
+                    button.addEventListener('click', function() {
+                        // TODO: Implement campaign creation and management
+                        console.log('Campaign management interaction');
+                    });
+                });
+
+                // Update metrics in real-time
+                function updateMetrics() {
+                    // TODO: Fetch real-time metrics from API
+                    // TODO: Update chart data and activity feed
+                }
+
+                // Set up periodic updates
+                // TODO: Implement WebSocket connection for real-time updates
+                // setInterval(updateMetrics, 30000); // Update every 30 seconds
+            }
+
+            // Initialize when DOM is ready
+            document.addEventListener('DOMContentLoaded', initializeDashboard);
+        })();
+    </script>
+</body>
+</html>

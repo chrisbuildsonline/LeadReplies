@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplyLeads Dashboard - AI Social Media Lead Generation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981', 
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        muted: '#6B7280'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-inter">
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- @COMPONENT: Sidebar [navigation menu with icons and links] -->
+        <div class="w-64 bg-white shadow-xl flex flex-col">
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-reply text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-dark">ReplyLeads</h1>
+                        <p class="text-sm text-muted">AI Lead Generation</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 bg-primary/10 text-primary rounded-xl font-medium">
+                    <i class="fas fa-home w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-muted hover:bg-gray-50 hover:text-dark rounded-xl transition-all duration-200">
+                    <i class="fas fa-bullhorn w-5"></i>
+                    <span>Campaigns</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-muted hover:bg-gray-50 hover:text-dark rounded-xl transition-all duration-200">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-muted hover:bg-gray-50 hover:text-dark rounded-xl transition-all duration-200">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Social Accounts</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-muted hover:bg-gray-50 hover:text-dark rounded-xl transition-all duration-200">
+                    <i class="fas fa-robot w-5"></i>
+                    <span>AI Replies</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-muted hover:bg-gray-50 hover:text-dark rounded-xl transition-all duration-200">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <!-- Upgrade Section -->
+            <div class="p-4 border-t border-gray-100">
+                <div class="bg-gradient-to-r from-primary to-secondary p-4 rounded-xl text-white">
+                    <h3 class="font-semibold mb-2">Upgrade to Pro</h3>
+                    <p class="text-sm opacity-90 mb-3">Get unlimited replies and advanced AI features</p>
+                    <button class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-2 rounded-lg transition-all duration-200">
+                        Upgrade Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [central dashboard area] -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header Section -->
+            <div class="bg-white shadow-sm border-b border-gray-100 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-dark mb-1">Hello, Sarah! 👋</h1>
+                        <p class="text-muted">Track your AI lead generation here. You're doing amazing!</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-muted">
+                            <i class="fas fa-calendar mr-2"></i>
+                            <span data-mock="true">15 Dec, 2024</span>
+                        </div>
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3">
+                            <!-- Professional headshot of a marketing professional -->
+                            <img src="https://pixabay.com/get/gba247b46ede560ea4915d182be02030077d73d427eca4866d5d00c526a2f8a9c4a1c5899642ec861249e1ea2d42302079e7f4836720ac886abd716d0c7372dc4_1280.jpg" alt="Sarah Johnson - Marketing Professional" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <p class="font-medium text-dark" data-bind="user.name">Sarah Johnson</p>
+                                <p class="text-sm text-muted" data-bind="user.email">@sarah.leads</p>
+                            </div>
+                            <button class="p-2 hover:bg-gray-50 rounded-lg">
+                                <i class="fas fa-chevron-down text-muted"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="flex-1 overflow-auto p-6">
+                <!-- Key Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <!-- @COMPONENT: MetricCard [displays key performance indicators] -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-reply text-primary text-lg"></i>
+                            </div>
+                            <span class="text-secondary text-sm font-medium">+12%</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-1" data-bind="metrics.repliesSent">1,247</h3>
+                        <p class="text-muted text-sm">AI Replies Sent</p>
+                        <div class="mt-3 text-xs text-muted">
+                            <span data-mock="true">+156 this week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-user-plus text-secondary text-lg"></i>
+                            </div>
+                            <span class="text-secondary text-sm font-medium">+28%</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-1" data-bind="metrics.leadsGenerated">389</h3>
+                        <p class="text-muted text-sm">Leads Generated</p>
+                        <div class="mt-3 text-xs text-muted">
+                            <span data-mock="true">+67 this week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-percentage text-accent text-lg"></i>
+                            </div>
+                            <span class="text-secondary text-sm font-medium">+3.2%</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-1" data-bind="metrics.conversionRate">31.2%</h3>
+                        <p class="text-muted text-sm">Conversion Rate</p>
+                        <div class="mt-3 text-xs text-muted">
+                            <span data-mock="true">Above average</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-clock text-purple-600 text-lg"></i>
+                            </div>
+                            <span class="text-secondary text-sm font-medium">-8h</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark mb-1" data-bind="metrics.timeSaved">142h</h3>
+                        <p class="text-muted text-sm">Time Saved</p>
+                        <div class="mt-3 text-xs text-muted">
+                            <span data-mock="true">This month</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: MetricCard -->
+                </div>
+
+                <!-- Charts and Analytics Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Performance Chart -->
+                    <!-- @COMPONENT: PerformanceChart [displays activity trends over time] -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-dark">Performance Overview</h3>
+                                <p class="text-sm text-muted">Reply activity across platforms</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 text-sm bg-primary text-white rounded-lg">7D</button>
+                                <button class="px-3 py-1 text-sm text-muted hover:bg-gray-100 rounded-lg">30D</button>
+                                <button class="px-3 py-1 text-sm text-muted hover:bg-gray-100 rounded-lg">90D</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Mock Chart Area -->
+                        <div class="h-64 relative">
+                            <!-- Chart background -->
+                            <svg class="w-full h-full">
+                                <!-- Grid lines -->
+                                <defs>
+                                    <pattern id="grid" width="50" height="32" patternUnits="userSpaceOnUse">
+                                        <path d="M 50 0 L 0 0 0 32" fill="none" stroke="#f1f5f9" stroke-width="1"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#grid)"/>
+                                
+                                <!-- Sample chart line -->
+                                <polyline fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"
+                                    points="0,200 80,180 160,150 240,120 320,100 400,80 480,60 560,40 640,30"/>
+                                
+                                <!-- Data points -->
+                                <circle cx="160" cy="150" r="4" fill="#3B82F6"/>
+                                <circle cx="320" cy="100" r="4" fill="#3B82F6"/>
+                                <circle cx="480" cy="60" r="4" fill="#3B82F6"/>
+                            </svg>
+                            
+                            <!-- Tooltip -->
+                            <div class="absolute top-16 left-72 bg-dark text-white px-3 py-2 rounded-lg text-sm">
+                                <div class="font-medium">Dec 12, 2024</div>
+                                <div class="text-xs opacity-75">Replies: 47 | Leads: 12</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Legend -->
+                        <div class="flex items-center space-x-6 mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-primary rounded-full"></div>
+                                <span class="text-sm text-muted">AI Replies</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-secondary rounded-full"></div>
+                                <span class="text-sm text-muted">Leads Generated</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: PerformanceChart -->
+
+                    <!-- Social Platform Stats -->
+                    <!-- @COMPONENT: PlatformStats [shows performance by social platform] -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-dark mb-4">Platform Performance</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-twitter text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-dark">Twitter/X</p>
+                                        <p class="text-xs text-muted">524 replies</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-semibold text-dark">142 leads</div>
+                                    <div class="text-xs text-secondary">+18%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-reddit text-orange-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-dark">Reddit</p>
+                                        <p class="text-xs text-muted">389 replies</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-semibold text-dark">97 leads</div>
+                                    <div class="text-xs text-secondary">+25%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-quora text-red-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-dark">Quora</p>
+                                        <p class="text-xs text-muted">334 replies</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-semibold text-dark">150 leads</div>
+                                    <div class="text-xs text-secondary">+31%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Buy Accounts Section -->
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <h4 class="font-medium text-dark mb-3">Need More Accounts?</h4>
+                            <div class="space-y-2">
+                                <a href="#" class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200" data-implementation="Should link to external account provider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fab fa-twitter text-blue-600"></i>
+                                        <span class="text-sm font-medium">Twitter Accounts</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-secondary font-semibold">$5 each</span>
+                                        <i class="fas fa-external-link-alt text-xs text-muted"></i>
+                                    </div>
+                                </a>
+                                <a href="#" class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fab fa-reddit text-orange-600"></i>
+                                        <span class="text-sm font-medium">Reddit Accounts</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-secondary font-semibold">$5 each</span>
+                                        <i class="fas fa-external-link-alt text-xs text-muted"></i>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: PlatformStats -->
+                </div>
+
+                <!-- Current Campaigns Section -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <!-- @COMPONENT: ActiveCampaigns [shows running campaigns and their status] -->
+                    <div class="xl:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-dark">Active Campaigns</h3>
+                                <p class="text-sm text-muted">Monitor your AI reply campaigns</p>
+                            </div>
+                            <button class="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all duration-200">
+                                <i class="fas fa-plus mr-2"></i>New Campaign
+                            </button>
+                        </div>
+
+                        <!-- Campaign Items -->
+                        <!-- @MAP: campaigns.map(campaign => ( -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-laptop text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-dark" data-bind="campaign.name">SaaS Tools Promotion</h4>
+                                        <p class="text-sm text-muted">Keywords: project management, productivity software</p>
+                                        <div class="flex items-center space-x-4 mt-1">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-lg bg-secondary/10 text-secondary text-xs font-medium">
+                                                <span class="w-2 h-2 bg-secondary rounded-full mr-1"></span>
+                                                Active
+                                            </span>
+                                            <span class="text-xs text-muted">Created 3 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-semibold text-dark">47 replies</div>
+                                    <div class="text-sm text-muted">12 leads today</div>
+                                    <div class="flex space-x-2 mt-2">
+                                        <button class="p-1 text-muted hover:text-dark">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button class="p-1 text-muted hover:text-dark">
+                                            <i class="fas fa-chart-bar text-sm"></i>
+                                        </button>
+                                        <button class="p-1 text-muted hover:text-red-500">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-dumbbell text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-dark">Fitness App Launch</h4>
+                                        <p class="text-sm text-muted">Keywords: workout app, fitness tracker, gym</p>
+                                        <div class="flex items-center space-x-4 mt-1">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-lg bg-accent/10 text-accent text-xs font-medium">
+                                                <span class="w-2 h-2 bg-accent rounded-full mr-1"></span>
+                                                Paused
+                                            </span>
+                                            <span class="text-xs text-muted">Created 1 week ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-semibold text-dark">23 replies</div>
+                                    <div class="text-sm text-muted">5 leads today</div>
+                                    <div class="flex space-x-2 mt-2">
+                                        <button class="p-1 text-muted hover:text-dark">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button class="p-1 text-muted hover:text-dark">
+                                            <i class="fas fa-chart-bar text-sm"></i>
+                                        </button>
+                                        <button class="p-1 text-muted hover:text-red-500">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-red-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-shopping-cart text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-dark">E-commerce Platform</h4>
+                                        <p class="text-sm text-muted">Keywords: online store, ecommerce solution</p>
+                                        <div class="flex items-center space-x-4 mt-1">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-lg bg-secondary/10 text-secondary text-xs font-medium">
+                                                <span class="w-2 h-2 bg-secondary rounded-full mr-1"></span>
+                                                Active
+                                            </span>
+                                            <span class="text-xs text-muted">Created 5 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-semibold text-dark">31 replies</div>
+                                    <div class="text-sm text-muted">8 leads today</div>
+                                    <div class="flex space-x-2 mt-2">
+                                        <button class="p-1 text-muted hover:text-dark">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button class="p-1 text-muted hover:text-dark">
+                                            <i class="fas fa-chart-bar text-sm"></i>
+                                        </button>
+                                        <button class="p-1 text-muted hover:text-red-500">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                    <!-- @END_COMPONENT: ActiveCampaigns -->
+
+                    <!-- Recent Activity Feed -->
+                    <!-- @COMPONENT: ActivityFeed [shows recent AI replies and lead activities] -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-dark mb-4">Recent Activity</h3>
+                        
+                        <div class="space-y-4 max-h-96 overflow-y-auto">
+                            <!-- @MAP: activities.map(activity => ( -->
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200">
+                                <!-- Professional avatar of a tech entrepreneur -->
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Alex Chen - Tech Entrepreneur" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-dark">AI replied to thread</p>
+                                    <p class="text-xs text-muted truncate">r/entrepreneur - "Best tools for project management?"</p>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-secondary">+1 lead</span>
+                                        <span class="text-xs text-muted">2 min ago</span>
+                                    </div>
+                                </div>
+                                <i class="fab fa-reddit text-orange-500 text-sm flex-shrink-0"></i>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200">
+                                <!-- Professional headshot of a business consultant -->
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Michael Torres - Business Consultant" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-dark">New lead generated</p>
+                                    <p class="text-xs text-muted truncate">Twitter - Software development discussion</p>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-secondary">High intent</span>
+                                        <span class="text-xs text-muted">5 min ago</span>
+                                    </div>
+                                </div>
+                                <i class="fab fa-twitter text-blue-500 text-sm flex-shrink-0"></i>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200">
+                                <!-- Professional photo of a startup founder -->
+                                <img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="David Kim - Startup Founder" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-dark">Campaign optimization</p>
+                                    <p class="text-xs text-muted truncate">Fitness App Launch - Keywords updated</p>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-accent">Improved targeting</span>
+                                        <span class="text-xs text-muted">12 min ago</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-cog text-gray-500 text-sm flex-shrink-0"></i>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200">
+                                <!-- Professional headshot of a marketing manager -->
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Emma Rodriguez - Marketing Manager" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-dark">AI replied to question</p>
+                                    <p class="text-xs text-muted truncate">Quora - "Best ecommerce solutions for small business?"</p>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-secondary">+2 leads</span>
+                                        <span class="text-xs text-muted">18 min ago</span>
+                                    </div>
+                                </div>
+                                <i class="fab fa-quora text-red-500 text-sm flex-shrink-0"></i>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-all duration-200">
+                                <!-- Professional portrait of a product manager -->
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="James Wilson - Product Manager" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-dark">Weekly summary</p>
+                                    <p class="text-xs text-muted truncate">47 replies sent, 15 leads generated this week</p>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-secondary">Performance up 23%</span>
+                                        <span class="text-xs text-muted">1h ago</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chart-line text-green-500 text-sm flex-shrink-0"></i>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-center">
+                            <button class="text-sm text-primary hover:text-primary/80 font-medium">
+                                View all activity
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: ActivityFeed -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <!-- @STATE: Various states for interactive elements like modal visibility, loading states, etc. -->
+    
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, or state management
+            
+            // Simple interactions for demo purposes
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('bg-primary/10', 'text-primary'));
+                    navLinks.forEach(l => l.classList.add('text-muted'));
+                    
+                    // Add active class to clicked link
+                    this.classList.remove('text-muted');
+                    this.classList.add('bg-primary/10', 'text-primary');
+                });
+            });
+
+            // Simulate real-time updates
+            function updateMetrics() {
+                const repliesElement = document.querySelector('[data-bind="metrics.repliesSent"]');
+                const leadsElement = document.querySelector('[data-bind="metrics.leadsGenerated"]');
+                
+                if (repliesElement && leadsElement) {
+                    // TODO: Replace with real API calls
+                    const currentReplies = parseInt(repliesElement.textContent.replace(/,/g, ''));
+                    const currentLeads = parseInt(leadsElement.textContent);
+                    
+                    // Simulate small increments
+                    if (Math.random() > 0.7) {
+                        repliesElement.textContent = (currentReplies + Math.floor(Math.random() * 3)).toLocaleString();
+                    }
+                    if (Math.random() > 0.8) {
+                        leadsElement.textContent = currentLeads + 1;
+                    }
+                }
+            }
+
+            // Update every 30 seconds for demo
+            setInterval(updateMetrics, 30000);
+
+            // Campaign action handlers
+            const campaignButtons = document.querySelectorAll('[data-event]');
+            campaignButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // TODO: Implement campaign management actions
+                    console.log('Campaign action:', this.getAttribute('data-event'));
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
