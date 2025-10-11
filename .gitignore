@@ -20,3 +20,6 @@ env/
 .env/
 .env
 .env.local
+.claude
+.config.local
+.replit

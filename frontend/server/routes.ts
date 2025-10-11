@@ -1,19 +1,20 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { redditStorage } from "./reddit-storage";
 import { insertCampaignSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Dashboard data
+  // Dashboard data - use Reddit API
   app.get("/api/dashboard", async (req, res) => {
     try {
       const [metrics, platformStats, campaigns, replies, accounts, dailyStats] = await Promise.all([
-        storage.getMetrics(),
-        storage.getPlatformStats(),
-        storage.getCampaigns(),
-        storage.getReplies(4),
-        storage.getAccounts(),
-        storage.getDailyStats(),
+        redditStorage.getMetrics(),
+        redditStorage.getPlatformStats(),
+        redditStorage.getCampaigns(),
+        redditStorage.getReplies(4),
+        redditStorage.getAccounts(),
+        redditStorage.getDailyStats(),
       ]);
 
       res.json({
@@ -25,6 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dailyStats,
       });
     } catch (error) {
+      console.error("Dashboard error:", error);
       res.status(500).json({ message: "Failed to fetch dashboard data" });
     }
   });
@@ -143,6 +145,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch daily stats" });
+    }
+  });
+
+  // Reddit leads endpoints
+  app.get("/api/reddit/leads", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const minProbability = req.query.min_probability ? parseInt(req.query.min_probability as string) : 0;
+      
+      const response = await fetch(`http://localhost:6070/api/leads?limit=${limit}&min_probability=${minProbability}`);
+      const data = await response.json();
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Reddit leads error:", error);
+      res.status(500).json({ message: "Failed to fetch Reddit leads" });
+    }
+  });
+
+  app.get("/api/reddit/leads/high-quality", async (req, res) => {
+    try {
+      const response = await fetch("http://localhost:6070/api/leads/high-quality");
+      const data = await response.json();
+      
+      res.json(data);
+    } catch (error) {
+      console.error("High quality leads error:", error);
+      res.status(500).json({ message: "Failed to fetch high quality leads" });
+    }
+  });
+
+  app.post("/api/reddit/scraping/run-once", async (req, res) => {
+    try {
+      const response = await fetch("http://localhost:6070/api/scraping/run-once", {
+        method: "POST"
+      });
+      const data = await response.json();
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Scraping error:", error);
+      res.status(500).json({ message: "Failed to run scraping" });
+    }
+  });
+
+  app.get("/api/reddit/scraping/status", async (req, res) => {
+    try {
+      const response = await fetch("http://localhost:6070/api/scraping/status");
+      const data = await response.json();
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Scraping status error:", error);
+      res.status(500).json({ message: "Failed to get scraping status" });
     }
   });
 
