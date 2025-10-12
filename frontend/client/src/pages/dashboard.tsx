@@ -53,7 +53,6 @@ export default function Dashboard() {
 
   return (
     <PageLayout>
-      <div className="p-8 bg-[#ffffff]">
         {/* Key Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {isLoading ? (
@@ -209,7 +208,6 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-        </div>
       </div>
     </PageLayout>
   );

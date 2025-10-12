@@ -1,0 +1,372 @@
+2025-10-12 02:04:52,707 - INFO - 🧪 Running lead scraping once for testing...
+2025-10-12 02:04:52,708 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 02:04:52,708 - INFO - ======================================================================
+2025-10-12 02:04:52,708 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 02:04:52,708 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 11:02:57,842 - INFO - 🚀 Starting Lead Scraping Background Service
+2025-10-12 11:02:57,843 - INFO - ⏰ Scheduled to run every hour
+2025-10-12 11:02:57,843 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 11:02:57,843 - INFO - ======================================================================
+2025-10-12 11:02:57,843 - INFO - 🔄 Running initial scraping...
+2025-10-12 11:02:57,843 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 11:02:57,843 - INFO - ======================================================================
+2025-10-12 11:02:57,843 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 11:02:57,844 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 11:03:43,998 - INFO - 📊 Found 0 potential leads from Reddit
+2025-10-12 11:03:43,998 - INFO - ℹ️  No new leads found (Reddit may be blocking or no matching content)
+2025-10-12 11:03:43,998 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 11:03:43,999 - INFO - 🏢 Processing 2 businesses
+2025-10-12 11:03:43,999 - INFO -   📋 Processing: 2e1e21e (ID: 1)
+2025-10-12 11:03:43,999 - INFO -     🔍 Keywords: marketing automation, customer acquisition, sales funnel...
+2025-10-12 11:03:44,001 - INFO -     📊 9 unprocessed leads
+2025-10-12 11:03:44,934 - INFO -     📊 Results: 9 processed, 0 matched
+2025-10-12 11:03:44,935 - INFO -   📋 Processing: Fishing (ID: 2)
+2025-10-12 11:03:44,935 - INFO -     🔍 Keywords: fishing gear
+2025-10-12 11:03:44,935 - INFO -     📊 52 unprocessed leads
+2025-10-12 11:03:50,343 - INFO -     📊 Results: 52 processed, 0 matched
+2025-10-12 11:03:50,343 - INFO - 📊 HOURLY SUMMARY:
+2025-10-12 11:03:50,343 - INFO -    New leads scraped: 0
+2025-10-12 11:03:50,343 - INFO -    Leads processed: 61
+2025-10-12 11:03:50,343 - INFO -    Leads matched: 0
+2025-10-12 11:03:50,343 - INFO -    Businesses processed: 2
+2025-10-12 11:03:50,343 - INFO - ✅ Hourly processing completed successfully!
+2025-10-12 11:03:50,343 - INFO - ======================================================================
+2025-10-12 12:03:50,717 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 12:03:50,718 - INFO - ======================================================================
+2025-10-12 12:03:50,718 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 12:03:50,721 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 12:04:37,950 - INFO - 📊 Found 0 potential leads from Reddit
+2025-10-12 12:04:37,950 - INFO - ℹ️  No new leads found (Reddit may be blocking or no matching content)
+2025-10-12 12:04:37,950 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 12:04:37,951 - INFO - 🏢 Processing 2 businesses
+2025-10-12 12:04:37,951 - INFO -   📋 Processing: 2e1e21e (ID: 1)
+2025-10-12 12:04:37,951 - INFO -     🔍 Keywords: marketing automation, customer acquisition, sales funnel...
+2025-10-12 12:04:37,953 - INFO -     📊 9 unprocessed leads
+2025-10-12 12:04:38,915 - INFO -     📊 Results: 9 processed, 0 matched
+2025-10-12 12:04:38,915 - INFO -   📋 Processing: Fishing (ID: 2)
+2025-10-12 12:04:38,915 - INFO -     🔍 Keywords: fishing gear
+2025-10-12 12:04:38,916 - INFO -     📊 52 unprocessed leads
+2025-10-12 12:04:44,477 - INFO -     📊 Results: 52 processed, 0 matched
+2025-10-12 12:04:44,478 - INFO - 📊 HOURLY SUMMARY:
+2025-10-12 12:04:44,478 - INFO -    New leads scraped: 0
+2025-10-12 12:04:44,478 - INFO -    Leads processed: 61
+2025-10-12 12:04:44,478 - INFO -    Leads matched: 0
+2025-10-12 12:04:44,478 - INFO -    Businesses processed: 2
+2025-10-12 12:04:44,478 - INFO - ✅ Hourly processing completed successfully!
+2025-10-12 12:04:44,478 - INFO - ======================================================================
+2025-10-12 13:04:44,960 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 13:04:44,961 - INFO - ======================================================================
+2025-10-12 13:04:44,961 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 13:04:44,965 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 13:05:31,067 - INFO - 📊 Found 0 potential leads from Reddit
+2025-10-12 13:05:31,067 - INFO - ℹ️  No new leads found (Reddit may be blocking or no matching content)
+2025-10-12 13:05:31,067 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 13:05:31,068 - INFO - 🏢 Processing 2 businesses
+2025-10-12 13:05:31,068 - INFO -   📋 Processing: 2e1e21e (ID: 1)
+2025-10-12 13:05:31,069 - INFO -     🔍 Keywords: marketing automation, customer acquisition, sales funnel...
+2025-10-12 13:05:31,070 - INFO -     📊 9 unprocessed leads
+2025-10-12 13:05:32,000 - INFO -     📊 Results: 9 processed, 0 matched
+2025-10-12 13:05:32,001 - INFO -   📋 Processing: Fishing (ID: 2)
+2025-10-12 13:05:32,001 - INFO -     🔍 Keywords: fishing gear
+2025-10-12 13:05:32,001 - INFO -     📊 52 unprocessed leads
+2025-10-12 13:05:37,405 - INFO -     📊 Results: 52 processed, 0 matched
+2025-10-12 13:05:37,406 - INFO - 📊 HOURLY SUMMARY:
+2025-10-12 13:05:37,406 - INFO -    New leads scraped: 0
+2025-10-12 13:05:37,406 - INFO -    Leads processed: 61
+2025-10-12 13:05:37,406 - INFO -    Leads matched: 0
+2025-10-12 13:05:37,406 - INFO -    Businesses processed: 2
+2025-10-12 13:05:37,406 - INFO - ✅ Hourly processing completed successfully!
+2025-10-12 13:05:37,406 - INFO - ======================================================================
+2025-10-12 14:54:15,564 - INFO - 🚀 Starting Lead Scraping Background Service
+2025-10-12 14:54:15,565 - INFO - ⏰ Scheduled to run every 30 minutes
+2025-10-12 14:54:15,565 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 14:54:15,565 - INFO - ======================================================================
+2025-10-12 14:54:15,565 - INFO - 🔄 Running initial scraping...
+2025-10-12 14:54:15,565 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 14:54:15,565 - INFO - ======================================================================
+2025-10-12 14:54:15,565 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 14:54:15,566 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 14:55:01,763 - INFO - 📊 Found 0 potential leads from Reddit
+2025-10-12 14:55:01,764 - INFO - ℹ️  No new leads found (Reddit may be blocking or no matching content)
+2025-10-12 14:55:01,764 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 14:55:01,765 - INFO - 🏢 Processing 2 businesses
+2025-10-12 14:55:01,765 - INFO -   📋 Processing: 2e1e21e (ID: 1)
+2025-10-12 14:55:01,765 - INFO -     🔍 Keywords: marketing automation, customer acquisition, sales funnel...
+2025-10-12 14:55:01,767 - INFO -     📊 9 unprocessed leads
+2025-10-12 14:55:02,699 - INFO -     📊 Results: 9 processed, 0 matched
+2025-10-12 14:55:02,699 - INFO -   📋 Processing: Fishing (ID: 2)
+2025-10-12 14:55:02,699 - INFO -     🔍 Keywords: fishing gear
+2025-10-12 14:55:02,700 - INFO -     📊 52 unprocessed leads
+2025-10-12 14:55:08,094 - INFO -     📊 Results: 52 processed, 0 matched
+2025-10-12 14:55:08,094 - INFO - 📊 HOURLY SUMMARY:
+2025-10-12 14:55:08,094 - INFO -    New leads scraped: 0
+2025-10-12 14:55:08,094 - INFO -    Leads processed: 61
+2025-10-12 14:55:08,094 - INFO -    Leads matched: 0
+2025-10-12 14:55:08,094 - INFO -    Businesses processed: 2
+2025-10-12 14:55:08,094 - INFO - ✅ Hourly processing completed successfully!
+2025-10-12 14:55:08,094 - INFO - ======================================================================
+2025-10-12 15:16:34,775 - INFO - 🚀 Starting Lead Scraping Background Service
+2025-10-12 15:16:34,775 - INFO - ⏰ Scheduled to run every 30 minutes
+2025-10-12 15:16:34,775 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 15:16:34,775 - INFO - ======================================================================
+2025-10-12 15:16:34,776 - INFO - 🔄 Running initial scraping...
+2025-10-12 15:16:34,777 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 15:16:34,777 - INFO - ======================================================================
+2025-10-12 15:16:34,777 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 15:16:34,778 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 15:17:21,370 - INFO - 📊 Found 0 potential leads from Reddit
+2025-10-12 15:17:21,370 - INFO - ℹ️  No new leads found (Reddit may be blocking or no matching content)
+2025-10-12 15:17:21,370 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 15:17:21,371 - INFO - 🏢 Processing 2 businesses
+2025-10-12 15:17:21,371 - INFO -   📋 Processing: 2e1e21e (ID: 1)
+2025-10-12 15:17:21,372 - INFO -     🔍 Keywords: marketing automation, customer acquisition, sales funnel...
+2025-10-12 15:17:21,373 - INFO -     📊 9 unprocessed leads
+2025-10-12 15:17:22,308 - INFO -     📊 Results: 9 processed, 0 matched
+2025-10-12 15:17:22,308 - INFO -   📋 Processing: Fishing (ID: 2)
+2025-10-12 15:17:22,309 - INFO -     🔍 Keywords: fishing gear
+2025-10-12 15:17:22,309 - INFO -     📊 52 unprocessed leads
+2025-10-12 15:17:27,724 - INFO -     📊 Results: 52 processed, 0 matched
+2025-10-12 15:17:27,724 - INFO - 📊 HOURLY SUMMARY:
+2025-10-12 15:17:27,724 - INFO -    New leads scraped: 0
+2025-10-12 15:17:27,724 - INFO -    Leads processed: 61
+2025-10-12 15:17:27,724 - INFO -    Leads matched: 0
+2025-10-12 15:17:27,724 - INFO -    Businesses processed: 2
+2025-10-12 15:17:27,724 - INFO - ✅ Processing completed successfully!
+2025-10-12 15:17:27,724 - INFO - ======================================================================
+2025-10-12 15:34:12,331 - INFO - 🚀 Starting Lead Scraping Background Service
+2025-10-12 15:34:12,332 - INFO - ⏰ Scheduled to run every 30 minutes
+2025-10-12 15:34:12,332 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 15:34:12,332 - INFO - ======================================================================
+2025-10-12 15:34:12,343 - INFO - 🔄 Running initial scraping...
+2025-10-12 15:34:12,343 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 15:34:12,343 - INFO - ======================================================================
+2025-10-12 15:34:12,343 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 15:34:12,385 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 15:39:11,931 - INFO - 🚀 Starting Lead Scraping Background Service
+2025-10-12 15:39:11,931 - INFO - ⏰ Scheduled to run every 30 minutes
+2025-10-12 15:39:11,931 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 15:39:11,931 - INFO - ======================================================================
+2025-10-12 15:39:11,934 - INFO - 🔄 Running initial scraping...
+2025-10-12 15:39:11,934 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 15:39:11,934 - INFO - ======================================================================
+2025-10-12 15:39:11,934 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 15:39:11,935 - INFO - 🔍 Scraping with 22 keywords across 5 subreddits
+2025-10-12 16:29:49,128 - INFO - 🚀 Starting F5Bot Lead Scraping Background Service
+2025-10-12 16:29:49,128 - INFO - ⏰ Scheduled to run every 120 minutes
+2025-10-12 16:29:49,128 - INFO - 🤖 Using F5Bot techniques for reliable Reddit scraping
+2025-10-12 16:29:49,128 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 16:29:49,128 - INFO - ======================================================================
+2025-10-12 16:29:49,128 - INFO - 🔄 Running initial scraping...
+2025-10-12 16:29:49,129 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-12 16:29:49,129 - INFO - ======================================================================
+2025-10-12 16:29:49,129 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-12 16:29:49,129 - INFO - 📋 Loaded 22 unique keywords from database
+2025-10-12 16:29:49,129 - INFO - 🔍 F5Bot scraping with 22 unique keywords from all businesses
+2025-10-12 16:30:02,273 - INFO - 📊 F5Bot found 94 potential leads from Reddit
+2025-10-12 16:30:02,275 - INFO -   ✅ Stored: Software As a Service Companies — The Fu... | Keywords: SaaS, software
+2025-10-12 16:30:02,276 - INFO -   ✅ Stored: Launched a devops tool, we are at 2.1K M... | Keywords: SaaS, tool
+2025-10-12 16:30:02,278 - INFO -   ✅ Stored: Sri Lanka Super App – A Smart AI-Powered... | Keywords: platform, app
+2025-10-12 16:30:02,282 - INFO -   ✅ Stored: Reddit is becoming a marketing junkyard... | Keywords: SaaS, marketing tool
+2025-10-12 16:30:02,286 - INFO -   ✅ Stored: Entrepreneur... | Keywords: startup, entrepreneur
+2025-10-12 16:30:02,287 - INFO -   ✅ Stored: App updates... | Keywords: software, app
+2025-10-12 16:30:02,288 - INFO -   ✅ Stored: Bulk File Renamer – Smarter Batch Rename... | Keywords: tool, app
+2025-10-12 16:30:02,289 - INFO -   ✅ Stored: [H] PayPal, Cash App, Venmo [W] Steam an... | Keywords: app, service
+2025-10-12 16:30:02,290 - INFO -   ✅ Stored: 2024 mazda 3 mild hybrid (skyactivG 1.5l... | Keywords: app, service
+2025-10-12 16:30:02,291 - INFO -   ✅ Stored: [SELF PROMOTION] Raunchy Predrink Dares ... | Keywords: software, app
+2025-10-12 16:30:02,292 - INFO -   ✅ Stored: Attention Everyone, The Full Copy Of Ath... | Keywords: tool, app
+2025-10-12 16:30:02,292 - INFO -   ✅ Stored: VORTEX services is working.... | Keywords: platform, service
+2025-10-12 16:30:02,293 - INFO -   ✅ Stored: Is there not one single streaming servic... | Keywords: service
+2025-10-12 16:30:02,294 - INFO -   ✅ Stored: What is the best game to get stuck on a ... | Keywords: platform
+2025-10-12 16:30:02,295 - INFO -   ✅ Stored: Lunchbox service in Mysore... | Keywords: service
+2025-10-12 16:30:02,296 - INFO -   ✅ Stored: My take: considering how big the company... | Keywords: app
+2025-10-12 16:30:02,300 - INFO -   ✅ Stored: Just Released Football Trivia App for iO... | Keywords: app
+2025-10-12 16:30:02,301 - INFO -   ✅ Stored: Digital Marketing... | Keywords: digital marketing
+2025-10-12 16:30:02,302 - INFO -   ✅ Stored: Should we test each other apps ? Win win... | Keywords: app
+2025-10-12 16:30:02,303 - INFO -   ✅ Stored: External payment options for iOS apps in... | Keywords: app
+2025-10-12 16:30:02,305 - INFO -   ✅ Stored: I’m seeing so many comments blaming pare... | Keywords: app
+2025-10-12 16:30:02,308 - INFO -   ✅ Stored: Can’t register the AT&amp;T business acc... | Keywords: app, service
+2025-10-12 16:30:02,309 - INFO -   ✅ Stored: 10 Weeks Review of My 2026 Model Y AWD... | Keywords: app, service
+2025-10-12 16:30:02,309 - INFO -   ✅ Stored: 6kg haul to Germany approx. 2 weeks with... | Keywords: app
+2025-10-12 16:30:02,315 - INFO -   ✅ Stored: Engineering heavy, materialist approach ... | Keywords: app
+2025-10-12 16:30:02,315 - INFO -   ✅ Stored: I'm building a system to create AI avata... | Keywords: app
+2025-10-12 16:30:02,316 - INFO -   ✅ Stored: Mass Effect X Helldivers 2 Warbond Conce... | Keywords: tool, app
+2025-10-12 16:30:02,317 - INFO -   ✅ Stored: Sweden 1959 - after a power outage, a fa... | Keywords: app, service
+2025-10-12 16:30:02,318 - INFO -   ✅ Stored: Confused about RaenonX stats — do you gu... | Keywords: tool, app
+2025-10-12 16:30:02,319 - INFO -   ✅ Stored: **Subs Quality**... | Keywords: app, service
+2025-10-12 16:30:02,319 - INFO -   ✅ Stored: AnannasAI vs OpenRouter... | Keywords: analytics, app
+2025-10-12 16:30:02,320 - INFO -   ✅ Stored: Affordable Airfreight Courier Recommenda... | Keywords: startup, app
+2025-10-12 16:30:02,321 - INFO -   ✅ Stored: Case 12 - No children allowed and my Lei... | Keywords: app, service
+2025-10-12 16:30:02,322 - INFO -   ✅ Stored: Englsih language barrier / uneducated su... | Keywords: platform, app
+2025-10-12 16:30:02,322 - INFO -   ✅ Stored: Confusion and uncertainty after graduati... | Keywords: app, service
+2025-10-12 16:30:02,325 - INFO -   ✅ Stored: My 20yo Corolla hit a quarter million mi... | Keywords: platform, app
+2025-10-12 16:30:02,327 - INFO -   ✅ Stored: Match My Client Type GPT that creates a ... | Keywords: entrepreneur, tool
+2025-10-12 16:30:02,329 - INFO -   ✅ Stored: I had to block my grandma.... | Keywords: app, service
+2025-10-12 16:30:02,332 - INFO -   ✅ Stored: Frustrated with Gemini - Abandoning Unle... | Keywords: app, service
+2025-10-12 16:30:02,334 - INFO -   ✅ Stored: I am giving up on this app... | Keywords: app
+2025-10-12 16:30:02,335 - INFO -   ✅ Stored: Quick $5 for signing up &amp; downloadin... | Keywords: app
+2025-10-12 16:30:02,336 - INFO -   ✅ Stored: Bengaluru becomes first Indian city to g... | Keywords: app
+2025-10-12 16:30:02,336 - INFO -   ✅ Stored: Thigh high platform boots.... | Keywords: platform
+2025-10-12 16:30:02,339 - INFO -   ✅ Stored: Centre Pushes 'Swadeshi Tech' With Made-... | Keywords: app
+2025-10-12 16:30:02,341 - INFO -   ✅ Stored: Tennis Superstar might be removed from t... | Keywords: app
+2025-10-12 16:30:02,341 - INFO -   ✅ Stored: Beaming King Charles gets behind the whe... | Keywords: service
+2025-10-12 16:30:02,342 - INFO -   ✅ Stored: Best digital Marketing institute Hyderab... | Keywords: digital marketing
+2025-10-12 16:30:02,344 - INFO -   ✅ Stored: Attention Everyone, The Full Copy Of Ath... | Keywords: app
+2025-10-12 16:30:02,349 - INFO -   ✅ Stored: LJR Batch AJ4 — 480 RMB | Factory precis... | Keywords: tool, app
+2025-10-12 16:30:02,349 - INFO -   ✅ Stored: UX/UI Feedback wanted – Landing page for... | Keywords: tool, app
+2025-10-12 16:30:02,352 - INFO -   ✅ Stored: I have the perfect plan for once and for... | Keywords: entrepreneur, app
+2025-10-12 16:30:02,353 - INFO -   ✅ Stored: [Hiring] Offer... | Keywords: app, service
+2025-10-12 16:30:02,354 - INFO -   ✅ Stored: Finally ready to dive into PvP regularly... | Keywords: tool, app
+2025-10-12 16:30:02,355 - INFO -   ✅ Stored: When does the game give me more tools?... | Keywords: tool
+2025-10-12 16:30:02,358 - INFO -   ✅ Stored: Should we test each other apps ? Win win... | Keywords: app
+2025-10-12 16:30:02,360 - INFO -   ✅ Stored: Organic-only is a luxury belief in 2025.... | Keywords: platform
+2025-10-12 16:30:02,362 - INFO -   ✅ Stored: Give me songs for my prog playlist!... | Keywords: tool
+2025-10-12 16:30:02,368 - INFO -   ✅ Stored: GPT transformer model looks similar to t... | Keywords: app
+2025-10-12 16:30:02,374 - INFO -   ✅ Stored: Automate YouTube Uploads with n8n | No T... | Keywords: automation
+2025-10-12 16:30:02,379 - INFO -   ✅ Stored: Andromeda galaxy... | Keywords: software
+2025-10-12 16:30:02,381 - INFO -   ✅ Stored: “Thor’s Helmet” – NGC 2359- painting... | Keywords: software
+2025-10-12 16:30:02,384 - INFO -   ✅ Stored: Issue with manychat... | Keywords: service
+2025-10-12 16:30:02,388 - INFO -   ✅ Stored: need help recovering sd2vita... | Keywords: software
+2025-10-12 16:30:02,395 - INFO -   ✅ Stored: Windows won't detect Mic... | Keywords: software
+2025-10-12 16:30:02,396 - INFO -   ✅ Stored: Is anyone else facing this dropdown issu... | Keywords: app
+2025-10-12 16:30:02,399 - INFO -   ✅ Stored: Last Week, Guest Speaker Got Political. ... | Keywords: service
+2025-10-12 16:30:02,401 - INFO -   ✅ Stored: Honey Moon, 400 pcs by Crescent Puzzles.... | Keywords: tool
+2025-10-12 16:30:02,403 - INFO -   ✅ Stored: Am I 4 or 5DPO? Cycle Day 18... | Keywords: app
+2025-10-12 16:30:02,407 - INFO -   ✅ Stored: Dex on fold5 inner display... | Keywords: app
+2025-10-12 16:30:02,411 - INFO -   ✅ Stored: If Scott Cawthon and Steel Wood Studios ... | Keywords: app
+2025-10-12 16:30:02,413 - INFO -   ✅ Stored: Introduction... | Keywords: service
+2025-10-12 16:30:02,419 - INFO -   ✅ Stored: I am a solo dev and this is my survival ... | Keywords: app
+2025-10-12 16:30:02,420 - INFO -   ✅ Stored: You can get BF 6 from making a subscript... | Keywords: platform
+2025-10-12 16:30:02,422 - INFO -   ✅ Stored: Affordable Glasses... | Keywords: service
+2025-10-12 16:30:02,426 - INFO -   ✅ Stored: My E1 zoon wont trigger alexa routines o... | Keywords: app
+2025-10-12 16:30:02,427 - INFO -   ✅ Stored: CaseOh played my game and loved it! W Ca... | Keywords: app
+2025-10-12 16:30:02,429 - INFO -   ✅ Stored: First 4x4 advice - prado or paj or ??... | Keywords: service
+2025-10-12 16:30:02,435 - INFO -   ✅ Stored: Wanting to switch from The Budget Mom me... | Keywords: app
+2025-10-12 16:30:02,437 - INFO -   ✅ Stored: Trying to post for the 1st time... | Keywords: app
+2025-10-12 16:30:02,439 - INFO -   ✅ Stored: Hilfe bzgl. zukünftige Karriere Schritte... | Keywords: software
+2025-10-12 16:30:02,441 - INFO -   ✅ Stored: I have a lot of different collections, b... | Keywords: service
+2025-10-12 16:30:02,442 - INFO -   ✅ Stored: Can anyone tell me what job this is?... | Keywords: service
+2025-10-12 16:30:02,443 - INFO -   ✅ Stored: Wuthering Waves Installed on External SS... | Keywords: app
+2025-10-12 16:30:02,445 - INFO -   ✅ Stored: Can someone pls help me with my ecs?... | Keywords: platform
+2025-10-12 16:30:02,450 - INFO -   ✅ Stored: You can now run ElectrumSV on Linux hass... | Keywords: app
+2025-10-12 16:30:02,451 - INFO -   ✅ Stored: I 27F, and my long distance boyfriend, 3... | Keywords: app
+2025-10-12 16:30:02,452 - INFO -   ✅ Stored: [13 YoE Operations, United States] help!... | Keywords: app
+2025-10-12 16:30:02,453 - INFO -   ✅ Stored: Having trouble with running bully on pc.... | Keywords: app
+2025-10-12 16:30:02,454 - INFO -   ✅ Stored: American Water Resources: Worth it?... | Keywords: app
+2025-10-12 16:30:02,454 - INFO -   ✅ Stored: Social Media Managers?... | Keywords: tool
+2025-10-12 16:30:02,455 - INFO -   ✅ Stored: Salesforce CEO Marc Benioff Says Trump S... | Keywords: service
+2025-10-12 16:30:02,458 - INFO -   ✅ Stored: My new traditional folk album comes to s... | Keywords: service
+2025-10-12 16:30:02,459 - INFO -   ✅ Stored: How to transfer braid from a broken spoo... | Keywords: tool
+2025-10-12 16:30:02,459 - INFO -   ✅ Stored: PSA 10 worthy?... | Keywords: app
+2025-10-12 16:30:02,459 - INFO - 📊 F5Bot results: 94 stored, 0 duplicates
+2025-10-12 16:30:02,459 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 16:30:02,459 - INFO - 🏢 Processing 2 businesses
+2025-10-12 16:30:02,459 - INFO -   📋 Processing: 2e1e21e (ID: 1)
+2025-10-12 16:30:02,459 - INFO -     🔍 Keywords: marketing automation, customer acquisition, sales funnel...
+2025-10-12 16:30:02,462 - INFO -     📊 103 unprocessed leads
+2025-10-12 16:30:08,676 - ERROR -     ❌ Error processing lead 56: too many values to unpack (expected 2)
+2025-10-12 16:30:14,722 - ERROR -     ❌ Error processing lead 57: too many values to unpack (expected 2)
+2025-10-12 16:30:21,510 - ERROR -     ❌ Error processing lead 58: too many values to unpack (expected 2)
+2025-10-12 16:30:27,583 - ERROR -     ❌ Error processing lead 59: too many values to unpack (expected 2)
+2025-10-12 16:30:33,413 - ERROR -     ❌ Error processing lead 60: too many values to unpack (expected 2)
+2025-10-12 16:30:38,132 - ERROR -     ❌ Error processing lead 61: too many values to unpack (expected 2)
+2025-10-12 16:30:43,776 - ERROR -     ❌ Error processing lead 62: too many values to unpack (expected 2)
+2025-10-12 16:30:48,972 - ERROR -     ❌ Error processing lead 63: too many values to unpack (expected 2)
+2025-10-12 16:30:54,546 - ERROR -     ❌ Error processing lead 64: too many values to unpack (expected 2)
+2025-10-12 16:31:00,051 - ERROR -     ❌ Error processing lead 65: too many values to unpack (expected 2)
+2025-10-12 16:31:07,126 - ERROR -     ❌ Error processing lead 66: too many values to unpack (expected 2)
+2025-10-12 16:31:12,221 - ERROR -     ❌ Error processing lead 67: too many values to unpack (expected 2)
+2025-10-12 16:31:18,440 - ERROR -     ❌ Error processing lead 68: too many values to unpack (expected 2)
+2025-10-12 16:31:23,264 - ERROR -     ❌ Error processing lead 69: too many values to unpack (expected 2)
+2025-10-12 16:31:28,858 - ERROR -     ❌ Error processing lead 70: too many values to unpack (expected 2)
+2025-10-12 16:31:33,991 - ERROR -     ❌ Error processing lead 71: too many values to unpack (expected 2)
+2025-10-12 16:31:39,612 - ERROR -     ❌ Error processing lead 72: too many values to unpack (expected 2)
+2025-10-12 16:31:45,480 - ERROR -     ❌ Error processing lead 73: too many values to unpack (expected 2)
+2025-10-12 16:31:52,623 - ERROR -     ❌ Error processing lead 74: too many values to unpack (expected 2)
+2025-10-12 16:31:58,194 - ERROR -     ❌ Error processing lead 75: too many values to unpack (expected 2)
+2025-10-12 16:32:04,327 - ERROR -     ❌ Error processing lead 76: too many values to unpack (expected 2)
+2025-10-12 16:32:09,258 - ERROR -     ❌ Error processing lead 77: too many values to unpack (expected 2)
+2025-10-12 16:32:14,620 - ERROR -     ❌ Error processing lead 78: too many values to unpack (expected 2)
+2025-10-12 16:32:19,501 - ERROR -     ❌ Error processing lead 79: too many values to unpack (expected 2)
+2025-10-12 16:32:24,455 - ERROR -     ❌ Error processing lead 80: too many values to unpack (expected 2)
+2025-10-12 16:32:30,169 - ERROR -     ❌ Error processing lead 81: too many values to unpack (expected 2)
+2025-10-12 16:32:36,190 - ERROR -     ❌ Error processing lead 82: too many values to unpack (expected 2)
+2025-10-12 16:32:41,492 - ERROR -     ❌ Error processing lead 83: too many values to unpack (expected 2)
+2025-10-12 16:32:47,050 - ERROR -     ❌ Error processing lead 84: too many values to unpack (expected 2)
+2025-10-12 16:32:53,007 - ERROR -     ❌ Error processing lead 85: too many values to unpack (expected 2)
+2025-10-12 16:32:59,288 - ERROR -     ❌ Error processing lead 86: too many values to unpack (expected 2)
+2025-10-12 16:33:04,924 - ERROR -     ❌ Error processing lead 87: too many values to unpack (expected 2)
+2025-10-12 16:33:09,713 - ERROR -     ❌ Error processing lead 88: too many values to unpack (expected 2)
+2025-10-12 16:33:16,784 - ERROR -     ❌ Error processing lead 89: too many values to unpack (expected 2)
+2025-10-12 16:33:22,616 - ERROR -     ❌ Error processing lead 90: too many values to unpack (expected 2)
+2025-10-12 16:33:27,904 - ERROR -     ❌ Error processing lead 91: too many values to unpack (expected 2)
+2025-10-12 16:33:34,772 - ERROR -     ❌ Error processing lead 92: too many values to unpack (expected 2)
+2025-10-12 16:33:41,635 - ERROR -     ❌ Error processing lead 93: too many values to unpack (expected 2)
+2025-10-12 16:33:47,193 - ERROR -     ❌ Error processing lead 94: too many values to unpack (expected 2)
+2025-10-12 16:33:52,434 - ERROR -     ❌ Error processing lead 95: too many values to unpack (expected 2)
+2025-10-12 16:33:57,855 - ERROR -     ❌ Error processing lead 96: too many values to unpack (expected 2)
+2025-10-12 16:34:02,960 - ERROR -     ❌ Error processing lead 97: too many values to unpack (expected 2)
+2025-10-12 16:34:07,978 - ERROR -     ❌ Error processing lead 98: too many values to unpack (expected 2)
+2025-10-12 16:34:12,653 - ERROR -     ❌ Error processing lead 99: too many values to unpack (expected 2)
+2025-10-12 16:34:18,115 - ERROR -     ❌ Error processing lead 100: too many values to unpack (expected 2)
+2025-10-12 16:34:23,058 - ERROR -     ❌ Error processing lead 101: too many values to unpack (expected 2)
+2025-10-12 16:34:29,404 - ERROR -     ❌ Error processing lead 102: too many values to unpack (expected 2)
+2025-10-12 16:34:35,038 - ERROR -     ❌ Error processing lead 103: too many values to unpack (expected 2)
+2025-10-12 16:34:41,384 - ERROR -     ❌ Error processing lead 104: too many values to unpack (expected 2)
+2025-10-12 16:34:47,855 - ERROR -     ❌ Error processing lead 105: too many values to unpack (expected 2)
+2025-10-12 16:34:52,758 - ERROR -     ❌ Error processing lead 106: too many values to unpack (expected 2)
+2025-10-12 16:34:59,305 - ERROR -     ❌ Error processing lead 107: too many values to unpack (expected 2)
+2025-10-12 16:35:04,646 - ERROR -     ❌ Error processing lead 108: too many values to unpack (expected 2)
+2025-10-12 16:35:09,774 - ERROR -     ❌ Error processing lead 109: too many values to unpack (expected 2)
+2025-10-12 16:35:15,374 - ERROR -     ❌ Error processing lead 110: too many values to unpack (expected 2)
+2025-10-12 16:35:22,182 - ERROR -     ❌ Error processing lead 111: too many values to unpack (expected 2)
+2025-10-12 16:35:27,340 - ERROR -     ❌ Error processing lead 112: too many values to unpack (expected 2)
+2025-10-12 16:35:32,200 - ERROR -     ❌ Error processing lead 113: too many values to unpack (expected 2)
+2025-10-12 16:35:39,527 - ERROR -     ❌ Error processing lead 114: too many values to unpack (expected 2)
+2025-10-12 16:35:44,342 - ERROR -     ❌ Error processing lead 115: too many values to unpack (expected 2)
+2025-10-12 16:35:50,351 - ERROR -     ❌ Error processing lead 116: too many values to unpack (expected 2)
+2025-10-12 16:35:57,241 - ERROR -     ❌ Error processing lead 117: too many values to unpack (expected 2)
+2025-10-12 16:36:02,117 - ERROR -     ❌ Error processing lead 118: too many values to unpack (expected 2)
+2025-10-12 16:36:08,319 - ERROR -     ❌ Error processing lead 119: too many values to unpack (expected 2)
+2025-10-12 16:36:13,832 - ERROR -     ❌ Error processing lead 120: too many values to unpack (expected 2)
+2025-10-12 16:36:19,401 - ERROR -     ❌ Error processing lead 121: too many values to unpack (expected 2)
+2025-10-12 16:36:24,914 - ERROR -     ❌ Error processing lead 122: too many values to unpack (expected 2)
+2025-10-12 16:36:29,719 - ERROR -     ❌ Error processing lead 123: too many values to unpack (expected 2)
+2025-10-12 16:36:34,523 - ERROR -     ❌ Error processing lead 124: too many values to unpack (expected 2)
+2025-10-12 16:36:42,635 - ERROR -     ❌ Error processing lead 125: too many values to unpack (expected 2)
+2025-10-12 16:36:48,372 - ERROR -     ❌ Error processing lead 126: too many values to unpack (expected 2)
+2025-10-12 16:36:53,388 - ERROR -     ❌ Error processing lead 127: too many values to unpack (expected 2)
+2025-10-12 16:36:58,497 - ERROR -     ❌ Error processing lead 128: too many values to unpack (expected 2)
+2025-10-12 16:37:03,836 - ERROR -     ❌ Error processing lead 129: too many values to unpack (expected 2)
+2025-10-12 16:37:09,304 - ERROR -     ❌ Error processing lead 130: too many values to unpack (expected 2)
+2025-10-12 16:37:15,449 - ERROR -     ❌ Error processing lead 131: too many values to unpack (expected 2)
+2025-10-12 16:37:21,252 - ERROR -     ❌ Error processing lead 132: too many values to unpack (expected 2)
+2025-10-12 16:37:27,330 - ERROR -     ❌ Error processing lead 133: too many values to unpack (expected 2)
+2025-10-12 16:37:32,270 - ERROR -     ❌ Error processing lead 134: too many values to unpack (expected 2)
+2025-10-12 16:37:38,263 - ERROR -     ❌ Error processing lead 135: too many values to unpack (expected 2)
+2025-10-12 16:37:43,608 - ERROR -     ❌ Error processing lead 136: too many values to unpack (expected 2)
+2025-10-12 16:37:49,299 - ERROR -     ❌ Error processing lead 137: too many values to unpack (expected 2)
+2025-10-12 16:37:54,440 - ERROR -     ❌ Error processing lead 138: too many values to unpack (expected 2)
+2025-10-12 16:37:59,251 - ERROR -     ❌ Error processing lead 139: too many values to unpack (expected 2)
+2025-10-12 16:38:05,274 - ERROR -     ❌ Error processing lead 140: too many values to unpack (expected 2)
+2025-10-12 16:38:09,722 - ERROR -     ❌ Error processing lead 141: too many values to unpack (expected 2)
+2025-10-12 16:38:15,979 - ERROR -     ❌ Error processing lead 142: too many values to unpack (expected 2)
+2025-10-12 16:38:22,104 - ERROR -     ❌ Error processing lead 143: too many values to unpack (expected 2)
+2025-10-12 16:38:27,878 - ERROR -     ❌ Error processing lead 144: too many values to unpack (expected 2)
+2025-10-12 16:38:34,817 - ERROR -     ❌ Error processing lead 145: too many values to unpack (expected 2)
+2025-10-12 16:38:40,848 - ERROR -     ❌ Error processing lead 146: too many values to unpack (expected 2)
+2025-10-12 16:38:46,468 - ERROR -     ❌ Error processing lead 147: too many values to unpack (expected 2)
+2025-10-12 16:38:51,883 - ERROR -     ❌ Error processing lead 148: too many values to unpack (expected 2)
+2025-10-12 16:38:57,256 - ERROR -     ❌ Error processing lead 149: too many values to unpack (expected 2)
+2025-10-12 16:38:58,191 - INFO -     📊 Results: 9 processed, 0 matched
+2025-10-12 16:38:58,192 - INFO -   📋 Processing: Fishing (ID: 2)
+2025-10-12 16:38:58,192 - INFO -     🔍 Keywords: fishing gear
+2025-10-12 16:38:58,193 - INFO -     📊 146 unprocessed leads
+2025-10-12 16:39:13,417 - INFO -     📊 Results: 146 processed, 0 matched
+2025-10-12 16:39:13,419 - INFO - 📊 F5BOT SCRAPING SUMMARY:
+2025-10-12 16:39:13,419 - INFO -    New leads scraped: 94
+2025-10-12 16:39:13,419 - INFO -    Leads processed: 155
+2025-10-12 16:39:13,419 - INFO -    Leads matched: 0
+2025-10-12 16:39:13,419 - INFO -    Businesses processed: 2
+2025-10-12 16:39:13,419 - INFO -    Next run in: 120 minutes
+2025-10-12 16:39:13,419 - INFO - ✅ F5Bot processing completed successfully!
+2025-10-12 16:39:13,419 - INFO - ======================================================================

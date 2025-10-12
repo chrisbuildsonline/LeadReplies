@@ -1,0 +1,338 @@
+2025-10-12 10:41:11,959 - INFO - 🚀 Starting Lead Scraping Background Service
+2025-10-12 10:41:11,959 - INFO - ⏰ Scheduled to run every hour
+2025-10-12 10:41:11,959 - INFO - 📋 Press Ctrl+C to stop the service
+2025-10-12 10:41:11,960 - INFO - ======================================================================
+2025-10-12 10:41:11,963 - INFO - 🔄 Running initial scraping...
+2025-10-12 10:41:11,963 - INFO - 🚀 Starting hourly lead scraping and processing...
+2025-10-12 10:41:11,963 - INFO - ======================================================================
+2025-10-12 10:41:11,963 - INFO - 📡 Step 1: Scraping Reddit for new leads...
+2025-10-12 10:41:11,964 - WARNING - ⚠️  No keywords found in database - skipping scraping
+2025-10-12 10:41:11,964 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 10:41:11,964 - WARNING - ⚠️  No businesses found
+2025-10-12 10:41:11,964 - INFO - 📊 HOURLY SUMMARY:
+2025-10-12 10:41:11,964 - INFO -    New leads scraped: 0
+2025-10-12 10:41:11,964 - INFO -    Leads processed: 0
+2025-10-12 10:41:11,964 - INFO -    Leads matched: 0
+2025-10-12 10:41:11,964 - INFO -    Businesses processed: 0
+2025-10-12 10:41:11,964 - INFO - ✅ Hourly processing completed successfully!
+2025-10-12 10:41:11,964 - INFO - ======================================================================
+2025-10-12 16:20:47,636 - INFO - 🧪 Running F5Bot lead scraping once for testing...
+2025-10-12 16:20:47,640 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-12 16:20:47,640 - INFO - ======================================================================
+2025-10-12 16:20:47,640 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-12 16:20:47,641 - INFO - 📋 Loaded 5 unique keywords from database
+2025-10-12 16:20:47,641 - INFO - 🔍 F5Bot scraping with 5 unique keywords from all businesses
+2025-10-12 16:20:59,888 - INFO - 📊 F5Bot found 85 potential leads from Reddit
+2025-10-12 16:20:59,891 - INFO -   ✅ Stored: Sales Funnel... | Keywords: customer acquisition, sales funnel
+2025-10-12 16:20:59,893 - INFO -   ✅ Stored: Marketing Automation... | Keywords: marketing automation
+2025-10-12 16:20:59,893 - INFO -   ✅ Stored: Lead Generation... | Keywords: lead generation
+2025-10-12 16:20:59,894 - INFO -   ✅ Stored: Software- Lead Generation, Post cards, l... | Keywords: lead generation
+2025-10-12 16:20:59,895 - INFO -   ✅ Stored: Is this a product limitation or a sales ... | Keywords: sales funnel
+2025-10-12 16:20:59,896 - INFO -   ✅ Stored: Anyone here actually happy with a lead g... | Keywords: lead generation
+2025-10-12 16:20:59,896 - INFO -   ✅ Stored: Remote Job - Wing - Lead Generation Spec... | Keywords: lead generation
+2025-10-12 16:20:59,897 - INFO -   ✅ Stored: Remote Job - Wing - Lead Generation Spec... | Keywords: lead generation
+2025-10-12 16:20:59,898 - INFO -   ✅ Stored: [For Hire] Virtual Assistant for Lead Ge... | Keywords: lead generation
+2025-10-12 16:20:59,899 - INFO -   ✅ Stored: Funnel Optimizer GPT that finds the hidd... | Keywords: sales funnel
+2025-10-12 16:20:59,899 - INFO -   ✅ Stored: Lead Generation Basics: How Businesses i... | Keywords: lead generation
+2025-10-12 16:20:59,900 - INFO -   ✅ Stored: The Rise of Digital Marketing Agencies i... | Keywords: marketing automation, conversion optimization
+2025-10-12 16:20:59,901 - INFO -   ✅ Stored: Remote Job - UpGuard - Lifecycle Marketi... | Keywords: marketing automation, lead generation
+2025-10-12 16:20:59,901 - INFO -   ✅ Stored: Remote Job - Wing - Performance Marketer... | Keywords: lead generation, conversion optimization
+2025-10-12 16:20:59,902 - INFO -   ✅ Stored: Google Opal AI + Gemini Integration: Bui... | Keywords: marketing automation, lead generation
+2025-10-12 16:20:59,903 - INFO -   ✅ Stored: salesfunnel... | Keywords: lead generation, sales funnel
+2025-10-12 16:20:59,903 - INFO -   ✅ Stored: [TASK] Lead Generation For UK Coach Hire... | Keywords: lead generation
+2025-10-12 16:20:59,904 - INFO -   ✅ Stored: Has any one tried Facebook and X (Twitte... | Keywords: lead generation
+2025-10-12 16:20:59,906 - INFO -   ✅ Stored: I'll build your sales funnel that will b... | Keywords: sales funnel
+2025-10-12 16:20:59,907 - INFO -   ✅ Stored: [Hiring] Lead Generation For UK Coach Hi... | Keywords: lead generation
+2025-10-12 16:20:59,908 - INFO -   ✅ Stored: Beta Users for a Lead Generation/Acquisi... | Keywords: lead generation
+2025-10-12 16:20:59,908 - INFO -   ✅ Stored: I'll build your sales funnel that will b... | Keywords: sales funnel
+2025-10-12 16:20:59,909 - INFO -   ✅ Stored: [For Hire] Virtual Assistant for Data En... | Keywords: lead generation
+2025-10-12 16:20:59,910 - INFO -   ✅ Stored: Feel Good MSP | Optimizing Your MSP Webs... | Keywords: lead generation
+2025-10-12 16:20:59,910 - INFO -   ✅ Stored: I'll build your sales funnel that will b... | Keywords: sales funnel
+2025-10-12 16:20:59,911 - INFO -   ✅ Stored: Wanna up-skill? Will pay too!... | Keywords: lead generation
+2025-10-12 16:20:59,911 - INFO -   ✅ Stored: Generating leads for our small business,... | Keywords: lead generation
+2025-10-12 16:20:59,912 - INFO -   ✅ Stored: SaaS founder cant do brand design... | Keywords: sales funnel
+2025-10-12 16:20:59,914 - INFO -   ✅ Stored: Why most SaaS founders fail at SEO - and... | Keywords: lead generation
+2025-10-12 16:20:59,914 - INFO -   ✅ Stored: Looking for Fintech BDE/Lead Gen Role... | Keywords: lead generation
+2025-10-12 16:20:59,918 - INFO -   ✅ Stored: How Comet Browser is Helping Me Generate... | Keywords: lead generation
+2025-10-12 16:20:59,929 - INFO -   ✅ Stored: [For Hire] Looking for a team of freelan... | Keywords: lead generation
+2025-10-12 16:20:59,931 - INFO -   ✅ Stored: Looking for fully commission based sales... | Keywords: lead generation
+2025-10-12 16:20:59,940 - INFO -   ✅ Stored: Double Stream Revenue Model: Laundry Ser... | Keywords: customer acquisition
+2025-10-12 16:20:59,941 - INFO -   ✅ Stored: I need some real advice on how to make i... | Keywords: lead generation
+2025-10-12 16:20:59,955 - INFO -   ✅ Stored: Zillow Leads vs. Google Ads: The True Co... | Keywords: lead generation
+2025-10-12 16:20:59,956 - INFO -   ✅ Stored: Remote Job - Bounteous - TCO Marketing S... | Keywords: marketing automation
+2025-10-12 16:20:59,957 - INFO -   ✅ Stored: The Psychology Behind Tai Lopez's Legend... | Keywords: sales funnel
+2025-10-12 16:20:59,958 - INFO -   ✅ Stored: Remote Job - Wing - Digital Marketing Sp... | Keywords: lead generation
+2025-10-12 16:20:59,965 - INFO -   ✅ Stored: Any reviews for Monaroa... | Keywords: lead generation
+2025-10-12 16:20:59,967 - INFO -   ✅ Stored: Three months of LinkedIn Premium could b... | Keywords: lead generation
+2025-10-12 16:20:59,967 - INFO -   ✅ Stored: How I Automated My Wholesaling Business ... | Keywords: lead generation
+2025-10-12 16:20:59,968 - INFO -   ✅ Stored: 3D Tours vs True Video Walkthroughs: Top... | Keywords: lead generation
+2025-10-12 16:20:59,969 - INFO -   ✅ Stored: Remote Job - Cyderes - Growth Marketing ... | Keywords: marketing automation
+2025-10-12 16:20:59,970 - INFO -   ✅ Stored: The Day I Realized My "Lead Funnel" Was ... | Keywords: lead generation
+2025-10-12 16:20:59,971 - INFO -   ✅ Stored: Remote Job - UpGuard - Director of Marke... | Keywords: marketing automation
+2025-10-12 16:20:59,973 - INFO -   ✅ Stored: Remote Job - Wing - Sales Development Re... | Keywords: lead generation
+2025-10-12 16:20:59,974 - INFO -   ✅ Stored: Remote Job - Wing - Sales Development Re... | Keywords: lead generation
+2025-10-12 16:20:59,974 - INFO -   ✅ Stored: Remote Job - Wing - Sales Development Re... | Keywords: lead generation
+2025-10-12 16:20:59,975 - INFO -   ✅ Stored: Remote Job - Wing - Sales Development Re... | Keywords: lead generation
+2025-10-12 16:20:59,976 - INFO -   ✅ Stored: Remote Job - Wing - Digital Marketing Sp... | Keywords: lead generation
+2025-10-12 16:20:59,976 - INFO -   ✅ Stored: Remote Job - Wing - Sales Development Re... | Keywords: lead generation
+2025-10-12 16:20:59,977 - INFO -   ✅ Stored: Remote Job - Wing - Sales Development Re... | Keywords: lead generation
+2025-10-12 16:20:59,978 - INFO -   ✅ Stored: My journey from 0 to a full waitlist for... | Keywords: customer acquisition
+2025-10-12 16:20:59,979 - INFO -   ✅ Stored: Remote Job - Wing - Sales Caller (Mexico... | Keywords: lead generation
+2025-10-12 16:20:59,979 - INFO -   ✅ Stored: Remote Job - Wing - Digital Marketing Sp... | Keywords: lead generation
+2025-10-12 16:20:59,980 - INFO -   ✅ Stored: Remote Job - Wing - Digital Marketing Sp... | Keywords: lead generation
+2025-10-12 16:20:59,981 - INFO -   ✅ Stored: Remote Job - Wing - Website Manager... | Keywords: conversion optimization
+2025-10-12 16:20:59,982 - INFO -   ✅ Stored: Remote Job - Wing - Website Manager... | Keywords: conversion optimization
+2025-10-12 16:20:59,982 - INFO -   ✅ Stored: Ubico... | Keywords: marketing automation
+2025-10-12 16:20:59,983 - INFO -   ✅ Stored: Remote Job - Accurate - Product Marketin... | Keywords: marketing automation
+2025-10-12 16:20:59,984 - INFO -   ✅ Stored: Importance of local seo for businesses... | Keywords: customer acquisition
+2025-10-12 16:20:59,986 - INFO -   ✅ Stored: [For Hire] Virtual Assistant with Market... | Keywords: lead generation
+2025-10-12 16:20:59,987 - INFO -   ✅ Stored: Remote Job - Zoom - Mid Market Account E... | Keywords: sales funnel
+2025-10-12 16:20:59,987 - INFO -   ✅ Stored: Remote Job - Zoom - Workvivo Senior Sale... | Keywords: customer acquisition
+2025-10-12 16:20:59,988 - INFO -   ✅ Stored: Remote Job - Outreach - Senior Enterpris... | Keywords: marketing automation
+2025-10-12 16:20:59,989 - INFO -   ✅ Stored: 🔍 Why SEO Is Crucial for Your Business W... | Keywords: lead generation
+2025-10-12 16:20:59,990 - INFO -   ✅ Stored: My SaaS Just Hit 250 Customers in One Mo... | Keywords: customer acquisition
+2025-10-12 16:20:59,991 - INFO -   ✅ Stored: Are You Still Chasing Viral Trends Like ... | Keywords: customer acquisition
+2025-10-12 16:20:59,991 - INFO -   ✅ Stored: Are You Still Chasing Viral Trends Like ... | Keywords: customer acquisition
+2025-10-12 16:20:59,993 - INFO -   ✅ Stored: 110 Best Small Business Ideas to Start i... | Keywords: lead generation
+2025-10-12 16:20:59,993 - INFO -   ✅ Stored: Double Stream Revenue Model: Laundry Ser... | Keywords: customer acquisition
+2025-10-12 16:20:59,994 - INFO -   ✅ Stored: 🚀 Help Shape “Buildup AI” — Made for Ind... | Keywords: marketing automation
+2025-10-12 16:20:59,995 - INFO -   ✅ Stored: Web Design Benefits for Small and Medium... | Keywords: lead generation
+2025-10-12 16:20:59,996 - INFO -   ✅ Stored: Remote Job - Arctic Wolf - Account Execu... | Keywords: lead generation
+2025-10-12 16:20:59,997 - INFO -   ✅ Stored: How Google Opal Builds Full Apps From Pl... | Keywords: marketing automation
+2025-10-12 16:20:59,998 - INFO -   ✅ Stored: Free Lead Generator GPT that creates tar... | Keywords: lead generation
+2025-10-12 16:21:00,000 - INFO -   ✅ Stored: Remote Job - Twilio - Staff Data Enginee... | Keywords: marketing automation
+2025-10-12 16:21:00,000 - INFO -   ✅ Stored: [HIRING] Fully Commission based sales re... | Keywords: lead generation
+2025-10-12 16:21:00,002 - INFO -   ✅ Stored: [For Hire] Experienced Virtual Assistant... | Keywords: lead generation
+2025-10-12 16:21:00,002 - INFO -   ✅ Stored: Build Lead Magnets that resolve real pai... | Keywords: customer acquisition
+2025-10-12 16:21:00,003 - INFO -   ✅ Stored: Updates from Ads4Seo... | Keywords: customer acquisition
+2025-10-12 16:21:00,004 - INFO -   ✅ Stored: why do enterprise tools have such bad us... | Keywords: marketing automation
+2025-10-12 16:21:00,004 - INFO -   ✅ Stored: Drop SOS Request!... | Keywords: sales funnel
+2025-10-12 16:21:00,005 - INFO -   ✅ Stored: Community for entrepreneurs to share pra... | Keywords: sales funnel
+2025-10-12 16:21:00,005 - INFO - 📊 F5Bot results: 85 stored, 0 duplicates
+2025-10-12 16:21:00,005 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 16:21:00,005 - INFO - 🏢 Processing 1 businesses
+2025-10-12 16:21:00,005 - INFO -   📋 Processing: Sample Business (ID: 1)
+2025-10-12 16:21:00,006 - INFO -     🔍 Keywords: marketing automation, lead generation, customer acquisition...
+2025-10-12 16:21:00,006 - INFO -     📊 85 unprocessed leads
+2025-10-12 16:21:06,138 - ERROR -     ❌ Error processing lead 79: too many values to unpack (expected 2)
+2025-10-12 16:21:11,759 - ERROR -     ❌ Error processing lead 80: too many values to unpack (expected 2)
+2025-10-12 16:21:20,182 - ERROR -     ❌ Error processing lead 81: too many values to unpack (expected 2)
+2025-10-12 16:21:26,424 - ERROR -     ❌ Error processing lead 82: too many values to unpack (expected 2)
+2025-10-12 16:21:31,991 - ERROR -     ❌ Error processing lead 83: too many values to unpack (expected 2)
+2025-10-12 16:21:39,147 - ERROR -     ❌ Error processing lead 84: too many values to unpack (expected 2)
+2025-10-12 16:21:44,662 - ERROR -     ❌ Error processing lead 85: too many values to unpack (expected 2)
+2025-10-12 16:21:50,208 - ERROR -     ❌ Error processing lead 1: too many values to unpack (expected 2)
+2025-10-12 16:21:55,789 - ERROR -     ❌ Error processing lead 2: too many values to unpack (expected 2)
+2025-10-12 16:22:02,006 - ERROR -     ❌ Error processing lead 3: too many values to unpack (expected 2)
+2025-10-12 16:22:07,501 - ERROR -     ❌ Error processing lead 4: too many values to unpack (expected 2)
+2025-10-12 16:22:12,996 - ERROR -     ❌ Error processing lead 5: too many values to unpack (expected 2)
+2025-10-12 16:22:18,886 - ERROR -     ❌ Error processing lead 6: too many values to unpack (expected 2)
+2025-10-12 16:31:22,190 - INFO - 🧪 Running F5Bot lead scraping once for testing...
+2025-10-12 16:31:22,192 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-12 16:31:22,192 - INFO - ======================================================================
+2025-10-12 16:31:22,192 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-12 16:31:22,192 - INFO - 📋 Loaded 5 unique keywords from database
+2025-10-12 16:31:22,192 - INFO - 🔍 F5Bot scraping with 5 unique keywords from all businesses
+2025-10-12 16:31:38,288 - INFO - 📊 F5Bot found 85 potential leads from Reddit
+2025-10-12 16:31:38,290 - INFO -   ✅ Stored: Marketing Automation... | Keywords: marketing automation
+2025-10-12 16:31:38,291 - INFO -   ✅ Stored: Lead Generation... | Keywords: lead generation
+2025-10-12 16:31:38,296 - INFO -   ✅ Stored: salesfunnel... | Keywords: lead generation, sales funnel
+2025-10-12 16:31:38,305 - INFO - 📊 F5Bot results: 3 stored, 82 duplicates
+2025-10-12 16:31:38,305 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 16:31:38,305 - INFO - 🏢 Processing 1 businesses
+2025-10-12 16:31:38,305 - INFO -   📋 Processing: Sample Business (ID: 1)
+2025-10-12 16:31:38,305 - INFO -     🔍 Keywords: marketing automation, lead generation, customer acquisition...
+2025-10-12 16:31:38,306 - INFO -     📊 88 unprocessed leads
+2025-10-12 16:31:56,092 - INFO -     ✅ Matched: salesfunnel... (Score: 70%)
+2025-10-12 16:32:17,735 - INFO -     ✅ Matched: Build Lead Magnets that resolve real pai... (Score: 75%)
+2025-10-12 16:32:31,689 - INFO -     ✅ Matched: why do enterprise tools have such bad us... (Score: 75%)
+2025-10-12 16:32:53,640 - INFO -     ✅ Matched: Sales Funnel... (Score: 70%)
+2025-10-12 16:33:11,947 - INFO -     ✅ Matched: Software- Lead Generation, Post cards, l... (Score: 75%)
+2025-10-12 16:33:23,769 - INFO -     ✅ Matched: Anyone here actually happy with a lead g... (Score: 90%)
+2025-10-12 16:33:55,659 - INFO -     ✅ Matched: Lead Generation Basics: How Businesses i... (Score: 75%)
+2025-10-12 16:33:57,042 - INFO - 🧪 Running F5Bot lead scraping once for testing...
+2025-10-12 16:33:57,042 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-12 16:33:57,042 - INFO - ======================================================================
+2025-10-12 16:33:57,042 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-12 16:33:57,042 - INFO - 📋 Loaded 5 unique keywords from database
+2025-10-12 16:33:57,043 - INFO - 🔍 F5Bot scraping with 5 unique keywords from all businesses
+2025-10-12 16:34:08,530 - INFO - 📊 F5Bot found 85 potential leads from Reddit
+2025-10-12 16:34:08,531 - INFO -   ✅ Stored: Marketing Automation... | Keywords: marketing automation
+2025-10-12 16:34:08,532 - INFO -   ✅ Stored: Lead Generation... | Keywords: lead generation
+2025-10-12 16:34:08,534 - INFO -   ✅ Stored: salesfunnel... | Keywords: lead generation, sales funnel
+2025-10-12 16:34:08,543 - INFO - 📊 F5Bot results: 3 stored, 82 duplicates
+2025-10-12 16:34:08,543 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 16:34:08,543 - INFO - 🏢 Processing 1 businesses
+2025-10-12 16:34:08,543 - INFO -   📋 Processing: Sample Business (ID: 1)
+2025-10-12 16:34:08,543 - INFO -     📄 Description: A sample business for testing
+2025-10-12 16:34:08,543 - INFO -     🔍 Keywords: marketing automation, lead generation, customer acquisition...
+2025-10-12 16:34:08,544 - INFO -     📊 84 unprocessed leads
+2025-10-12 16:34:10,208 - INFO -     ✅ Matched: Remote Job - UpGuard - Lifecycle Marketi... (Score: 75%)
+2025-10-12 16:34:25,955 - INFO -     ✅ Matched: salesfunnel... (Score: 70%)
+2025-10-12 16:34:29,503 - INFO -     ✅ Matched: salesfunnel... (Score: 70%)
+2025-10-12 16:34:35,040 - INFO -     ✅ Matched: [TASK] Lead Generation For UK Coach Hire... (Score: 70%)
+2025-10-12 16:34:41,064 - INFO -     ✅ Matched: Has any one tried Facebook and X (Twitte... (Score: 75%)
+2025-10-12 16:34:46,863 - INFO -     ✅ Matched: I'll build your sales funnel that will b... (Score: 90%)
+2025-10-12 16:34:53,516 - INFO -     ✅ Matched: [Hiring] Lead Generation For UK Coach Hi... (Score: 75%)
+2025-10-12 16:34:59,556 - INFO -     ✅ Matched: Beta Users for a Lead Generation/Acquisi... (Score: 90%)
+2025-10-12 16:35:18,747 - INFO -     ✅ Matched: Feel Good MSP | Optimizing Your MSP Webs... (Score: 90%)
+2025-10-12 16:35:25,568 - INFO -     ✅ Matched: I'll build your sales funnel that will b... (Score: 90%)
+2025-10-12 16:35:30,053 - INFO - 🧪 Running F5Bot lead scraping once for testing...
+2025-10-12 16:35:30,053 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-12 16:35:30,053 - INFO - ======================================================================
+2025-10-12 16:35:30,053 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-12 16:35:30,054 - INFO - 📋 Loaded 5 unique keywords from database
+2025-10-12 16:35:30,054 - INFO - 🔍 F5Bot scraping with 5 unique keywords from all businesses
+2025-10-12 16:35:37,110 - INFO -     ✅ Matched: Generating leads for our small business,... (Score: 90%)
+2025-10-12 16:35:43,079 - INFO - 📊 F5Bot found 85 potential leads from Reddit
+2025-10-12 16:35:43,081 - INFO -   ✅ Stored: Marketing Automation... | Keywords: marketing automation
+2025-10-12 16:35:43,082 - INFO -   ✅ Stored: Lead Generation... | Keywords: lead generation
+2025-10-12 16:35:43,085 - INFO -   ✅ Stored: salesfunnel... | Keywords: lead generation, sales funnel
+2025-10-12 16:35:43,095 - INFO - 📊 F5Bot results: 3 stored, 82 duplicates
+2025-10-12 16:35:43,095 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 16:35:43,096 - INFO - 🏢 Processing 1 businesses
+2025-10-12 16:35:43,096 - INFO -   📋 Processing: Sample Business (ID: 1)
+2025-10-12 16:35:43,096 - INFO -     📄 Description: A sample business for testing
+2025-10-12 16:35:43,096 - INFO -     🔍 Keywords: marketing automation, lead generation, customer acquisition...
+2025-10-12 16:35:43,099 - INFO -     📊 76 unprocessed leads
+2025-10-12 16:35:43,101 - INFO -     🎯 76 leads match business keywords
+2025-10-12 16:35:43,101 - INFO -     🤖 Analyzing batch 1 (10 leads)
+2025-10-12 16:35:47,491 - INFO -     ✅ Matched: Why most SaaS founders fail at SEO - and... (Score: 65%)
+2025-10-12 16:35:59,480 - INFO -     ✅ Matched: How Comet Browser is Helping Me Generate... (Score: 75%)
+2025-10-12 16:36:05,857 - INFO -     ✅ Matched: [For Hire] Looking for a team of freelan... (Score: 60%)
+2025-10-12 16:36:14,506 - INFO -     🤖 Analyzing batch 2 (10 leads)
+2025-10-12 16:36:27,493 - INFO -     ✅ Matched: I need some real advice on how to make i... (Score: 70%)
+2025-10-12 16:36:45,854 - INFO -     🤖 Analyzing batch 3 (10 leads)
+2025-10-12 16:37:01,903 - INFO -     ✅ Matched: Any reviews for Monaroa... (Score: 75%)
+2025-10-12 16:37:15,357 - INFO -     ✅ Matched: How I Automated My Wholesaling Business ... (Score: 75%)
+2025-10-12 16:37:17,197 - INFO -     🤖 Analyzing batch 4 (10 leads)
+2025-10-12 16:37:30,055 - INFO -     ✅ Matched: Remote Job - Cyderes - Growth Marketing ... (Score: 90%)
+2025-10-12 16:37:34,704 - INFO -     ✅ Matched: Wanna up-skill? Will pay too!... (Score: 75%)
+2025-10-12 16:37:36,964 - INFO -     ✅ Matched: The Day I Realized My "Lead Funnel" Was ... (Score: 95%)
+2025-10-12 16:37:45,071 - INFO -     ✅ Matched: Remote Job - UpGuard - Director of Marke... (Score: 90%)
+2025-10-12 16:37:48,531 - INFO -     🤖 Analyzing batch 5 (10 leads)
+2025-10-12 16:38:19,890 - INFO -     🤖 Analyzing batch 6 (10 leads)
+2025-10-12 16:38:51,223 - INFO -     🤖 Analyzing batch 7 (10 leads)
+2025-10-12 16:39:02,655 - INFO -     ✅ Matched: Remote Job - Wing - Digital Marketing Sp... (Score: 70%)
+2025-10-12 16:39:08,353 - INFO -     ✅ Matched: Three months of LinkedIn Premium could b... (Score: 60%)
+2025-10-12 16:39:09,531 - INFO -     ✅ Matched: Remote Job - Wing - Website Manager... (Score: 75%)
+2025-10-12 16:39:16,551 - INFO -     ✅ Matched: Remote Job - Wing - Website Manager... (Score: 75%)
+2025-10-12 16:39:22,586 - INFO -     🤖 Analyzing batch 8 (6 leads)
+2025-10-12 16:39:29,474 - INFO -     ✅ Matched: Remote Job - Accurate - Product Marketin... (Score: 70%)
+2025-10-12 16:39:48,066 - INFO -     ✅ Matched: 🚀 Help Shape “Buildup AI” — Made for Ind... (Score: 85%)
+2025-10-12 16:39:48,067 - INFO -     ✅ Matched: How Google Opal Builds Full Apps From Pl... (Score: 60%)
+2025-10-12 16:39:48,068 - INFO -     ✅ Matched: Free Lead Generator GPT that creates tar... (Score: 90%)
+2025-10-12 16:39:49,070 - INFO -     📊 Results: 76 processed, 3 matched
+2025-10-12 16:39:49,071 - INFO - 📊 F5BOT SCRAPING SUMMARY:
+2025-10-12 16:39:49,071 - INFO -    New leads scraped: 3
+2025-10-12 16:39:49,071 - INFO -    Leads processed: 76
+2025-10-12 16:39:49,071 - INFO -    Leads matched: 3
+2025-10-12 16:39:49,071 - INFO -    Businesses processed: 1
+2025-10-12 16:39:49,071 - INFO -    Next run in: 120 minutes
+2025-10-12 16:39:49,071 - INFO - ✅ F5Bot processing completed successfully!
+2025-10-12 16:39:49,071 - INFO - ======================================================================
+2025-10-12 16:40:25,551 - INFO - 🧪 Running F5Bot lead scraping once for testing...
+2025-10-12 16:40:25,551 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-12 16:40:25,552 - INFO - ======================================================================
+2025-10-12 16:40:25,552 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-12 16:40:25,552 - INFO - 📋 Loaded 5 unique keywords from database
+2025-10-12 16:40:25,552 - INFO - 🔍 F5Bot scraping with 5 unique keywords from all businesses
+2025-10-12 16:40:25,644 - INFO -     ✅ Matched: Are You Still Chasing Viral Trends Like ... (Score: 75%)
+2025-10-12 16:40:32,451 - INFO -     ✅ Matched: Are You Still Chasing Viral Trends Like ... (Score: 75%)
+2025-10-12 16:40:33,583 - INFO -     ✅ Matched: My journey from 0 to a full waitlist for... (Score: 90%)
+2025-10-12 16:40:36,744 - INFO - 📊 F5Bot found 85 potential leads from Reddit
+2025-10-12 16:40:36,745 - INFO -   ✅ Stored: Marketing Automation... | Keywords: marketing automation
+2025-10-12 16:40:36,746 - INFO -   ✅ Stored: Lead Generation... | Keywords: lead generation
+2025-10-12 16:40:36,748 - INFO -   ✅ Stored: salesfunnel... | Keywords: lead generation, sales funnel
+2025-10-12 16:40:36,754 - INFO - 📊 F5Bot results: 3 stored, 82 duplicates
+2025-10-12 16:40:36,754 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-12 16:40:36,755 - INFO - 🏢 Processing 1 businesses
+2025-10-12 16:40:36,755 - INFO -   📋 Processing: Sample Business (ID: 1)
+2025-10-12 16:40:36,755 - INFO -     📄 Description: A sample business for testing
+2025-10-12 16:40:36,755 - INFO -     🔍 Keywords: marketing automation, lead generation, customer acquisition...
+2025-10-12 16:40:36,755 - INFO -     📊 58 unprocessed leads
+2025-10-12 16:40:36,756 - INFO -     🎯 58 leads match business keywords
+2025-10-12 16:40:36,756 - INFO -     🤖 Analyzing batch 1 (5 leads)
+2025-10-12 16:40:48,089 - INFO -     ✅ Matched: Marketing Automation... (Score: 90%)
+2025-10-12 16:40:48,090 - INFO -     ✅ Matched: Lead Generation... (Score: 95%)
+2025-10-12 16:40:48,091 - INFO -     ✅ Matched: salesfunnel... (Score: 85%)
+2025-10-12 16:40:48,091 - INFO -     ✅ Matched: Marketing Automation... (Score: 90%)
+2025-10-12 16:40:48,092 - INFO -     ✅ Matched: Lead Generation... (Score: 95%)
+2025-10-12 16:40:49,097 - INFO -     🤖 Analyzing batch 2 (5 leads)
+2025-10-12 16:40:57,422 - INFO -     ✅ Matched: salesfunnel... (Score: 95%)
+2025-10-12 16:40:57,423 - INFO -     ✅ Matched: Marketing Automation... (Score: 90%)
+2025-10-12 16:40:57,424 - INFO -     ✅ Matched: Lead Generation... (Score: 85%)
+2025-10-12 16:40:57,424 - INFO -     ✅ Matched: Marketing Automation... (Score: 90%)
+2025-10-12 16:40:57,425 - INFO -     ✅ Matched: Lead Generation... (Score: 85%)
+2025-10-12 16:40:58,429 - INFO -     🤖 Analyzing batch 3 (5 leads)
+2025-10-12 16:41:09,127 - INFO -     ✅ Matched: [HIRING] Fully Commission based sales re... (Score: 75%)
+2025-10-12 16:41:09,128 - INFO -     ✅ Matched: Updates from Ads4Seo... (Score: 90%)
+2025-10-12 16:41:09,129 - INFO -     ✅ Matched: Drop SOS Request!... (Score: 65%)
+2025-10-12 16:41:09,130 - INFO -     ✅ Matched: Community for entrepreneurs to share pra... (Score: 85%)
+2025-10-12 16:41:10,135 - INFO -     🤖 Analyzing batch 4 (5 leads)
+2025-10-12 16:41:19,176 - INFO -     ✅ Matched: Marketing Automation... (Score: 90%)
+2025-10-12 16:41:19,180 - INFO -     ✅ Matched: Lead Generation... (Score: 85%)
+2025-10-12 16:41:19,182 - INFO -     ✅ Matched: Remote Job - Wing - Lead Generation Spec... (Score: 75%)
+2025-10-12 16:41:19,183 - INFO -     ✅ Matched: Remote Job - Wing - Lead Generation Spec... (Score: 70%)
+2025-10-12 16:41:20,183 - INFO -     🤖 Analyzing batch 5 (5 leads)
+2025-10-12 16:41:28,848 - INFO -     📊 Results: 88 processed, 32 matched
+2025-10-12 16:41:28,849 - INFO - 📊 F5BOT SCRAPING SUMMARY:
+2025-10-12 16:41:28,849 - INFO -    New leads scraped: 3
+2025-10-12 16:41:28,849 - INFO -    Leads processed: 88
+2025-10-12 16:41:28,849 - INFO -    Leads matched: 32
+2025-10-12 16:41:28,849 - INFO -    Businesses processed: 1
+2025-10-12 16:41:28,849 - INFO -    Next run in: 120 minutes
+2025-10-12 16:41:28,849 - INFO - ✅ F5Bot processing completed successfully!
+2025-10-12 16:41:28,849 - INFO - ======================================================================
+2025-10-12 16:41:29,995 - INFO -     ✅ Matched: [For Hire] Virtual Assistant for Lead Ge... (Score: 75%)
+2025-10-12 16:41:29,996 - INFO -     ✅ Matched: Funnel Optimizer GPT that finds the hidd... (Score: 90%)
+2025-10-12 16:41:29,996 - INFO -     ✅ Matched: Google Opal AI + Gemini Integration: Bui... (Score: 65%)
+2025-10-12 16:41:31,001 - INFO -     🤖 Analyzing batch 6 (5 leads)
+2025-10-12 16:41:42,066 - INFO -     ✅ Matched: I'll build your sales funnel that will b... (Score: 90%)
+2025-10-12 16:41:42,067 - INFO -     ✅ Matched: [For Hire] Virtual Assistant for Data En... (Score: 75%)
+2025-10-12 16:41:42,067 - INFO -     ✅ Matched: Looking for Fintech BDE/Lead Gen Role... (Score: 65%)
+2025-10-12 16:41:43,073 - INFO -     🤖 Analyzing batch 7 (5 leads)
+2025-10-12 16:41:53,753 - INFO -     ✅ Matched: Double Stream Revenue Model: Laundry Ser... (Score: 75%)
+2025-10-12 16:41:53,754 - INFO -     ✅ Matched: Zillow Leads vs. Google Ads: The True Co... (Score: 90%)
+2025-10-12 16:41:53,754 - INFO -     ✅ Matched: Remote Job - Bounteous - TCO Marketing S... (Score: 60%)
+2025-10-12 16:41:53,755 - INFO -     ✅ Matched: The Psychology Behind Tai Lopez's Legend... (Score: 85%)
+2025-10-12 16:41:54,759 - INFO -     🤖 Analyzing batch 8 (5 leads)
+2025-10-12 16:42:04,660 - INFO -     ✅ Matched: 3D Tours vs True Video Walkthroughs: Top... (Score: 75%)
+2025-10-12 16:42:04,661 - INFO -     ✅ Matched: Remote Job - Wing - Sales Development Re... (Score: 90%)
+2025-10-12 16:42:04,661 - INFO -     ✅ Matched: Remote Job - Wing - Sales Development Re... (Score: 95%)
+2025-10-12 16:42:04,662 - INFO -     ✅ Matched: Remote Job - Wing - Sales Development Re... (Score: 85%)
+2025-10-12 16:42:04,663 - INFO -     ✅ Matched: Remote Job - Wing - Sales Development Re... (Score: 95%)
+2025-10-12 16:42:05,665 - INFO -     🤖 Analyzing batch 9 (5 leads)
+2025-10-12 16:42:16,776 - INFO -     ✅ Matched: Remote Job - Wing - Digital Marketing Sp... (Score: 75%)
+2025-10-12 16:42:16,777 - INFO -     ✅ Matched: Remote Job - Wing - Sales Development Re... (Score: 80%)
+2025-10-12 16:42:16,778 - INFO -     ✅ Matched: Remote Job - Wing - Sales Development Re... (Score: 70%)
+2025-10-12 16:42:16,779 - INFO -     ✅ Matched: Remote Job - Wing - Sales Caller (Mexico... (Score: 65%)
+2025-10-12 16:42:16,779 - INFO -     ✅ Matched: Remote Job - Wing - Digital Marketing Sp... (Score: 75%)
+2025-10-12 16:42:17,781 - INFO -     🤖 Analyzing batch 10 (5 leads)
+2025-10-12 16:42:28,153 - INFO -     ✅ Matched: Ubico... (Score: 90%)
+2025-10-12 16:42:28,153 - INFO -     ✅ Matched: Importance of local seo for businesses... (Score: 65%)
+2025-10-12 16:42:28,154 - INFO -     ✅ Matched: [For Hire] Virtual Assistant with Market... (Score: 75%)
+2025-10-12 16:42:29,158 - INFO -     🤖 Analyzing batch 11 (5 leads)
+2025-10-12 16:42:39,435 - INFO -     ✅ Matched: 🔍 Why SEO Is Crucial for Your Business W... (Score: 75%)
+2025-10-12 16:42:39,436 - INFO -     ✅ Matched: My SaaS Just Hit 250 Customers in One Mo... (Score: 95%)
+2025-10-12 16:42:39,437 - INFO -     ✅ Matched: Double Stream Revenue Model: Laundry Ser... (Score: 60%)
+2025-10-12 16:42:40,437 - INFO -     🤖 Analyzing batch 12 (3 leads)
+2025-10-12 16:42:48,115 - INFO -     ✅ Matched: Web Design Benefits for Small and Medium... (Score: 75%)
+2025-10-12 16:42:49,120 - INFO -     📊 Results: 58 processed, 45 matched
+2025-10-12 16:42:49,120 - INFO - 📊 F5BOT SCRAPING SUMMARY:
+2025-10-12 16:42:49,120 - INFO -    New leads scraped: 3
+2025-10-12 16:42:49,120 - INFO -    Leads processed: 58
+2025-10-12 16:42:49,120 - INFO -    Leads matched: 45
+2025-10-12 16:42:49,120 - INFO -    Businesses processed: 1
+2025-10-12 16:42:49,120 - INFO -    Next run in: 120 minutes
+2025-10-12 16:42:49,120 - INFO - ✅ F5Bot processing completed successfully!
+2025-10-12 16:42:49,120 - INFO - ======================================================================
+2025-10-12 16:43:16,927 - INFO -     📊 Results: 84 processed, 4 matched
+2025-10-12 16:43:16,928 - INFO - 📊 F5BOT SCRAPING SUMMARY:
+2025-10-12 16:43:16,928 - INFO -    New leads scraped: 3
+2025-10-12 16:43:16,928 - INFO -    Leads processed: 84
+2025-10-12 16:43:16,928 - INFO -    Leads matched: 4
+2025-10-12 16:43:16,928 - INFO -    Businesses processed: 1
+2025-10-12 16:43:16,928 - INFO -    Next run in: 120 minutes
+2025-10-12 16:43:16,928 - INFO - ✅ F5Bot processing completed successfully!
+2025-10-12 16:43:16,929 - INFO - ======================================================================

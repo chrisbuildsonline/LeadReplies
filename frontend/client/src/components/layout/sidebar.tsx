@@ -1,12 +1,9 @@
 import {
   Home,
-  Megaphone,
   BarChart3,
   Share2,
   Settings,
-  Inbox,
-  FolderOpen,
-  Users,
+  Building2,
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 import { Link, useLocation } from "wouter";
@@ -15,8 +12,8 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "Businesses", href: "/businesses", icon: Building2 },
   { name: "Reddit Leads", href: "/reddit-leads", icon: SiReddit },
-  { name: "Campaigns", href: "#", icon: Megaphone, badge: 3 },
   { name: "Analytics", href: "#", icon: BarChart3 },
   { name: "Platforms", href: "#", icon: Share2 },
 ];
@@ -90,11 +87,7 @@ export default function Sidebar() {
                       <ItemIcon className="h-4 w-4" />
                       <span>{item.name}</span>
                     </div>
-                    {item.badge && (
-                      <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {item.badge}
-                      </span>
-                    )}
+
                   </div>
                 </Link>
               );

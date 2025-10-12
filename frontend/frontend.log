@@ -2,9 +2,86 @@
 > rest-express@1.0.0 dev
 > NODE_ENV=development tsx server/index.ts
 
-11:13:32 PM [express] serving on port 3050
-11:13:33 PM [express] GET /api/reddit/leads 200 in 29ms :: {"leads":[{"id":155,"reddit_id":"1o46em8",…
+12:36:18 AM [express] serving on port 3050
 Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
-11:13:34 PM [express] GET /api/reddit/leads 200 in 132ms :: {"leads":[{"id":155,"reddit_id":"1o46em8"…
+Failed to fetch metrics: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RedditAPIStorage.getMetrics (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/reddit-storage.ts:58:24)
+    at async Promise.all (index 0)
+    at async <anonymous> (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/routes.ts:11:82) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Failed to fetch campaigns: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RedditAPIStorage.getCampaigns (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/reddit-storage.ts:17:24)
+    at async Promise.all (index 2)
+    at async <anonymous> (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/routes.ts:11:82) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Failed to fetch platform stats: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RedditAPIStorage.getPlatformStats (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/reddit-storage.ts:82:24)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/routes.ts:11:82) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Failed to fetch replies: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RedditAPIStorage.getReplies (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/reddit-storage.ts:111:24)
+    at async Promise.all (index 3)
+    at async <anonymous> (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/routes.ts:11:82) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Failed to fetch daily stats: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RedditAPIStorage.getDailyStats (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/reddit-storage.ts:156:24)
+    at async Promise.all (index 5)
+    at async <anonymous> (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/routes.ts:11:82) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Failed to fetch accounts: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RedditAPIStorage.getAccounts (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/reddit-storage.ts:135:24)
+    at async Promise.all (index 4)
+    at async <anonymous> (/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/frontend/server/routes.ts:11:82) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+12:36:20 AM [express] GET /api/dashboard 200 in 12ms :: {"platformStats":[],"campaigns":[],"replies":…

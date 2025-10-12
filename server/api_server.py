@@ -1,314 +1,251 @@
 #!/usr/bin/env python3
 """
-FastAPI server to bridge Reddit Lead Finder with the frontend.
-Provides REST API endpoints for the React frontend to consume.
+Multi-tenant FastAPI server for Reddit Lead Finder
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from typing import List, Dict, Optional
+from pydantic import BaseModel
+from typing import List, Optional
+import jwt
+import bcrypt
 from datetime import datetime, timedelta
-import uvicorn
+import os
+from dotenv import load_dotenv
+
 from database import Database
-from reddit_scraper_final import RedditLeadScraper
-from ai_analyzer import AILeadAnalyzer
-import asyncio
-import threading
-import time
+from deepseek_analyzer import DeepSeekAnalyzer
 
-app = FastAPI(title="Reddit Lead Finder API", version="1.0.0")
+load_dotenv()
 
-# Enable CORS for frontend
+app = FastAPI(title="Reddit Lead Finder API v2")
+security = HTTPBearer()
+
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3050", "http://localhost:3000", "http://localhost:5173", "http://localhost:6070"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize components
+# Initialize services
 db = Database()
-scraper = RedditLeadScraper()
-ai_analyzer = AILeadAnalyzer()
+ai_analyzer = DeepSeekAnalyzer()
 
-# Background scraping state
-scraping_active = False
-last_scrape_time = None
+# JWT settings
+JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key-change-this")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24
 
+# Pydantic models
+class UserRegister(BaseModel):
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class BusinessCreate(BaseModel):
+    name: str
+    website: Optional[str] = None
+    description: Optional[str] = None
+
+class KeywordAdd(BaseModel):
+    keyword: str
+    source: str = "manual"
+
+class SubredditAdd(BaseModel):
+    subreddit: str
+    source: str = "manual"
+
+class WebsiteAnalyze(BaseModel):
+    website_url: str
+
+# Helper functions
+def create_jwt_token(user_id: int) -> str:
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> int:
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return user_id
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# Routes
 @app.get("/")
 async def root():
-    """Health check endpoint"""
-    return {"message": "Reddit Lead Finder API", "status": "running"}
+    return {"message": "Reddit Lead Finder API v2", "status": "running"}
 
-@app.get("/api/dashboard")
-async def get_dashboard():
-    """Get dashboard data compatible with frontend"""
+# Authentication endpoints
+@app.post("/api/auth/register")
+async def register(user: UserRegister):
+    user_id = db.create_user(user.email, user.password)
+    if user_id is None:
+        raise HTTPException(status_code=400, detail="Email already exists")
+    
+    token = create_jwt_token(user_id)
+    return {"token": token, "user_id": user_id}
+
+@app.post("/api/auth/login")
+async def login(user: UserLogin):
+    user_id = db.verify_user(user.email, user.password)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = create_jwt_token(user_id)
+    user_data = db.get_user(user_id)
+    return {"token": token, "user": user_data}
+
+@app.get("/api/auth/me")
+async def get_current_user(user_id: int = Depends(verify_jwt_token)):
+    user = db.get_user(user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"user": user}
+
+# Business management
+@app.post("/api/businesses")
+async def create_business(business: BusinessCreate, user_id: int = Depends(verify_jwt_token)):
+    business_id = db.create_business(user_id, business.name, business.website, business.description)
+    return {"business_id": business_id}
+
+@app.get("/api/businesses")
+async def get_businesses(user_id: int = Depends(verify_jwt_token)):
+    businesses = db.get_user_businesses(user_id)
+    return {"businesses": businesses}
+
+@app.get("/api/businesses/{business_id}")
+async def get_business(business_id: int, user_id: int = Depends(verify_jwt_token)):
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    return {"business": business}
+
+@app.put("/api/businesses/{business_id}")
+async def update_business(business_id: int, business: BusinessCreate, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    existing_business = db.get_business(business_id, user_id)
+    if existing_business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    # Update business (we'll need to add this method to the database)
+    success = db.update_business(business_id, business.name, business.website, business.description)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update business")
+    
+    return {"success": True}
+
+# Website analysis
+@app.post("/api/businesses/{business_id}/analyze-website")
+async def analyze_website(business_id: int, data: WebsiteAnalyze, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
     try:
-        # Get leads data
-        all_leads = db.get_leads(limit=1000, min_probability=0)
-        high_quality_leads = [l for l in all_leads if l.get('ai_probability', 0) >= 70]
+        # Analyze website for keywords
+        keywords = ai_analyzer.analyze_website_for_keywords(data.website_url, business['name'])
         
-        # Calculate metrics
-        total_replies = len(all_leads)
-        products_promoted = len(set(l.get('subreddit', '') for l in all_leads))
-        avg_probability = sum(l.get('ai_probability', 0) for l in all_leads) / len(all_leads) if all_leads else 0
-        
-        # Get recent leads for activity feed
-        recent_leads = db.get_leads(limit=10, min_probability=40)
-        
-        # Convert leads to replies format for frontend
-        replies = []
-        for lead in recent_leads[:4]:
-            replies.append({
-                "id": lead.get('id', ''),
-                "platform": "reddit",
-                "content": lead.get('ai_analysis', '')[:100] + "..." if lead.get('ai_analysis') else lead.get('content', '')[:100] + "...",
-                "originalPost": lead.get('title', ''),
-                "username": f"r/{lead.get('subreddit', '')}",
-                "upvotes": lead.get('upvotes', 0),
-                "campaignId": None,
-                "createdAt": lead.get('processed_at', datetime.now()).isoformat() if isinstance(lead.get('processed_at'), datetime) else datetime.now().isoformat()
-            })
-        
-        # Mock accounts data (since we don't have account purchasing in our system)
-        accounts = [
-            {
-                "id": "1",
-                "platform": "reddit",
-                "username": "",
-                "price": 5.0,
-                "age": "1yr old",
-                "stats": "500+ karma",
-                "description": "active history",
-                "available": True
-            },
-            {
-                "id": "2", 
-                "platform": "reddit",
-                "username": "",
-                "price": 8.0,
-                "age": "2yr old", 
-                "stats": "1000+ karma",
-                "description": "verified email",
-                "available": True
-            }
-        ]
-        
-        # Get active keywords and subreddits
-        keywords = db.get_active_keywords()
-        subreddits = db.get_active_subreddits()
+        # Suggest subreddits
+        keyword_list = [kw['keyword'] for kw in keywords]
+        subreddits = ai_analyzer.suggest_subreddits_for_keywords(keyword_list, business['name'])
         
         return {
-            "metrics": {
-                "id": "1",
-                "totalReplies": total_replies,
-                "productsPromoted": products_promoted,
-                "clickThroughRate": round(avg_probability / 10, 1),  # Convert to CTR-like metric
-                "engagementRate": round(avg_probability, 1),
-                "updatedAt": datetime.now().isoformat()
-            },
-            "platformStats": [
-                {
-                    "id": "reddit",
-                    "platform": "reddit",
-                    "repliesPosted": total_replies,
-                    "accountsConnected": 2,
-                    "isActive": True,
-                    "updatedAt": datetime.now().isoformat()
-                }
-            ],
-            "campaigns": [
-                {
-                    "id": "reddit-leads",
-                    "name": "Reddit Lead Generation",
-                    "keywords": keywords[:10],  # Show first 10 keywords
-                    "platforms": ["reddit"],
-                    "status": "active" if scraping_active else "paused",
-                    "productUrl": "https://your-product.com",
-                    "description": f"Monitoring {len(subreddits)} subreddits for {len(keywords)} keywords",
-                    "createdAt": datetime.now().isoformat()
-                }
-            ],
-            "replies": replies,
-            "accounts": accounts,
-            "dailyStats": {
-                "id": "today",
-                "date": datetime.now().strftime("%Y-%m-%d"),
-                "repliesPosted": len([l for l in all_leads if l.get('processed_at') and 
-                                   isinstance(l.get('processed_at'), datetime) and 
-                                   l.get('processed_at').date() == datetime.now().date()]),
-                "clicksGenerated": len(high_quality_leads),
-                "engagementRate": round(avg_probability, 1),
-                "keywordsTracked": len(keywords)
-            }
+            "keywords": keywords,
+            "subreddits": subreddits
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch dashboard data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
-@app.get("/api/leads")
-async def get_leads(limit: int = 50, min_probability: int = 0):
-    """Get leads with filtering"""
-    try:
-        leads = db.get_leads(limit=limit, min_probability=min_probability)
-        
-        # Convert to frontend-friendly format
-        formatted_leads = []
-        for lead in leads:
-            formatted_leads.append({
-                "id": lead.get('id', ''),
-                "reddit_id": lead.get('reddit_id', ''),
-                "title": lead.get('title', ''),
-                "content": lead.get('content', ''),
-                "url": lead.get('url', ''),
-                "author": lead.get('author', ''),
-                "subreddit": lead.get('subreddit', ''),
-                "ai_probability": lead.get('ai_probability', 0),
-                "ai_analysis": lead.get('ai_analysis', ''),
-                "keywords_matched": lead.get('keywords_matched', []),
-                "upvotes": lead.get('upvotes', 0),
-                "created_date": lead.get('created_date', ''),
-                "processed_at": lead.get('processed_at', '')
-            })
-        
-        return {"leads": formatted_leads, "total": len(formatted_leads)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch leads: {str(e)}")
-
-@app.get("/api/leads/high-quality")
-async def get_high_quality_leads():
-    """Get high quality leads (70%+)"""
-    return await get_leads(limit=100, min_probability=70)
-
-@app.get("/api/scraping/status")
-async def get_scraping_status():
-    """Get current scraping status"""
-    return {
-        "active": scraping_active,
-        "last_scrape": last_scrape_time.isoformat() if last_scrape_time else None,
-        "total_leads": len(db.get_leads(limit=10000, min_probability=0))
-    }
-
-@app.post("/api/scraping/start")
-async def start_scraping():
-    """Start background scraping"""
-    global scraping_active
+# Keywords management
+@app.post("/api/businesses/{business_id}/keywords")
+async def add_keyword(business_id: int, keyword: KeywordAdd, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
     
-    if scraping_active:
-        return {"message": "Scraping already active"}
-    
-    scraping_active = True
-    
-    # Start background scraping in a separate thread
-    def background_scrape():
-        global last_scrape_time
-        while scraping_active:
-            try:
-                print("🔄 Running background scrape...")
-                
-                # Get keywords and subreddits
-                keywords = db.get_active_keywords()
-                subreddits = db.get_active_subreddits()
-                
-                if keywords and subreddits:
-                    # Scrape Reddit
-                    leads = scraper.search_leads(keywords, subreddits, days_back=1)
-                    
-                    if leads:
-                        # AI Analysis
-                        analyzed_leads = ai_analyzer.analyze_batch(leads)
-                        
-                        # Save to database
-                        saved_count = 0
-                        for lead in analyzed_leads:
-                            if db.save_lead(lead):
-                                saved_count += 1
-                        
-                        print(f"✅ Background scrape complete: {saved_count} leads saved")
-                    
-                last_scrape_time = datetime.now()
-                
-                # Wait 1 hour before next scrape
-                time.sleep(3600)
-                
-            except Exception as e:
-                print(f"❌ Background scrape error: {e}")
-                time.sleep(300)  # Wait 5 minutes on error
-    
-    thread = threading.Thread(target=background_scrape, daemon=True)
-    thread.start()
-    
-    return {"message": "Background scraping started"}
+    db.add_keyword(business_id, keyword.keyword, keyword.source)
+    return {"success": True}
 
-@app.post("/api/scraping/stop")
-async def stop_scraping():
-    """Stop background scraping"""
-    global scraping_active
-    scraping_active = False
-    return {"message": "Background scraping stopped"}
+@app.get("/api/businesses/{business_id}/keywords")
+async def get_keywords(business_id: int, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    keywords = db.get_business_keywords(business_id)
+    return {"keywords": keywords}
 
-@app.post("/api/scraping/run-once")
-async def run_scraping_once():
-    """Run scraping once immediately"""
-    try:
-        # Get keywords and subreddits
-        keywords = db.get_active_keywords()
-        subreddits = db.get_active_subreddits()
-        
-        if not keywords or not subreddits:
-            raise HTTPException(status_code=400, detail="No keywords or subreddits configured")
-        
-        # Scrape Reddit
-        leads = scraper.search_leads(keywords, subreddits, days_back=1)
-        
-        if not leads:
-            return {"message": "No leads found", "leads_processed": 0}
-        
-        # AI Analysis
-        analyzed_leads = ai_analyzer.analyze_batch(leads)
-        
-        # Save to database
-        saved_count = 0
-        for lead in analyzed_leads:
-            if db.save_lead(lead):
-                saved_count += 1
-        
-        global last_scrape_time
-        last_scrape_time = datetime.now()
-        
-        return {
-            "message": "Scraping completed successfully",
-            "leads_found": len(leads),
-            "leads_processed": len(analyzed_leads),
-            "leads_saved": saved_count,
-            "high_quality_leads": len([l for l in analyzed_leads if l.get('ai_probability', 0) >= 70])
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Scraping failed: {str(e)}")
+@app.delete("/api/businesses/{business_id}/keywords/{keyword_id}")
+async def remove_keyword(business_id: int, keyword_id: int, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    db.remove_keyword(keyword_id, business_id)
+    return {"success": True}
 
-@app.get("/api/keywords")
-async def get_keywords():
-    """Get active keywords"""
-    try:
-        keywords = db.get_active_keywords()
-        return {"keywords": keywords}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch keywords: {str(e)}")
+# Subreddits management
+@app.post("/api/businesses/{business_id}/subreddits")
+async def add_subreddit(business_id: int, subreddit: SubredditAdd, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    db.add_subreddit(business_id, subreddit.subreddit, subreddit.source)
+    return {"success": True}
 
-@app.get("/api/subreddits")
-async def get_subreddits():
-    """Get active subreddits"""
-    try:
-        subreddits = db.get_active_subreddits()
-        return {"subreddits": subreddits}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch subreddits: {str(e)}")
+@app.get("/api/businesses/{business_id}/subreddits")
+async def get_subreddits(business_id: int, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    subreddits = db.get_business_subreddits(business_id)
+    return {"subreddits": subreddits}
+
+@app.delete("/api/businesses/{business_id}/subreddits/{subreddit_id}")
+async def remove_subreddit(business_id: int, subreddit_id: int, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    db.remove_subreddit(subreddit_id, business_id)
+    return {"success": True}
+
+# Leads management
+@app.get("/api/businesses/{business_id}/leads")
+async def get_business_leads(business_id: int, limit: int = 50, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if business is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    leads = db.get_business_leads(business_id, limit)
+    return {"leads": leads, "total": len(leads)}
 
 if __name__ == "__main__":
-    print("🚀 Starting Reddit Lead Finder API Server...")
-    print("📊 Dashboard: http://localhost:6070")
-    print("📋 API Docs: http://localhost:6070/docs")
-    
-    uvicorn.run(app, host="0.0.0.0", port=6070)
+    import uvicorn
+    print("🚀 Starting Reddit Lead Finder API v2...")
+    uvicorn.run(app, host="0.0.0.0", port=8001)
