@@ -1765,3 +1765,19 @@
 2025-10-14 01:34:35,580 - ERROR -    Processing error: 'Database' object has no attribute 'db_path'
 2025-10-14 01:34:35,580 - INFO - ✅ F5Bot processing completed successfully!
 2025-10-14 01:34:35,580 - INFO - ======================================================================
+2025-10-14 03:34:36,449 - INFO - 🚀 Starting F5Bot lead scraping and processing...
+2025-10-14 03:34:36,454 - INFO - ======================================================================
+2025-10-14 03:34:36,455 - INFO - 📡 Step 1: F5Bot Reddit scraping for new leads...
+2025-10-14 03:34:36,456 - ERROR - ❌ Error loading keywords: 'Database' object has no attribute 'db_path'
+2025-10-14 03:34:36,456 - WARNING - ⚠️  No keywords found in database - skipping scraping
+2025-10-14 03:34:36,457 - INFO - 🤖 Step 2: Processing leads for all businesses...
+2025-10-14 03:34:36,457 - ERROR - ❌ Business processing failed: 'Database' object has no attribute 'db_path'
+2025-10-14 03:34:36,457 - INFO - 📊 F5BOT SCRAPING SUMMARY:
+2025-10-14 03:34:36,457 - INFO -    New leads scraped: 0
+2025-10-14 03:34:36,457 - INFO -    Leads processed: 0
+2025-10-14 03:34:36,457 - INFO -    Leads matched: 0
+2025-10-14 03:34:36,457 - INFO -    Businesses processed: 0
+2025-10-14 03:34:36,457 - INFO -    Next run in: 120 minutes
+2025-10-14 03:34:36,457 - ERROR -    Processing error: 'Database' object has no attribute 'db_path'
+2025-10-14 03:34:36,457 - INFO - ✅ F5Bot processing completed successfully!
+2025-10-14 03:34:36,457 - INFO - ======================================================================

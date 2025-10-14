@@ -11,6 +11,8 @@ import Businesses from "@/pages/businesses";
 import BusinessEdit from "@/pages/business-edit";
 import Platforms from "@/pages/platforms";
 import Accounts from "@/pages/accounts";
+import Notifications from "@/pages/notifications";
+import Replies from "@/pages/replies";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +24,8 @@ function Router() {
       <Route path="/businesses" component={Businesses} />
       <Route path="/businesses/:id/edit" component={BusinessEdit} />
       <Route path="/leads" component={LeadsDashboard} />
+      <Route path="/replies" component={Replies} />
+      <Route path="/notifications" component={Notifications} />
       <Route path="/platforms" component={Platforms} />
       <Route path="/accounts" component={Accounts} />
       <Route component={NotFound} />

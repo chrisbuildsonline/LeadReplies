@@ -367,17 +367,37 @@ export default function Platforms() {
         )}
 
         {/* Info Section */}
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-6">
             <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+              <Settings className="w-5 h-5 text-gray-600 mt-0.5" />
               <div>
-                <h3 className="text-sm font-medium text-blue-900 mb-1">Platform Settings</h3>
-                <div className="text-sm text-blue-800 space-y-1">
-                  <p><strong>Track Leads:</strong> Enable/disable lead discovery for each platform</p>
-                  <p><strong>Auto Reply:</strong> Automatically post AI-generated replies when confidence is high enough</p>
-                  <p><strong>Confidence Threshold:</strong> Minimum AI confidence score required for auto-reply</p>
-                  <p><strong>Reply Suggestions:</strong> Generate reply drafts that you can review before posting</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Platform Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Lead Tracking</h4>
+                    <p className="text-gray-600 text-xs leading-relaxed">
+                      Enable or disable lead discovery for each platform. When enabled, the system will monitor for relevant posts and comments.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Auto Reply</h4>
+                    <p className="text-gray-600 text-xs leading-relaxed">
+                      Automatically post generated replies when the confidence score meets your threshold. Requires active lead tracking.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Confidence Threshold</h4>
+                    <p className="text-gray-600 text-xs leading-relaxed">
+                      Set the minimum confidence score (50-100%) required before auto-posting replies. Higher values mean more selective posting.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Reply Suggestions</h4>
+                    <p className="text-gray-600 text-xs leading-relaxed">
+                      Generate reply drafts for manual review and posting. Useful for maintaining control while getting assistance.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

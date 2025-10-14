@@ -152,7 +152,7 @@ export default function Businesses() {
           
           <Button
             onClick={() => setShowCreateForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-purple-600 hover:bg-blue-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Business
@@ -266,7 +266,7 @@ export default function Businesses() {
                 <p className="text-gray-600 mb-4">Create your first business to start tracking leads</p>
                 <Button
                   onClick={() => setShowCreateForm(true)}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-purple-600 hover:bg-blue-700"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create Business
@@ -379,7 +379,7 @@ export default function Businesses() {
                     <Button
                       type="submit"
                       disabled={creating}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 bg-purple-600 hover:bg-blue-700"
                     >
                       {creating ? 'Creating...' : 'Create Business'}
                     </Button>

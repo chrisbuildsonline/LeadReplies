@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 
 from database import Database
 from deepseek_analyzer import DeepSeekAnalyzer
+from notification_service import notification_service
 
 load_dotenv()
 
@@ -78,6 +79,22 @@ class SocialAccountCreate(BaseModel):
 
 class SocialAccountUpdate(BaseModel):
     is_active: bool
+
+class NotificationPreferenceUpdate(BaseModel):
+    notification_type: str
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+
+class BusinessAISettings(BaseModel):
+    persona: Optional[str] = None
+    instructions: Optional[str] = None
+    bad_words: Optional[List[str]] = None
+    service_links: Optional[dict] = None
+    tone: Optional[str] = None
+    max_reply_length: Optional[int] = None
+    include_links: Optional[bool] = None
+    auto_reply_enabled: Optional[bool] = None
+    confidence_threshold: Optional[float] = None
 
 # Helper functions
 def create_jwt_token(user_id: int) -> str:
@@ -162,6 +179,38 @@ async def update_business(business_id: int, business: BusinessCreate, user_id: i
         raise HTTPException(status_code=500, detail="Failed to update business")
     
     return {"success": True}
+
+@app.get("/api/businesses/{business_id}/ai-settings")
+async def get_business_ai_settings(business_id: int, user_id: int = Depends(verify_jwt_token)):
+    """Get AI reply settings for a business"""
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    settings = db.get_business_ai_settings(business_id)
+    return {"ai_settings": settings}
+
+@app.put("/api/businesses/{business_id}/ai-settings")
+async def update_business_ai_settings(
+    business_id: int,
+    settings: BusinessAISettings,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update AI reply settings for a business"""
+    # Verify business ownership
+    business = db.get_business(business_id, user_id)
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+    
+    # Convert to dict and filter None values
+    settings_dict = {k: v for k, v in settings.model_dump().items() if v is not None}
+    
+    success = db.update_business_ai_settings(business_id, settings_dict)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update AI settings")
+    
+    return {"message": "AI settings updated successfully"}
 
 # Website analysis
 @app.post("/api/businesses/{business_id}/analyze-website")
@@ -666,6 +715,225 @@ async def delete_social_account(
         raise HTTPException(status_code=404, detail="Account not found")
     
     return {"message": "Account deleted successfully"}
+
+@app.post("/api/accounts/upload-csv")
+async def upload_accounts_csv(
+    file: bytes,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Upload accounts from CSV file"""
+    import csv
+    import io
+    
+    try:
+        # Parse CSV content
+        csv_content = file.decode('utf-8')
+        csv_reader = csv.DictReader(io.StringIO(csv_content))
+        
+        added_accounts = []
+        errors = []
+        
+        for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 because row 1 is header
+            try:
+                # Validate required fields
+                platform = row.get('platform', '').strip().lower()
+                username = row.get('username', '').strip()
+                password = row.get('password', '').strip()
+                notes = row.get('notes', '').strip()
+                
+                if not platform or not username or not password:
+                    errors.append(f"Row {row_num}: Missing required fields (platform, username, password)")
+                    continue
+                
+                # Validate platform
+                if platform not in ['reddit', 'twitter', 'linkedin']:
+                    errors.append(f"Row {row_num}: Invalid platform '{platform}'. Must be reddit, twitter, or linkedin")
+                    continue
+                
+                # Add account
+                account_id = db.add_social_account(
+                    user_id=user_id,
+                    platform=platform,
+                    username=username,
+                    password=password,
+                    notes=notes if notes else None
+                )
+                
+                if account_id:
+                    added_accounts.append({
+                        'platform': platform,
+                        'username': username,
+                        'account_id': account_id
+                    })
+                else:
+                    errors.append(f"Row {row_num}: Account @{username} on {platform} already exists")
+                    
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+        
+        return {
+            "message": f"Successfully added {len(added_accounts)} accounts",
+            "added_accounts": added_accounts,
+            "errors": errors,
+            "total_processed": len(added_accounts) + len(errors)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process CSV: {str(e)}")
+
+# Notifications endpoints
+@app.get("/api/notifications")
+async def get_notifications(
+    limit: int = 50,
+    unread_only: bool = False,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Get notifications for the authenticated user"""
+    notifications = db.get_user_notifications(user_id, limit, unread_only)
+    unread_count = db.get_unread_notification_count(user_id)
+    
+    return {
+        "notifications": notifications,
+        "unread_count": unread_count,
+        "total_count": len(notifications)
+    }
+
+@app.put("/api/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: int,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Mark a notification as read"""
+    success = db.mark_notification_read(notification_id, user_id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    return {"message": "Notification marked as read"}
+
+@app.put("/api/notifications/mark-all-read")
+async def mark_all_notifications_read(user_id: int = Depends(verify_jwt_token)):
+    """Mark all notifications as read"""
+    count = db.mark_all_notifications_read(user_id)
+    
+    return {"message": f"Marked {count} notifications as read", "count": count}
+
+@app.delete("/api/notifications/{notification_id}")
+async def delete_notification(
+    notification_id: int,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Delete a notification"""
+    success = db.delete_notification(notification_id, user_id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    return {"message": "Notification deleted"}
+
+@app.get("/api/notifications/preferences")
+async def get_notification_preferences(user_id: int = Depends(verify_jwt_token)):
+    """Get notification preferences for the user"""
+    preferences = db.get_user_notification_preferences(user_id)
+    
+    return {"preferences": preferences}
+
+@app.put("/api/notifications/preferences")
+async def update_notification_preferences(
+    preference: NotificationPreferenceUpdate,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update notification preferences"""
+    success = db.update_notification_preference(
+        user_id, 
+        preference.notification_type,
+        preference.email_enabled,
+        preference.push_enabled
+    )
+    
+    return {"message": "Notification preferences updated"}
+
+# Replies endpoints
+@app.get("/api/replies")
+async def get_replies(
+    status: Optional[str] = None,
+    limit: int = 50,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Get replies for the authenticated user"""
+    replies = db.get_user_replies(user_id, status, limit)
+    
+    # Get stats
+    stats = db.get_reply_stats(user_id)
+    
+    return {
+        "replies": replies,
+        "total": len(replies),
+        "stats": stats
+    }
+
+@app.put("/api/replies/{reply_id}")
+async def update_reply(
+    reply_id: int,
+    reply_content: str,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update a reply's content"""
+    # Verify reply ownership through business ownership
+    reply = db.get_reply_by_id(reply_id, user_id)
+    if not reply:
+        raise HTTPException(status_code=404, detail="Reply not found")
+    
+    success = db.update_reply_content(reply_id, reply_content)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update reply")
+    
+    return {"message": "Reply updated successfully"}
+
+@app.delete("/api/replies/{reply_id}")
+async def delete_reply(
+    reply_id: int,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Delete a reply"""
+    # Verify reply ownership through business ownership
+    reply = db.get_reply_by_id(reply_id, user_id)
+    if not reply:
+        raise HTTPException(status_code=404, detail="Reply not found")
+    
+    success = db.delete_reply(reply_id, user_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete reply")
+    
+    return {"message": "Reply deleted successfully"}
+
+@app.post("/api/replies/{reply_id}/post")
+async def post_reply(
+    reply_id: int,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Post a reply to the platform"""
+    # Verify reply ownership
+    reply = db.get_reply_by_id(reply_id, user_id)
+    if not reply:
+        raise HTTPException(status_code=404, detail="Reply not found")
+    
+    if reply['status'] != 'draft':
+        raise HTTPException(status_code=400, detail="Only draft replies can be posted")
+    
+    # Update status to pending
+    db.update_reply_status(reply_id, 'pending')
+    
+    # TODO: Implement actual posting to platform
+    # For now, we'll simulate posting
+    import time
+    time.sleep(1)  # Simulate API call
+    
+    # Update to posted status with fake platform ID
+    platform_reply_id = f"fake_reply_{reply_id}_{int(time.time())}"
+    db.update_reply_status(reply_id, 'posted', platform_reply_id)
+    
+    return {"message": "Reply posted successfully", "platform_reply_id": platform_reply_id}
 
 @app.get("/api/platforms")
 async def get_available_platforms():

@@ -1,21 +1,22 @@
 import {
   Home,
-  BarChart3,
   Share2,
   Settings,
   Building2,
+  Bell,
+  Users,
+  MessageSquare,
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-// Logo placeholder - using div instead of image
-
-import { Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Businesses", href: "/businesses", icon: Building2 },
   { name: "Leads", href: "/leads", icon: SiReddit },
+  { name: "Replies", href: "/replies", icon: MessageSquare },
   { name: "Platforms", href: "/platforms", icon: Share2 },
   { name: "Accounts", href: "/accounts", icon: Users },
 ];
@@ -28,7 +29,36 @@ const favoriteItems = [
 
 export default function Sidebar() {
   const [location] = useLocation();
-  
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return undefined;
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+  };
+
+  const { data: notificationData } = useQuery({
+    queryKey: ["/api/notifications/count"],
+    queryFn: async () => {
+      const headers = getAuthHeaders();
+      if (!headers) return { unread_count: 0 };
+
+      const response = await fetch(
+        "http://localhost:8001/api/notifications?limit=1&unread_only=true",
+        {
+          headers,
+        }
+      );
+
+      if (!response.ok) return { unread_count: 0 };
+      return response.json();
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+    enabled: !!localStorage.getItem("token"),
+  });
+
   return (
     <div className="w-80 bg-gray-900 flex flex-col h-full shadow-inner border-r border-gray-800">
       {/* Logo Section */}
@@ -51,8 +81,8 @@ export default function Sidebar() {
             {menuItems.map((item) => {
               const isActive = location === item.href;
               const ItemIcon = item.icon;
-              
-              return item.href.startsWith('#') ? (
+
+              return item.href.startsWith("#") ? (
                 <a
                   key={item.name}
                   href={item.href}
@@ -60,19 +90,16 @@ export default function Sidebar() {
                     "flex items-center justify-between py-3 px-6 text-sm relative text-gray-300 hover:text-white hover:bg-gray-800 pt-[20px] pb-[20px] pl-[23px] pr-[23px]",
                     isActive
                       ? "text-white bg-gray-800 border-l-4 border-orange-500"
-                      : "text-gray-300 hover:text-white hover:bg-gray-800",
+                      : "text-gray-300 hover:text-white hover:bg-gray-800"
                   )}
-                  data-testid={`nav-${item.name.toLowerCase().replace(" ", "-")}`}
+                  data-testid={`nav-${item.name
+                    .toLowerCase()
+                    .replace(" ", "-")}`}
                 >
                   <div className="flex items-center space-x-3">
                     <ItemIcon className="h-4 w-4" />
                     <span>{item.name}</span>
                   </div>
-                  {item.badge && (
-                    <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  )}
                 </a>
               ) : (
                 <Link key={item.name} href={item.href}>
@@ -81,22 +108,23 @@ export default function Sidebar() {
                       "flex items-center justify-between py-3 px-6 text-sm relative text-gray-300 hover:text-white hover:bg-gray-800 pt-[20px] pb-[20px] pl-[23px] pr-[23px] cursor-pointer",
                       isActive
                         ? "text-white bg-gray-800 border-l-4 border-orange-500"
-                        : "text-gray-300 hover:text-white hover:bg-gray-800",
+                        : "text-gray-300 hover:text-white hover:bg-gray-800"
                     )}
-                    data-testid={`nav-${item.name.toLowerCase().replace(" ", "-")}`}
+                    data-testid={`nav-${item.name
+                      .toLowerCase()
+                      .replace(" ", "-")}`}
                   >
                     <div className="flex items-center space-x-3">
                       <ItemIcon className="h-4 w-4" />
                       <span>{item.name}</span>
                     </div>
-
                   </div>
                 </Link>
               );
             })}
           </nav>
         </div>
-        
+
         {/* Favorites Section */}
         <div className="mb-6">
           <h3 className="text-sm font-medium text-gray-400 mb-4 px-6">
@@ -108,7 +136,9 @@ export default function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className="flex items-center space-x-3 py-3 px-6 text-sm text-gray-300 hover:text-white hover:bg-gray-800"
-                data-testid={`fav-${item.name.toLowerCase().replace(/\s+/g, "-")}`}
+                data-testid={`fav-${item.name
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
               >
                 <div className="w-2 h-2 rounded-full border border-gray-500"></div>
                 <span>{item.name}</span>
@@ -131,27 +161,46 @@ export default function Sidebar() {
               <p className="text-xs text-gray-400">Sr. Marketing Manager</p>
             </div>
           </div>
-          
+
           {/* Package and Settings Row */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-transparent border border-orange-500 text-orange-400 shadow-sm">
                 Starter Plan
               </span>
             </div>
+          </div>
+
+          {/* Notifications and Settings */}
+          <div className="flex items-center space-x-1 bg-gray-800 rounded-lg p-1">
+            <Link href="/notifications">
+              <div className="flex items-center space-x-1 text-xs text-gray-300 hover:text-white px-2 py-1 rounded hover:bg-gray-700 cursor-pointer relative">
+                <Bell className="h-3 w-3" />
+                <span>Notifications</span>
+                <span className="text-gray-400">
+                  ({notificationData?.unread_count || 0})
+                </span>
+                {notificationData?.unread_count > 0 && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                )}
+              </div>
+            </Link>
+
+            <div className="w-px h-4 bg-gray-600"></div>
+
             <a
               href="#"
-              className="flex items-center space-x-2 text-sm text-gray-300 hover:text-white p-1 rounded hover:bg-gray-800"
+              className="flex items-center space-x-1 text-xs text-gray-300 hover:text-white px-2 py-1 rounded hover:bg-gray-700"
               data-testid="nav-settings"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3 w-3" />
               <span>Settings</span>
             </a>
           </div>
         </div>
 
         <div className="px-6 pb-4 text-xs text-gray-500">
-          2024 LeadReplies License
+          {new Date().getFullYear()} LeadReplies
         </div>
       </div>
     </div>

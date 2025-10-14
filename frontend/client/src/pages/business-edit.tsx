@@ -2,12 +2,31 @@ import { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import PageLayout from '../components/layout/page-layout';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, X, Globe, Hash, Target, Sparkles, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { 
+  ArrowLeft, 
+  Plus, 
+  X, 
+  Hash, 
+  Target, 
+  Sparkles, 
+  Trash2, 
+  Bot,
+  Settings,
+  MessageSquare,
+  Shield,
+  Link as LinkIcon,
+  Sliders
+} from "lucide-react";
 
-const API_URL = '';
+const API_URL = 'http://localhost:8001';
 
 interface Business {
   id: number;
@@ -23,10 +42,18 @@ interface Keyword {
   source: string;
 }
 
-interface Subreddit {
-  id: number;
-  subreddit: string;
-  source: string;
+
+
+interface AISettings {
+  persona: string;
+  instructions: string;
+  bad_words: string[];
+  service_links: Record<string, string>;
+  tone: string;
+  max_reply_length: number;
+  include_links: boolean;
+  auto_reply_enabled: boolean;
+  confidence_threshold: number;
 }
 
 export default function BusinessEdit() {
@@ -34,9 +61,20 @@ export default function BusinessEdit() {
   const [, setLocation] = useLocation();
   const businessId = params?.id ? parseInt(params.id) : null;
 
+  const [activeTab, setActiveTab] = useState('general');
   const [business, setBusiness] = useState<Business | null>(null);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
-  const [subreddits, setSubreddits] = useState<Subreddit[]>([]);
+  const [aiSettings, setAiSettings] = useState<AISettings>({
+    persona: '',
+    instructions: '',
+    bad_words: [],
+    service_links: {},
+    tone: 'professional',
+    max_reply_length: 500,
+    include_links: true,
+    auto_reply_enabled: false,
+    confidence_threshold: 0.8,
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -49,7 +87,9 @@ export default function BusinessEdit() {
   });
 
   const [newKeyword, setNewKeyword] = useState('');
-  const [newSubreddit, setNewSubreddit] = useState('');
+  const [newBadWord, setNewBadWord] = useState('');
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newServiceUrl, setNewServiceUrl] = useState('');
 
   useEffect(() => {
     if (businessId) {
@@ -74,10 +114,10 @@ export default function BusinessEdit() {
 
     try {
       setLoading(true);
-      const [businessRes, keywordsRes, subredditsRes] = await Promise.all([
+      const [businessRes, keywordsRes, aiSettingsRes] = await Promise.all([
         fetch(`${API_URL}/api/businesses/${businessId}`, { headers: getAuthHeaders() }),
         fetch(`${API_URL}/api/businesses/${businessId}/keywords`, { headers: getAuthHeaders() }),
-        fetch(`${API_URL}/api/businesses/${businessId}/subreddits`, { headers: getAuthHeaders() })
+        fetch(`${API_URL}/api/businesses/${businessId}/ai-settings`, { headers: getAuthHeaders() })
       ]);
 
       if (businessRes.ok) {
@@ -95,9 +135,9 @@ export default function BusinessEdit() {
         setKeywords(keywordsData.keywords || []);
       }
 
-      if (subredditsRes.ok) {
-        const subredditsData = await subredditsRes.json();
-        setSubreddits(subredditsData.subreddits || []);
+      if (aiSettingsRes.ok) {
+        const aiSettingsData = await aiSettingsRes.json();
+        setAiSettings(aiSettingsData.ai_settings);
       }
 
       if (!businessRes.ok && businessRes.status === 401) {
@@ -166,12 +206,7 @@ export default function BusinessEdit() {
           }
         }
 
-        // Add suggested subreddits
-        if (data.subreddits && data.subreddits.length > 0) {
-          for (const sub of data.subreddits) {
-            await addSubreddit(sub.subreddit, 'ai_suggested');
-          }
-        }
+
 
         fetchBusinessData();
       } else {
@@ -206,26 +241,7 @@ export default function BusinessEdit() {
     }
   };
 
-  const addSubreddit = async (subreddit: string, source: string = 'manual') => {
-    if (!businessId || !subreddit.trim()) return;
 
-    try {
-      const response = await fetch(`${API_URL}/api/businesses/${businessId}/subreddits`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ subreddit: subreddit.trim(), source }),
-      });
-
-      if (response.ok) {
-        if (source === 'manual') {
-          setNewSubreddit('');
-          fetchBusinessData();
-        }
-      }
-    } catch (err) {
-      console.error('Failed to add subreddit');
-    }
-  };
 
   const removeKeyword = async (keywordId: number) => {
     if (!businessId) return;
@@ -244,21 +260,72 @@ export default function BusinessEdit() {
     }
   };
 
-  const removeSubreddit = async (subredditId: number) => {
+
+
+  const saveAISettings = async () => {
     if (!businessId) return;
 
+    setSaving(true);
+    setError('');
+
     try {
-      const response = await fetch(`${API_URL}/api/businesses/${businessId}/subreddits/${subredditId}`, {
-        method: 'DELETE',
+      const response = await fetch(`${API_URL}/api/businesses/${businessId}/ai-settings`, {
+        method: 'PUT',
         headers: getAuthHeaders(),
+        body: JSON.stringify(aiSettings),
       });
 
       if (response.ok) {
-        fetchBusinessData();
+        // Settings saved successfully
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to save AI settings');
       }
     } catch (err) {
-      console.error('Failed to remove subreddit');
+      setError('Network error');
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const addBadWord = () => {
+    if (newBadWord.trim() && !aiSettings.bad_words.includes(newBadWord.trim())) {
+      setAiSettings({
+        ...aiSettings,
+        bad_words: [...aiSettings.bad_words, newBadWord.trim()]
+      });
+      setNewBadWord('');
+    }
+  };
+
+  const removeBadWord = (word: string) => {
+    setAiSettings({
+      ...aiSettings,
+      bad_words: aiSettings.bad_words.filter(w => w !== word)
+    });
+  };
+
+  const addServiceLink = () => {
+    if (newServiceName.trim() && newServiceUrl.trim()) {
+      setAiSettings({
+        ...aiSettings,
+        service_links: {
+          ...aiSettings.service_links,
+          [newServiceName.trim()]: newServiceUrl.trim()
+        }
+      });
+      setNewServiceName('');
+      setNewServiceUrl('');
+    }
+  };
+
+  const removeServiceLink = (serviceName: string) => {
+    const newLinks = { ...aiSettings.service_links };
+    delete newLinks[serviceName];
+    setAiSettings({
+      ...aiSettings,
+      service_links: newLinks
+    });
   };
 
   if (loading) {
@@ -305,6 +372,359 @@ export default function BusinessEdit() {
     );
   }
 
+  const tabs = [
+    { id: 'general', name: 'General', icon: Target },
+    { id: 'targeting', name: 'Targeting', icon: Hash },
+    { id: 'ai-replies', name: 'AI Replies', icon: Bot },
+  ];
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'general':
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="w-5 h-5 text-blue-600 mr-2" />
+                  Business Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Business Name</Label>
+                  <Input
+                    id="name"
+                    value={editedBusiness.name}
+                    onChange={(e) => setEditedBusiness({ ...editedBusiness, name: e.target.value })}
+                    placeholder="Enter business name"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="website">Website URL</Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    value={editedBusiness.website}
+                    onChange={(e) => setEditedBusiness({ ...editedBusiness, website: e.target.value })}
+                    placeholder="https://example.com"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={editedBusiness.description}
+                    onChange={(e) => setEditedBusiness({ ...editedBusiness, description: e.target.value })}
+                    placeholder="Describe your business..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex justify-between">
+                  <Button
+                    onClick={analyzeWebsite}
+                    disabled={analyzing || !editedBusiness.website}
+                    variant="outline"
+                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {analyzing ? 'Analyzing...' : 'AI Analyze Website'}
+                  </Button>
+                  
+                  <Button
+                    onClick={saveBusiness}
+                    disabled={saving}
+                    className="bg-purple-600 hover:bg-blue-700"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 'targeting':
+        return (
+          <div className="space-y-6">
+            {/* Keywords */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Hash className="w-5 h-5 text-green-600 mr-2" />
+                    Keywords ({keywords.length})
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={newKeyword}
+                    onChange={(e) => setNewKeyword(e.target.value)}
+                    placeholder="Add keyword..."
+                    onKeyPress={(e) => e.key === 'Enter' && addKeyword(newKeyword)}
+                  />
+                  <Button
+                    onClick={() => addKeyword(newKeyword)}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                  {keywords.map((keyword) => (
+                    <Badge
+                      key={keyword.id}
+                      className={`inline-flex items-center gap-1 ${
+                        keyword.source === 'ai_website'
+                          ? 'bg-purple-100 text-purple-800 border-purple-200'
+                          : 'bg-blue-100 text-blue-800 border-blue-200'
+                      }`}
+                    >
+                      {keyword.keyword}
+                      {keyword.source === 'ai_website' && <Sparkles className="w-3 h-3" />}
+                      <button
+                        onClick={() => removeKeyword(keyword.id)}
+                        className="ml-1 text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+
+          </div>
+        );
+
+      case 'ai-replies':
+        return (
+          <div className="space-y-6">
+            {/* AI Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Bot className="w-5 h-5 text-purple-600 mr-2" />
+                  AI Reply Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Auto Reply Toggle */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+                  <div>
+                    <Label className="text-base font-medium">Auto Reply</Label>
+                    <p className="text-sm text-gray-600">Automatically post AI-generated replies to high-quality leads</p>
+                  </div>
+                  <Switch
+                    checked={aiSettings.auto_reply_enabled}
+                    onCheckedChange={(checked) => setAiSettings({ ...aiSettings, auto_reply_enabled: checked })}
+                  />
+                </div>
+
+                {/* Persona */}
+                <div>
+                  <Label htmlFor="persona">AI Persona</Label>
+                  <Textarea
+                    id="persona"
+                    value={aiSettings.persona}
+                    onChange={(e) => setAiSettings({ ...aiSettings, persona: e.target.value })}
+                    placeholder="Describe how the AI should present itself (e.g., 'You are a helpful software consultant with 10 years of experience...')"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Instructions */}
+                <div>
+                  <Label htmlFor="instructions">Reply Instructions</Label>
+                  <Textarea
+                    id="instructions"
+                    value={aiSettings.instructions}
+                    onChange={(e) => setAiSettings({ ...aiSettings, instructions: e.target.value })}
+                    placeholder="Specific instructions for generating replies (e.g., 'Always mention our free trial', 'Keep responses under 200 words', etc.)"
+                    rows={4}
+                  />
+                </div>
+
+                {/* Tone Selection */}
+                <div>
+                  <Label htmlFor="tone">Reply Tone</Label>
+                  <select
+                    id="tone"
+                    value={aiSettings.tone}
+                    onChange={(e) => setAiSettings({ ...aiSettings, tone: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="professional">Professional</option>
+                    <option value="friendly">Friendly</option>
+                    <option value="casual">Casual</option>
+                    <option value="authoritative">Authoritative</option>
+                    <option value="helpful">Helpful</option>
+                  </select>
+                </div>
+
+                {/* Settings Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="maxLength">Max Reply Length</Label>
+                    <Input
+                      id="maxLength"
+                      type="number"
+                      value={aiSettings.max_reply_length}
+                      onChange={(e) => setAiSettings({ ...aiSettings, max_reply_length: parseInt(e.target.value) })}
+                      min="100"
+                      max="1000"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="confidence">Confidence Threshold</Label>
+                    <Input
+                      id="confidence"
+                      type="number"
+                      step="0.1"
+                      min="0.1"
+                      max="1.0"
+                      value={aiSettings.confidence_threshold}
+                      onChange={(e) => setAiSettings({ ...aiSettings, confidence_threshold: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                </div>
+
+                {/* Include Links Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Include Service Links</Label>
+                    <p className="text-sm text-gray-600">Allow AI to include links to your services in replies</p>
+                  </div>
+                  <Switch
+                    checked={aiSettings.include_links}
+                    onCheckedChange={(checked) => setAiSettings({ ...aiSettings, include_links: checked })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Service Links */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <LinkIcon className="w-5 h-5 text-blue-600 mr-2" />
+                  Service Links
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <Input
+                    value={newServiceName}
+                    onChange={(e) => setNewServiceName(e.target.value)}
+                    placeholder="Service name (e.g., 'Free Trial')"
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={newServiceUrl}
+                      onChange={(e) => setNewServiceUrl(e.target.value)}
+                      placeholder="https://example.com/trial"
+                    />
+                    <Button
+                      onClick={addServiceLink}
+                      size="sm"
+                      className="bg-purple-600 hover:bg-blue-700"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {Object.entries(aiSettings.service_links).map(([name, url]) => (
+                    <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <span className="font-medium">{name}</span>
+                        <p className="text-sm text-gray-600">{url}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeServiceLink(name)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Bad Words Filter */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Shield className="w-5 h-5 text-red-600 mr-2" />
+                  Content Filter
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={newBadWord}
+                    onChange={(e) => setNewBadWord(e.target.value)}
+                    placeholder="Add word/phrase to avoid..."
+                    onKeyPress={(e) => e.key === 'Enter' && addBadWord()}
+                  />
+                  <Button
+                    onClick={addBadWord}
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {aiSettings.bad_words.map((word, index) => (
+                    <Badge
+                      key={index}
+                      className="inline-flex items-center gap-1 bg-red-100 text-red-800 border-red-200"
+                    >
+                      {word}
+                      <button
+                        onClick={() => removeBadWord(word)}
+                        className="ml-1 text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="mt-4">
+                  <Button
+                    onClick={saveAISettings}
+                    disabled={saving}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {saving ? 'Saving...' : 'Save AI Settings'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <PageLayout>
       <div className="space-y-6">
@@ -320,27 +740,8 @@ export default function BusinessEdit() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Edit Business</h1>
-              <p className="text-gray-600">Configure your business settings and lead generation</p>
+              <p className="text-gray-600">Configure your business settings and AI automation</p>
             </div>
-          </div>
-
-          <div className="flex space-x-2">
-            <Button
-              onClick={analyzeWebsite}
-              disabled={analyzing || !editedBusiness.website}
-              variant="outline"
-              className="text-purple-600 border-purple-200 hover:bg-purple-50"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {analyzing ? 'Analyzing...' : 'AI Analyze'}
-            </Button>
-            <Button
-              onClick={saveBusiness}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
           </div>
         </div>
 
@@ -350,154 +751,53 @@ export default function BusinessEdit() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Business Details */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                <Target className="w-5 h-5 text-blue-600 mr-2" />
-                <h2 className="text-lg font-semibold">Business Details</h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Business Name</label>
-                  <input
-                    type="text"
-                    value={editedBusiness.name}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Website URL</label>
-                  <input
-                    type="url"
-                    value={editedBusiness.website}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, website: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="https://example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    value={editedBusiness.description}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    rows={4}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Keywords */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <Hash className="w-5 h-5 text-green-600 mr-2" />
-                  <h2 className="text-lg font-semibold">Keywords ({keywords.length})</h2>
-                </div>
-              </div>
-
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={newKeyword}
-                  onChange={(e) => setNewKeyword(e.target.value)}
-                  placeholder="Add keyword..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  onKeyPress={(e) => e.key === 'Enter' && addKeyword(newKeyword)}
-                />
-                <Button
-                  onClick={() => addKeyword(newKeyword)}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700"
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
                 >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                {keywords.map((keyword) => (
-                  <Badge
-                    key={keyword.id}
-                    className={`inline-flex items-center gap-1 ${
-                      keyword.source === 'ai_website'
-                        ? 'bg-purple-100 text-purple-800 border-purple-200'
-                        : 'bg-blue-100 text-blue-800 border-blue-200'
-                    }`}
-                  >
-                    {keyword.keyword}
-                    {keyword.source === 'ai_website' && <Sparkles className="w-3 h-3" />}
-                    <button
-                      onClick={() => removeKeyword(keyword.id)}
-                      className="ml-1 text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Subreddits */}
-          <Card className="lg:col-span-2">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <Globe className="w-5 h-5 text-orange-600 mr-2" />
-                  <h2 className="text-lg font-semibold">Subreddits ({subreddits.length})</h2>
-                </div>
-              </div>
-
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={newSubreddit}
-                  onChange={(e) => setNewSubreddit(e.target.value)}
-                  placeholder="Add subreddit (without r/)..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  onKeyPress={(e) => e.key === 'Enter' && addSubreddit(newSubreddit)}
-                />
-                <Button
-                  onClick={() => addSubreddit(newSubreddit)}
-                  size="sm"
-                  className="bg-orange-600 hover:bg-orange-700"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {subreddits.map((subreddit) => (
-                  <Badge
-                    key={subreddit.id}
-                    className={`inline-flex items-center gap-1 ${
-                      subreddit.source === 'ai_suggested'
-                        ? 'bg-purple-100 text-purple-800 border-purple-200'
-                        : 'bg-orange-100 text-orange-800 border-orange-200'
-                    }`}
-                  >
-                    r/{subreddit.subreddit}
-                    {subreddit.source === 'ai_suggested' && <Sparkles className="w-3 h-3" />}
-                    <button
-                      onClick={() => removeSubreddit(subreddit.id)}
-                      className="ml-1 text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <Icon className="w-5 h-5 mr-2" />
+                  {tab.name}
+                </button>
+              );
+            })}
+          </nav>
         </div>
+
+        {/* Tab Content */}
+        {loading ? (
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <Skeleton className="h-6 w-32 mb-4" />
+                <Skeleton className="h-10 w-full mb-4" />
+                <Skeleton className="h-10 w-full mb-4" />
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        ) : !business ? (
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Business not found</h2>
+            <p className="text-gray-600 mb-6">The business you're looking for doesn't exist.</p>
+            <Button onClick={() => setLocation('/businesses')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Businesses
+            </Button>
+          </div>
+        ) : (
+          renderTabContent()
+        )}
       </div>
     </PageLayout>
   );

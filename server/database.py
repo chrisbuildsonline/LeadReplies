@@ -127,6 +127,60 @@ class Database:
             )
         ''')
         
+        # Notifications table for tracking system events
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                type VARCHAR(50) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                data JSONB,
+                is_read BOOLEAN DEFAULT FALSE,
+                is_email_sent BOOLEAN DEFAULT FALSE,
+                priority VARCHAR(20) DEFAULT 'normal',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                read_at TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        ''')
+        
+        # User notification preferences
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_notification_preferences (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                notification_type VARCHAR(50) NOT NULL,
+                email_enabled BOOLEAN DEFAULT TRUE,
+                push_enabled BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                UNIQUE(user_id, notification_type)
+            )
+        ''')
+        
+        # Business AI reply settings
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS business_ai_settings (
+                id SERIAL PRIMARY KEY,
+                business_id INTEGER NOT NULL,
+                persona TEXT,
+                instructions TEXT,
+                bad_words TEXT[],
+                service_links JSONB,
+                tone VARCHAR(50) DEFAULT 'professional',
+                max_reply_length INTEGER DEFAULT 500,
+                include_links BOOLEAN DEFAULT TRUE,
+                auto_reply_enabled BOOLEAN DEFAULT FALSE,
+                confidence_threshold REAL DEFAULT 0.8,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE,
+                UNIQUE(business_id)
+            )
+        ''')
+        
         # Create indexes for better performance
         indexes = [
             "CREATE INDEX IF NOT EXISTS idx_businesses_user_id ON businesses(user_id)",
@@ -137,7 +191,13 @@ class Database:
             "CREATE INDEX IF NOT EXISTS idx_business_leads_processed_at ON business_leads(processed_at)",
             "CREATE INDEX IF NOT EXISTS idx_business_leads_ai_score ON business_leads(ai_score)",
             "CREATE INDEX IF NOT EXISTS idx_social_accounts_user_id ON social_accounts(user_id)",
-            "CREATE INDEX IF NOT EXISTS idx_social_accounts_platform ON social_accounts(platform)"
+            "CREATE INDEX IF NOT EXISTS idx_social_accounts_platform ON social_accounts(platform)",
+            "CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)",
+            "CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type)",
+            "CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at)",
+            "CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read)",
+            "CREATE INDEX IF NOT EXISTS idx_user_notification_preferences_user_id ON user_notification_preferences(user_id)",
+            "CREATE INDEX IF NOT EXISTS idx_business_ai_settings_business_id ON business_ai_settings(business_id)"
         ]
         
         for index_sql in indexes:
@@ -502,7 +562,10 @@ class Database:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         base_query = '''
-            SELECT r.*, bl.ai_score, gl.title, gl.platform, gl.url, b.name as business_name
+            SELECT r.*, bl.ai_score, 
+                   gl.title as lead_title, gl.platform as lead_platform, gl.url as lead_url,
+                   gl.subreddit as lead_subreddit, gl.author as lead_author,
+                   b.name as business_name
             FROM replies r
             JOIN business_leads bl ON r.business_lead_id = bl.id
             JOIN global_leads gl ON bl.global_lead_id = gl.id
@@ -776,4 +839,325 @@ class Database:
         
         conn.commit()
         cursor.close()
+        conn.close()    
+
+    # Notifications management
+    def create_notification(self, user_id, notification_type, title, message, data=None, priority='normal'):
+        """Create a new notification for a user."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT INTO notifications (user_id, type, title, message, data, priority)
+                VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+            ''', (user_id, notification_type, title, message, json.dumps(data) if data else None, priority))
+            
+            notification_id = cursor.fetchone()[0]
+            conn.commit()
+            return notification_id
+        except Exception as e:
+            conn.rollback()
+            return None
+        finally:
+            cursor.close()
+            conn.close()
+    
+    def get_user_notifications(self, user_id, limit=50, unread_only=False):
+        """Get notifications for a user."""
+        conn = self.get_connection()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        where_clause = "WHERE user_id = %s"
+        params = [user_id]
+        
+        if unread_only:
+            where_clause += " AND is_read = FALSE"
+        
+        cursor.execute(f'''
+            SELECT id, type, title, message, data, is_read, priority, created_at, read_at
+            FROM notifications 
+            {where_clause}
+            ORDER BY created_at DESC 
+            LIMIT %s
+        ''', params + [limit])
+        
+        results = cursor.fetchall()
+        cursor.close()
         conn.close()
+        
+        notifications = []
+        for row in results:
+            notification = dict(row)
+            # JSONB data is already parsed by psycopg2, no need to json.loads
+            notifications.append(notification)
+        
+        return notifications
+    
+    def mark_notification_read(self, notification_id, user_id):
+        """Mark a notification as read."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE notifications 
+            SET is_read = TRUE, read_at = CURRENT_TIMESTAMP 
+            WHERE id = %s AND user_id = %s
+        ''', (notification_id, user_id))
+        
+        success = cursor.rowcount > 0
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return success
+    
+    def mark_all_notifications_read(self, user_id):
+        """Mark all notifications as read for a user."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE notifications 
+            SET is_read = TRUE, read_at = CURRENT_TIMESTAMP 
+            WHERE user_id = %s AND is_read = FALSE
+        ''', (user_id,))
+        
+        count = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return count
+    
+    def get_unread_notification_count(self, user_id):
+        """Get count of unread notifications for a user."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT COUNT(*) FROM notifications 
+            WHERE user_id = %s AND is_read = FALSE
+        ''', (user_id,))
+        
+        count = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        return count
+    
+    def delete_notification(self, notification_id, user_id):
+        """Delete a notification."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            DELETE FROM notifications 
+            WHERE id = %s AND user_id = %s
+        ''', (notification_id, user_id))
+        
+        success = cursor.rowcount > 0
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return success
+    
+    # Notification preferences management
+    def get_user_notification_preferences(self, user_id):
+        """Get notification preferences for a user."""
+        conn = self.get_connection()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cursor.execute('''
+            SELECT notification_type, email_enabled, push_enabled
+            FROM user_notification_preferences 
+            WHERE user_id = %s
+        ''', (user_id,))
+        
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return [dict(row) for row in results]
+    
+    def update_notification_preference(self, user_id, notification_type, email_enabled=None, push_enabled=None):
+        """Update notification preferences for a user."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Insert or update preference
+        cursor.execute('''
+            INSERT INTO user_notification_preferences (user_id, notification_type, email_enabled, push_enabled)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (user_id, notification_type)
+            DO UPDATE SET 
+                email_enabled = COALESCE(%s, user_notification_preferences.email_enabled),
+                push_enabled = COALESCE(%s, user_notification_preferences.push_enabled),
+                updated_at = CURRENT_TIMESTAMP
+        ''', (user_id, notification_type, email_enabled, push_enabled, email_enabled, push_enabled))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return True
+    
+    def should_send_email_notification(self, user_id, notification_type):
+        """Check if email notifications are enabled for a user and notification type."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT email_enabled FROM user_notification_preferences 
+            WHERE user_id = %s AND notification_type = %s
+        ''', (user_id, notification_type))
+        
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        # Default to True if no preference is set
+        return result[0] if result else True    
+
+    # Business AI settings management
+    def get_business_ai_settings(self, business_id):
+        """Get AI reply settings for a business."""
+        conn = self.get_connection()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cursor.execute('''
+            SELECT * FROM business_ai_settings 
+            WHERE business_id = %s
+        ''', (business_id,))
+        
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if result:
+            settings = dict(result)
+            # Parse JSON fields
+            if settings['service_links']:
+                settings['service_links'] = settings['service_links']
+            return settings
+        
+        # Return default settings if none exist
+        return {
+            'business_id': business_id,
+            'persona': '',
+            'instructions': '',
+            'bad_words': [],
+            'service_links': {},
+            'tone': 'professional',
+            'max_reply_length': 500,
+            'include_links': True,
+            'auto_reply_enabled': False,
+            'confidence_threshold': 0.8
+        }
+    
+    def update_business_ai_settings(self, business_id, settings):
+        """Update AI reply settings for a business."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO business_ai_settings (
+                business_id, persona, instructions, bad_words, service_links,
+                tone, max_reply_length, include_links, auto_reply_enabled, confidence_threshold
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (business_id)
+            DO UPDATE SET 
+                persona = EXCLUDED.persona,
+                instructions = EXCLUDED.instructions,
+                bad_words = EXCLUDED.bad_words,
+                service_links = EXCLUDED.service_links,
+                tone = EXCLUDED.tone,
+                max_reply_length = EXCLUDED.max_reply_length,
+                include_links = EXCLUDED.include_links,
+                auto_reply_enabled = EXCLUDED.auto_reply_enabled,
+                confidence_threshold = EXCLUDED.confidence_threshold,
+                updated_at = CURRENT_TIMESTAMP
+        ''', (
+            business_id,
+            settings.get('persona', ''),
+            settings.get('instructions', ''),
+            settings.get('bad_words', []),
+            json.dumps(settings.get('service_links', {})),
+            settings.get('tone', 'professional'),
+            settings.get('max_reply_length', 500),
+            settings.get('include_links', True),
+            settings.get('auto_reply_enabled', False),
+            settings.get('confidence_threshold', 0.8)
+        ))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return True    
+
+    # Additional reply management methods
+    def get_reply_by_id(self, reply_id, user_id):
+        """Get a specific reply by ID, ensuring user ownership through business"""
+        conn = self.get_connection()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cursor.execute('''
+            SELECT r.*, bl.business_id, gl.title as lead_title, gl.url as lead_url, 
+                   gl.platform as lead_platform, gl.subreddit as lead_subreddit, 
+                   gl.author as lead_author, bl.ai_score
+            FROM replies r
+            JOIN business_leads bl ON r.business_lead_id = bl.id
+            JOIN businesses b ON bl.business_id = b.id
+            JOIN global_leads gl ON bl.global_lead_id = gl.id
+            WHERE r.id = %s AND b.user_id = %s
+        ''', (reply_id, user_id))
+        
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        return dict(result) if result else None
+    
+    def update_reply_content(self, reply_id, content):
+        """Update reply content"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE replies 
+            SET reply_content = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s AND status = 'draft'
+        ''', (content, reply_id))
+        
+        success = cursor.rowcount > 0
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return success
+    
+    def delete_reply(self, reply_id, user_id):
+        """Delete a reply (only drafts and failed)"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            DELETE FROM replies 
+            WHERE id = %s 
+            AND status IN ('draft', 'failed')
+            AND business_lead_id IN (
+                SELECT bl.id FROM business_leads bl
+                JOIN businesses b ON bl.business_id = b.id
+                WHERE b.user_id = %s
+            )
+        ''', (reply_id, user_id))
+        
+        success = cursor.rowcount > 0
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return success

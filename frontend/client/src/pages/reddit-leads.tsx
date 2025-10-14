@@ -318,7 +318,7 @@ export default function LeadsDashboard() {
           </p>
           <button
             onClick={() => setLocation("/businesses")}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           >
             Create Your First Business
           </button>
@@ -547,7 +547,7 @@ export default function LeadsDashboard() {
               leadsData?.leads.map((lead) => (
                 <Card
                   key={lead.id}
-                  className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1 h-fit"
+                  className="bg-white/50 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-md transition-all duration-200 hover:-translate-y-1 h-fit"
                 >
                   <CardContent className="p-4">
                     {/* Header with probability and subreddit */}
@@ -586,10 +586,15 @@ export default function LeadsDashboard() {
 
                     {/* AI Analysis */}
                     {lead.ai_reasoning && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-3">
-                        <p className="text-xs text-blue-800 line-clamp-2">
-                          <strong>AI:</strong> {lead.ai_reasoning}
-                        </p>
+                      <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-medium text-gray-600">AI</span>
+                          </div>
+                          <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">
+                            {lead.ai_reasoning}
+                          </p>
+                        </div>
                       </div>
                     )}
 

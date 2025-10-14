@@ -156,6 +156,14 @@ export default function Dashboard() {
     return "bg-blue-100 text-blue-800 border-blue-200";
   };
 
+  const getProbabilityEmoji = (probability: number) => {
+    if (probability >= 80) return "🔥";
+    if (probability >= 70) return "⭐";
+    if (probability >= 60) return "👍";
+    if (probability >= 40) return "💡";
+    return "📝";
+  };
+
   if (error) {
     return (
       <PageLayout>
@@ -536,7 +544,7 @@ export default function Dashboard() {
                   </div>
                   <button 
                     onClick={() => setLocation("/accounts")}
-                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                    className="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                   >
                     Connect
                   </button>
@@ -575,7 +583,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Recent Activity */}
-            <Card>
+            <Card className="bg-white/50 backdrop-blur-sm border-gray-200">
               <CardHeader>
                 <CardTitle className="text-lg font-bold text-gray-900">
                   ⚡ Recent Activity
@@ -598,7 +606,7 @@ export default function Dashboard() {
                     {dashboardData?.recentActivity?.map((activity) => (
                       <div
                         key={activity.id}
-                        className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="flex items-start space-x-3 p-3 bg-white/30 rounded-lg hover:bg-white/60 transition-colors border border-gray-100"
                       >
                         <div className="flex-shrink-0 mt-1">
                           {getPlatformIcon(activity.platform)}
@@ -608,13 +616,12 @@ export default function Dashboard() {
                             {activity.title}
                           </p>
                           <div className="flex items-center space-x-2 mt-1">
-                            <Badge
-                              className={`text-xs ${getScoreColor(
-                                activity.score
-                              )}`}
-                            >
-                              {activity.score}%
-                            </Badge>
+                            <div className="flex items-center text-xs font-medium">
+                              <span className="mr-1">
+                                {getProbabilityEmoji(activity.score)}
+                              </span>
+                              <span className="text-gray-900">{activity.score}%</span>
+                            </div>
                             <span className="text-xs text-gray-500">
                               {activity.business}
                             </span>

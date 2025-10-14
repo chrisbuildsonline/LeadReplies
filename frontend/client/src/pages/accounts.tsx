@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Plus, Trash2, Eye, EyeOff, CheckCircle, XCircle, Clock, Users } from "lucide-react";
+import { AlertCircle, Plus, Trash2, Eye, EyeOff, CheckCircle, XCircle, Clock, Users, Shield, Settings, Upload, FileText, Download } from "lucide-react";
 import { SiReddit, SiX, SiLinkedin } from "react-icons/si";
 
 const API_URL = 'http://localhost:8001';
@@ -33,6 +33,10 @@ export default function Accounts() {
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
+  const [showCsvUpload, setShowCsvUpload] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvUploading, setCsvUploading] = useState(false);
+  const [csvResults, setCsvResults] = useState<any>(null);
   
   // New account form
   const [newAccount, setNewAccount] = useState({
@@ -207,12 +211,12 @@ export default function Accounts() {
 
   const getStatusBadge = (account: SocialAccount) => {
     if (!account.is_active) {
-      return <Badge variant="secondary" className="bg-gray-100 text-gray-600">Inactive</Badge>;
+      return <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-gray-200">Inactive</Badge>;
     }
     if (account.is_verified) {
-      return <Badge className="bg-green-100 text-green-800 border-green-200">Verified</Badge>;
+      return <Badge className="bg-gray-100 text-gray-700 border-gray-200">Verified</Badge>;
     }
-    return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>;
+    return <Badge className="bg-gray-100 text-gray-600 border-gray-200">Pending</Badge>;
   };
 
   const togglePasswordVisibility = (accountId: number) => {
@@ -222,31 +226,105 @@ export default function Accounts() {
     }));
   };
 
+  const handleCsvUpload = async () => {
+    if (!csvFile) {
+      setError('Please select a CSV file');
+      return;
+    }
+
+    setCsvUploading(true);
+    setError('');
+
+    try {
+      const headers = getAuthHeaders();
+      if (!headers) return;
+
+      const fileContent = await csvFile.text();
+      
+      const response = await fetch(`${API_URL}/api/accounts/upload-csv`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'text/plain',
+        },
+        body: fileContent,
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setLocation('/login');
+        }
+        throw new Error('Failed to upload CSV');
+      }
+
+      const results = await response.json();
+      setCsvResults(results);
+      
+      // Refresh accounts list
+      await fetchAccounts();
+      
+      // Reset form
+      setCsvFile(null);
+      
+    } catch (err) {
+      setError('Failed to upload CSV. Please try again.');
+      console.error('CSV upload error:', err);
+    } finally {
+      setCsvUploading(false);
+    }
+  };
+
+  const downloadCsvTemplate = () => {
+    const csvContent = 'platform,username,password,notes\nreddit,example_user,example_password,Optional notes\n';
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'accounts_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <PageLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Social Accounts</h1>
-            <p className="text-gray-600">Manage your social media accounts for automated posting</p>
+      <div className="flex gap-8">
+        {/* Main Content */}
+        <div className="flex-1 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Social Accounts</h1>
+              <p className="text-gray-600">Manage your social media accounts for automated posting</p>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline"
+                onClick={() => setShowCsvUpload(true)}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload CSV
+              </Button>
+              
+              <Button 
+                onClick={() => setShowAddForm(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Account
+              </Button>
+            </div>
           </div>
-          
-          <Button 
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Account
-          </Button>
-        </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center">
-            <AlertCircle className="w-5 h-5 mr-2" />
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center">
+              <AlertCircle className="w-5 h-5 mr-2" />
+              {error}
+            </div>
+          )}
 
         {/* Add Account Form */}
         {showAddForm && (
@@ -255,7 +333,7 @@ export default function Accounts() {
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
                       <Plus className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -336,7 +414,7 @@ export default function Accounts() {
                     <Button 
                       onClick={addAccount}
                       disabled={loading || !newAccount.username || !newAccount.password}
-                      className="bg-blue-600 hover:bg-blue-700 px-6"
+                      className="bg-purple-600 hover:bg-blue-700 px-6"
                     >
                       {loading ? (
                         <div className="flex items-center space-x-2">
@@ -347,6 +425,136 @@ export default function Accounts() {
                         <div className="flex items-center space-x-2">
                           <Plus className="w-4 h-4" />
                           <span>Add Account</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* CSV Upload Form */}
+        {showCsvUpload && (
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                      <Upload className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-semibold text-green-900">Upload Accounts CSV</CardTitle>
+                      <p className="text-sm text-green-700 mt-1">Bulk import multiple accounts from a CSV file</p>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* CSV Format Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-2 flex items-center">
+                    <FileText className="w-4 h-4 mr-2" />
+                    CSV Format Requirements
+                  </h4>
+                  <div className="text-sm text-blue-800 space-y-1">
+                    <p><strong>Required columns:</strong> platform, username, password</p>
+                    <p><strong>Optional columns:</strong> notes</p>
+                    <p><strong>Supported platforms:</strong> reddit, twitter, linkedin</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadCsvTemplate}
+                    className="mt-3 text-blue-700 border-blue-300 hover:bg-blue-100"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Template
+                  </Button>
+                </div>
+
+                {/* File Upload */}
+                <div className="space-y-3">
+                  <Label htmlFor="csvFile" className="text-sm font-medium text-gray-700">
+                    Select CSV File
+                  </Label>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      id="csvFile"
+                      type="file"
+                      accept=".csv"
+                      onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                      className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                    />
+                  </div>
+                  {csvFile && (
+                    <p className="text-sm text-gray-600">
+                      Selected: {csvFile.name} ({(csvFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                </div>
+
+                {/* Upload Results */}
+                {csvResults && (
+                  <div className="space-y-3">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h4 className="font-medium text-green-900 mb-2">Upload Results</h4>
+                      <div className="text-sm text-green-800 space-y-1">
+                        <p><strong>Successfully added:</strong> {csvResults.added_accounts?.length || 0} accounts</p>
+                        <p><strong>Errors:</strong> {csvResults.errors?.length || 0}</p>
+                        <p><strong>Total processed:</strong> {csvResults.total_processed || 0} rows</p>
+                      </div>
+                    </div>
+                    
+                    {csvResults.errors && csvResults.errors.length > 0 && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h4 className="font-medium text-red-900 mb-2">Errors</h4>
+                        <div className="text-sm text-red-800 space-y-1 max-h-32 overflow-y-auto">
+                          {csvResults.errors.map((error: string, index: number) => (
+                            <p key={index}>• {error}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-green-200">
+                  <div className="flex items-center space-x-2 text-sm text-green-700">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Passwords will be encrypted securely</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setShowCsvUpload(false);
+                        setCsvFile(null);
+                        setCsvResults(null);
+                        setError('');
+                      }}
+                      className="px-6"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleCsvUpload}
+                      disabled={csvUploading || !csvFile}
+                      className="bg-green-600 hover:bg-green-700 px-6"
+                    >
+                      {csvUploading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Uploading...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Upload className="w-4 h-4" />
+                          <span>Upload CSV</span>
                         </div>
                       )}
                     </Button>
@@ -403,30 +611,30 @@ export default function Accounts() {
             </Card>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {accounts.map((account) => (
-              <Card key={account.id} className="hover:shadow-lg transition-all duration-200 border-gray-200 hover:border-gray-300">
-                <CardHeader className="pb-3">
+              <Card key={account.id} className="hover:shadow-md transition-all duration-200 border-gray-200 hover:border-gray-300">
+                <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
                         {getPlatformIcon(account.platform)}
                       </div>
                       <div>
-                        <CardTitle className="text-lg capitalize font-semibold">{account.platform}</CardTitle>
-                        <p className="text-sm text-gray-500 font-medium">@{account.username}</p>
+                        <CardTitle className="text-base capitalize font-semibold">{account.platform}</CardTitle>
+                        <p className="text-xs text-gray-500 font-medium">@{account.username}</p>
                       </div>
                     </div>
                     {getStatusBadge(account)}
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
                   {/* Account Status Toggle */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Active Status</Label>
-                      <p className="text-xs text-gray-500">Enable for automation</p>
+                      <Label className="text-xs font-medium text-gray-700">Active</Label>
+                      <p className="text-xs text-gray-500">Enable automation</p>
                     </div>
                     <Switch
                       checked={account.is_active}
@@ -435,11 +643,11 @@ export default function Accounts() {
                   </div>
 
                   {/* Account Details */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <Label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Password</Label>
-                        <p className="text-sm font-mono text-gray-900 mt-1">
+                        <p className="text-xs font-mono text-gray-900 mt-1">
                           {showPasswords[account.id] ? account.password || '••••••••' : '••••••••'}
                         </p>
                       </div>
@@ -447,12 +655,12 @@ export default function Accounts() {
                         variant="ghost"
                         size="sm"
                         onClick={() => togglePasswordVisibility(account.id)}
-                        className="p-2 h-8 w-8 hover:bg-gray-100"
+                        className="p-1 h-6 w-6 hover:bg-gray-100"
                       >
                         {showPasswords[account.id] ? (
-                          <EyeOff className="w-4 h-4 text-gray-500" />
+                          <EyeOff className="w-3 h-3 text-gray-500" />
                         ) : (
-                          <Eye className="w-4 h-4 text-gray-500" />
+                          <Eye className="w-3 h-3 text-gray-500" />
                         )}
                       </Button>
                     </div>
@@ -460,28 +668,28 @@ export default function Accounts() {
                     {account.notes && (
                       <div>
                         <Label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notes</Label>
-                        <p className="text-sm text-gray-700 mt-1 bg-gray-50 p-2 rounded text-xs">{account.notes}</p>
+                        <p className="text-xs text-gray-700 mt-1 bg-gray-50 p-2 rounded">{account.notes}</p>
                       </div>
                     )}
 
                     {account.last_used && (
                       <div>
                         <Label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Last Used</Label>
-                        <p className="text-sm text-gray-700 mt-1">{new Date(account.last_used).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-700 mt-1">{new Date(account.last_used).toLocaleDateString()}</p>
                       </div>
                     )}
                   </div>
 
                   {/* Account Actions */}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                     <div className="flex items-center space-x-2">
                       {account.is_verified ? (
-                        <div className="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                        <div className="flex items-center text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           <span className="text-xs font-medium">Verified</span>
                         </div>
                       ) : (
-                        <div className="flex items-center text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                        <div className="flex items-center text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
                           <Clock className="w-3 h-3 mr-1" />
                           <span className="text-xs font-medium">Pending</span>
                         </div>
@@ -492,7 +700,7 @@ export default function Accounts() {
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteAccount(account.id)}
-                      className="text-red-600 hover:bg-red-50 hover:text-red-700 px-3 py-1 h-8"
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700 px-2 py-1 h-7"
                     >
                       <Trash2 className="w-3 h-3 mr-1" />
                       <span className="text-xs">Delete</span>
@@ -504,53 +712,118 @@ export default function Accounts() {
           </div>
         )}
 
-        {/* Info Section */}
-        {accounts.length > 0 && (
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <AlertCircle className="w-5 h-5 text-amber-600" />
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-80 space-y-6">
+          {/* Account Overview */}
+          {accounts.length > 0 && (
+            <Card className="bg-white border-gray-200 sticky top-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Account Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="text-2xl font-bold text-gray-900">{accounts.length}</div>
+                    <div className="text-xs text-gray-600 font-medium">Total</div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-amber-900 mb-3">Security & Usage Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-amber-800">
-                      <div className="space-y-2">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
-                          <div>
-                            <strong>Secure Storage:</strong> All passwords are encrypted using industry-standard encryption
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                          <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
-                          <div>
-                            <strong>Account Verification:</strong> Accounts are verified before automation begins
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
-                          <div>
-                            <strong>Active Control:</strong> Only active accounts participate in automated replies
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                          <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
-                          <div>
-                            <strong>Platform Support:</strong> Reddit available now, Twitter & LinkedIn coming soon
-                          </div>
-                        </div>
-                      </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {accounts.filter(acc => acc.is_active).length}
                     </div>
+                    <div className="text-xs text-gray-600 font-medium">Active</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Verified</span>
+                    <span className="font-medium text-gray-900">
+                      {accounts.filter(acc => acc.is_verified).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Pending</span>
+                    <span className="font-medium text-gray-900">
+                      {accounts.filter(acc => !acc.is_verified).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Reddit</span>
+                    <span className="font-medium text-gray-900">
+                      {accounts.filter(acc => acc.platform === 'reddit').length}
+                    </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
+          )}
+
+          {/* Security Information */}
+          <Card className="bg-white border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
+                <Shield className="w-5 h-5 mr-2 text-gray-600" />
+                Security & Privacy
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Data Protection</h4>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    All account credentials are encrypted using industry-standard AES-256 encryption before storage.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Account Verification</h4>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Accounts are automatically verified to ensure they work correctly before being used for automation.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Access Control</h4>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Only active accounts participate in automated activities. You can disable accounts at any time.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Usage Guidelines */}
+          <Card className="bg-white border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
+                <Settings className="w-5 h-5 mr-2 text-gray-600" />
+                Best Practices
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-xs text-gray-600">Use dedicated accounts for automation</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-xs text-gray-600">Keep credentials up to date</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-xs text-gray-600">Monitor account activity regularly</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-xs text-gray-600">Disable unused accounts</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </PageLayout>
   );
