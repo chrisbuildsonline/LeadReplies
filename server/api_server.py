@@ -12,6 +12,7 @@ import jwt
 import bcrypt
 from datetime import datetime, timedelta
 import os
+import logging
 from dotenv import load_dotenv
 
 from database import Database
@@ -19,13 +20,17 @@ from deepseek_analyzer import DeepSeekAnalyzer
 
 load_dotenv()
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="Reddit Lead Finder API v2")
 security = HTTPBearer()
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["http://localhost:3000", "http://localhost:3050", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,6 +70,15 @@ class SubredditAdd(BaseModel):
 class WebsiteAnalyze(BaseModel):
     website_url: str
 
+class SocialAccountCreate(BaseModel):
+    platform: str
+    username: str
+    password: str
+    notes: Optional[str] = None
+
+class SocialAccountUpdate(BaseModel):
+    is_active: bool
+
 # Helper functions
 def create_jwt_token(user_id: int) -> str:
     payload = {
@@ -82,7 +96,7 @@ def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(securit
         return user_id
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # Routes
@@ -234,6 +248,184 @@ async def remove_subreddit(business_id: int, subreddit_id: int, user_id: int = D
     db.remove_subreddit(subreddit_id, business_id)
     return {"success": True}
 
+# Dashboard endpoint
+@app.get("/api/dashboard")
+async def get_dashboard_data(user_id: int = Depends(verify_jwt_token)):
+    """Get dashboard data including metrics, leads stats, and activity."""
+    try:
+        logger.info(f"Dashboard request for user_id: {user_id}")
+        
+        # Get user's businesses
+        businesses = db.get_user_businesses(user_id)
+        logger.info(f"Found {len(businesses)} businesses for user {user_id}")
+        
+        if not businesses:
+            logger.warning(f"No businesses found for user {user_id}")
+            return {
+                "metrics": {
+                    "totalLeads": 0,
+                    "leadsToday": 0,
+                    "leadsThisWeek": 0,
+                    "highQualityLeads": 0
+                },
+                "platformStats": [],
+                "recentActivity": [],
+                "businessStats": []
+            }
+        
+        # Calculate metrics using simple JOIN query
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        logger.info(f"Calculating metrics for user {user_id} with {len(businesses)} businesses")
+        
+        # Get lead metrics
+        cursor.execute('''
+            SELECT 
+                COUNT(*) as total_leads,
+                COUNT(CASE WHEN DATE(bl.processed_at) = CURRENT_DATE THEN 1 END) as leads_today,
+                COUNT(CASE WHEN bl.processed_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as leads_this_week,
+                COUNT(CASE WHEN bl.ai_score >= 80 THEN 1 END) as high_quality_leads
+            FROM business_leads bl
+            JOIN businesses b ON bl.business_id = b.id
+            WHERE b.user_id = %s
+        ''', (user_id,))
+        
+        result = cursor.fetchone()
+        total_leads = result[0] or 0
+        leads_today = result[1] or 0
+        leads_this_week = result[2] or 0
+        high_quality_leads = result[3] or 0
+        
+        # Get reply metrics
+        cursor.execute('''
+            SELECT 
+                COUNT(CASE WHEN r.status = 'submitted' THEN 1 END) as total_replies_posted,
+                COUNT(CASE WHEN DATE(r.submitted_at) = CURRENT_DATE AND r.status = 'submitted' THEN 1 END) as replies_today,
+                COUNT(CASE WHEN r.submitted_at >= CURRENT_DATE - INTERVAL '7 days' AND r.status = 'submitted' THEN 1 END) as replies_this_week
+            FROM replies r
+            JOIN business_leads bl ON r.business_lead_id = bl.id
+            JOIN businesses b ON bl.business_id = b.id
+            WHERE b.user_id = %s
+        ''', (user_id,))
+        
+        reply_result = cursor.fetchone()
+        total_replies_posted = reply_result[0] or 0
+        replies_today = reply_result[1] or 0
+        replies_this_week = reply_result[2] or 0
+        
+        logger.info(f"Dashboard metrics - Leads: {total_leads}, Replies Posted: {total_replies_posted}, Today: {leads_today}, Week: {leads_this_week}, High Quality: {high_quality_leads}")
+        
+        platform_stats = {}
+        recent_activity = []
+        business_stats = []
+        
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = today - timedelta(days=7)
+        
+        logger.info(f"Today: {today}, Week ago: {week_ago}")
+        
+        # Get platform stats
+        cursor.execute('''
+            SELECT gl.platform, COUNT(*) as lead_count
+            FROM business_leads bl
+            JOIN global_leads gl ON bl.global_lead_id = gl.id
+            JOIN businesses b ON bl.business_id = b.id
+            WHERE b.user_id = %s
+            GROUP BY gl.platform
+        ''', (user_id,))
+        platform_results = cursor.fetchall()
+        
+        for platform, count in platform_results:
+            platform_stats[platform] = {
+                'leads': count,
+                'businesses': len(businesses)
+            }
+        
+        # Get recent activity (last 10 leads)
+        cursor.execute('''
+            SELECT bl.id, b.name as business_name, gl.title, gl.platform, bl.ai_score, bl.processed_at
+            FROM business_leads bl
+            JOIN businesses b ON bl.business_id = b.id
+            JOIN global_leads gl ON bl.global_lead_id = gl.id
+            WHERE b.user_id = %s
+            ORDER BY bl.processed_at DESC
+            LIMIT 10
+        ''', (user_id,))
+        activity_results = cursor.fetchall()
+        
+        for row in activity_results:
+            recent_activity.append({
+                'id': row[0],
+                'business': row[1],
+                'title': row[2][:50] + '...' if len(row[2]) > 50 else row[2],
+                'platform': row[3],
+                'score': row[4],
+                'processed_at': row[5]
+            })
+        
+        # Get individual business stats
+        cursor.execute('''
+            SELECT 
+                b.id,
+                b.name,
+                COUNT(bl.id) as total,
+                COUNT(CASE WHEN DATE(bl.processed_at) = CURRENT_DATE THEN 1 END) as today,
+                COUNT(CASE WHEN bl.processed_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as week,
+                COUNT(CASE WHEN bl.ai_score >= 80 THEN 1 END) as high_quality
+            FROM businesses b
+            LEFT JOIN business_leads bl ON b.id = bl.business_id
+            WHERE b.user_id = %s
+            GROUP BY b.id, b.name
+            ORDER BY b.name
+        ''', (user_id,))
+        
+        business_results = cursor.fetchall()
+        for row in business_results:
+            business_stats.append({
+                'id': row[0],
+                'name': row[1],
+                'totalLeads': row[2] or 0,
+                'leadsToday': row[3] or 0,
+                'leadsThisWeek': row[4] or 0,
+                'highQualityLeads': row[5] or 0
+            })
+        
+        conn.close()
+        
+        # Format platform stats
+        formatted_platform_stats = []
+        for platform, stats in platform_stats.items():
+            formatted_platform_stats.append({
+                'platform': platform,
+                'leads': stats['leads'],
+                'businesses': stats['businesses']
+            })
+        
+        # Sort recent activity by processed_at
+        recent_activity.sort(key=lambda x: x['processed_at'], reverse=True)
+        
+        return {
+            "metrics": {
+                "totalLeads": total_leads,
+                "leadsToday": leads_today,
+                "leadsThisWeek": leads_this_week,
+                "highQualityLeads": high_quality_leads,
+                "totalRepliesPosted": total_replies_posted,
+                "repliesToday": replies_today,
+                "repliesThisWeek": replies_this_week
+            },
+            "platformStats": formatted_platform_stats,
+            "recentActivity": recent_activity[:10],
+            "businessStats": business_stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Dashboard error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to load dashboard data")
+
 # Leads management
 @app.get("/api/businesses/{business_id}/leads")
 async def get_business_leads(business_id: int, limit: int = 50, user_id: int = Depends(verify_jwt_token)):
@@ -244,6 +436,304 @@ async def get_business_leads(business_id: int, limit: int = 50, user_id: int = D
     
     leads = db.get_business_leads(business_id, limit)
     return {"leads": leads, "total": len(leads)}
+
+# Reply management endpoints
+@app.post("/api/replies")
+async def create_reply(
+    business_lead_id: int, 
+    reply_content: str, 
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Create a new AI reply for a business lead."""
+    try:
+        # Verify the business lead belongs to the user
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT bl.id FROM business_leads bl
+            JOIN businesses b ON bl.business_id = b.id
+            WHERE bl.id = %s AND b.user_id = %s
+        ''', (business_lead_id, user_id))
+        
+        if not cursor.fetchone():
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Business lead not found")
+        
+        cursor.close()
+        conn.close()
+        
+        # Create the reply
+        reply_id = db.add_reply(business_lead_id, user_id, reply_content)
+        
+        if reply_id:
+            return {"reply_id": reply_id, "status": "created"}
+        else:
+            raise HTTPException(status_code=400, detail="Reply already exists for this lead")
+            
+    except Exception as e:
+        logger.error(f"Create reply error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create reply")
+
+@app.put("/api/replies/{reply_id}/status")
+async def update_reply_status(
+    reply_id: int,
+    status: str,
+    platform_reply_id: str = None,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update reply status (pending -> submitted -> posted)."""
+    try:
+        # Verify the reply belongs to the user
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT r.id FROM replies r
+            JOIN business_leads bl ON r.business_lead_id = bl.id
+            JOIN businesses b ON bl.business_id = b.id
+            WHERE r.id = %s AND b.user_id = %s
+        ''', (reply_id, user_id))
+        
+        if not cursor.fetchone():
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Reply not found")
+        
+        cursor.close()
+        conn.close()
+        
+        # Update the reply status
+        success = db.update_reply_status(reply_id, status, platform_reply_id)
+        
+        if success:
+            return {"success": True, "status": status}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to update reply status")
+            
+    except Exception as e:
+        logger.error(f"Update reply status error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update reply status")
+
+@app.get("/api/replies")
+async def get_user_replies(
+    status: str = None,
+    limit: int = 50,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Get replies for the current user."""
+    try:
+        replies = db.get_user_replies(user_id, status, limit)
+        return {"replies": replies}
+        
+    except Exception as e:
+        logger.error(f"Get replies error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get replies")
+
+# Platform settings endpoints
+@app.get("/api/platforms/settings")
+async def get_platform_settings(user_id: int = Depends(verify_jwt_token)):
+    """Get all platform settings for the current user."""
+    try:
+        settings = db.get_user_platform_settings(user_id)
+        return {"settings": settings}
+        
+    except Exception as e:
+        logger.error(f"Get platform settings error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get platform settings")
+
+@app.get("/api/platforms/{platform_id}/settings")
+async def get_platform_setting(
+    platform_id: str,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Get specific platform setting for the current user."""
+    try:
+        setting = db.get_platform_setting(user_id, platform_id)
+        if not setting:
+            # Return default settings if none exist
+            return {
+                "platform_id": platform_id,
+                "is_active": platform_id == "reddit",  # Reddit active by default
+                "auto_reply": False,
+                "confidence_threshold": 80,
+                "write_reply_suggestion": False
+            }
+        return setting
+        
+    except Exception as e:
+        logger.error(f"Get platform setting error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get platform setting")
+
+@app.put("/api/platforms/{platform_id}/settings")
+async def update_platform_setting(
+    platform_id: str,
+    settings: dict,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update platform settings for the current user."""
+    try:
+        # Validate platform_id
+        valid_platforms = ['reddit', 'twitter', 'linkedin']
+        if platform_id not in valid_platforms:
+            raise HTTPException(status_code=400, detail="Invalid platform ID")
+        
+        # Extract settings from request
+        is_active = settings.get('isActive')
+        auto_reply = settings.get('autoReply')
+        confidence_threshold = settings.get('confidenceThreshold')
+        write_reply_suggestion = settings.get('writeReplySuggestion')
+        
+        # Validate confidence threshold
+        if confidence_threshold is not None:
+            if not isinstance(confidence_threshold, int) or confidence_threshold < 50 or confidence_threshold > 100:
+                raise HTTPException(status_code=400, detail="Confidence threshold must be between 50 and 100")
+        
+        # Update settings
+        success = db.update_platform_setting(
+            user_id=user_id,
+            platform_id=platform_id,
+            is_active=is_active,
+            auto_reply=auto_reply,
+            confidence_threshold=confidence_threshold,
+            write_reply_suggestion=write_reply_suggestion
+        )
+        
+        if success:
+            return {"success": True, "message": "Platform settings updated successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to update platform settings")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update platform setting error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update platform settings")
+
+# Social Accounts endpoints
+@app.get("/api/accounts")
+async def get_social_accounts(user_id: int = Depends(verify_jwt_token)):
+    """Get all social accounts for the authenticated user"""
+    accounts = db.get_user_social_accounts(user_id)
+    return {"accounts": accounts}
+
+@app.post("/api/accounts")
+async def create_social_account(
+    account: SocialAccountCreate,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Create a new social media account"""
+    account_id = db.add_social_account(
+        user_id=user_id,
+        platform=account.platform,
+        username=account.username,
+        password=account.password,
+        notes=account.notes
+    )
+    
+    if account_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Account with this username already exists for this platform"
+        )
+    
+    return {"message": "Account created successfully", "account_id": account_id}
+
+@app.put("/api/accounts/{account_id}/status")
+async def update_account_status(
+    account_id: int,
+    update: SocialAccountUpdate,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update the active status of a social account"""
+    success = db.update_social_account_status(account_id, user_id, update.is_active)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Account not found")
+    
+    return {"message": "Account status updated successfully"}
+
+@app.delete("/api/accounts/{account_id}")
+async def delete_social_account(
+    account_id: int,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Delete a social media account"""
+    success = db.delete_social_account(account_id, user_id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Account not found")
+    
+    return {"message": "Account deleted successfully"}
+
+@app.get("/api/platforms")
+async def get_available_platforms():
+    """Get list of available platforms and their status."""
+    platforms = [
+        {
+            "id": "reddit",
+            "name": "Reddit",
+            "description": "Track leads from Reddit posts and comments",
+            "isAvailable": True,
+            "icon": "reddit"
+        },
+        {
+            "id": "twitter", 
+            "name": "Twitter/X",
+            "description": "Track leads from Twitter posts and mentions",
+            "isAvailable": False,
+            "icon": "twitter"
+        },
+        {
+            "id": "linkedin",
+            "name": "LinkedIn", 
+            "description": "Track leads from LinkedIn posts and comments",
+            "isAvailable": False,
+            "icon": "linkedin"
+        }
+    ]
+    
+    return {"platforms": platforms}
+
+@app.get("/api/scraper/status")
+async def get_scraper_status(user_id: int = Depends(verify_jwt_token)):
+    """Get the current status of the scraper service"""
+    try:
+        # Check last scrape activity from database
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT MAX(scraped_at) as last_scrape 
+            FROM global_leads 
+            WHERE scraped_at > %s
+        ''', (datetime.now() - timedelta(hours=3),))
+        
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        last_scrape = result[0] if result and result[0] else None
+        recent_activity = last_scrape and (datetime.now() - last_scrape).total_seconds() < 10800  # 3 hours
+        
+        # Simple check - if we have recent scraping activity, consider it active
+        is_active = recent_activity
+        
+        return {
+            "is_active": is_active,
+            "last_scrape": last_scrape.isoformat() if last_scrape else None,
+            "recent_activity": recent_activity,
+            "status_message": "Scraper is active" if is_active else "Scraper offline"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error checking scraper status: {e}")
+        return {
+            "is_active": False,
+            "last_scrape": None,
+            "recent_activity": False,
+            "status_message": "Scraper offline"
+        }
 
 if __name__ == "__main__":
     import uvicorn

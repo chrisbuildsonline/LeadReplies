@@ -1,4 +1,4 @@
-  File "/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/server/api_server.py", line 325
-    @app.post("/api/auth/register")
-                                   ^
+  File "/Users/chrisjohansson/Google Drive/Mild Media/Projekt/Egna Projekt/ongoing/leadreplies/server/api_server.py", line 528
+    Platform settings endpoints
+                               ^
 IndentationError: unindent does not match any outer indentation level

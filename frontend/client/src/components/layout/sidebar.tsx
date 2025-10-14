@@ -10,18 +10,20 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 // Logo placeholder - using div instead of image
 
+import { Users } from "lucide-react";
+
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Businesses", href: "/businesses", icon: Building2 },
-  { name: "Reddit Leads", href: "/reddit-leads", icon: SiReddit },
-  { name: "Analytics", href: "#", icon: BarChart3 },
-  { name: "Platforms", href: "#", icon: Share2 },
+  { name: "Leads", href: "/leads", icon: SiReddit },
+  { name: "Platforms", href: "/platforms", icon: Share2 },
+  { name: "Accounts", href: "/accounts", icon: Users },
 ];
 
 const favoriteItems = [
-  { name: "Active Campaigns", href: "#", current: false },
-  { name: "Top Performers", href: "#", current: false },
-  { name: "Recent Replies", href: "#", current: false },
+  { name: "High Quality Leads", href: "/leads?filter=high", current: false },
+  { name: "Today's Leads", href: "/leads?date=today", current: false },
+  { name: "Recent Activity", href: "/dashboard", current: false },
 ];
 
 export default function Sidebar() {

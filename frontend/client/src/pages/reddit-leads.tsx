@@ -1,15 +1,32 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { useLocation } from 'wouter';
-import PageLayout from '../components/layout/page-layout';
+import { useLocation } from "wouter";
+import PageLayout from "../components/layout/page-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ExternalLink, Play, RefreshCw, TrendingUp, Users, Zap } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertCircle,
+  ExternalLink,
+  TrendingUp,
+  Calendar,
+  BarChart3,
+  Grid3X3,
+  List,
+  MessageSquare,
+} from "lucide-react";
 import { SiReddit } from "react-icons/si";
 
-const API_URL = '';
+const API_URL = "";
 
 interface Lead {
   id: string;
@@ -43,44 +60,55 @@ interface LeadsResponse {
   total: number;
 }
 
-export default function RedditLeads() {
+export default function LeadsDashboard() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(null);
-  const [selectedFilter, setSelectedFilter] = useState<"all" | "high" | "medium">("high");
-  const [dateFilter, setDateFilter] = useState('all');
+  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(
+    null
+  );
+  const [selectedFilter, setSelectedFilter] = useState<
+    "all" | "high" | "medium"
+  >("high");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     fetchBusinesses();
   }, []);
 
-  // Fetch leads based on filter
-  const getMinProbability = () => {
+  // Filter leads based on score ranges
+  const filterByScoreRange = (leads: Lead[]) => {
     switch (selectedFilter) {
-      case "high": return 70;
-      case "medium": return 40;
-      case "all": return 0;
-      default: return 70;
+      case "high":
+        return leads.filter((lead) => lead.ai_score >= 80);
+      case "medium":
+        return leads.filter((lead) => lead.ai_score < 80);
+      case "all":
+        return leads;
+      default:
+        return leads.filter((lead) => lead.ai_score >= 80);
     }
   };
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      setLocation('/login');
-      return {};
+      setLocation("/login");
+      return undefined;
     }
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     };
   };
 
   const fetchBusinesses = async () => {
     try {
+      const headers = getAuthHeaders();
+      if (!headers) return;
+
       const response = await fetch(`${API_URL}/api/businesses`, {
-        headers: getAuthHeaders(),
+        headers,
       });
 
       if (response.ok) {
@@ -90,76 +118,153 @@ export default function RedditLeads() {
           setSelectedBusinessId(data.businesses[0].id);
         }
       } else if (response.status === 401) {
-        setLocation('/login');
+        setLocation("/login");
       }
     } catch (err) {
-      console.error('Failed to fetch businesses');
+      console.error("Failed to fetch businesses");
     }
   };
 
-  // Fetch leads using React Query
-  const { data: leadsData, isLoading: leadsLoading, error: leadsError } = useQuery<LeadsResponse>({
-    queryKey: [`/api/businesses/${selectedBusinessId}/leads`, selectedFilter, dateFilter],
-    queryFn: async () => {
-      if (!selectedBusinessId) throw new Error('No business selected');
-      
-      const response = await fetch(`${API_URL}/api/businesses/${selectedBusinessId}/leads?limit=100`, {
-        headers: getAuthHeaders(),
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          setLocation('/login');
+  // Fetch ALL leads for metrics (unfiltered)
+  const { data: allLeadsData, isLoading: allLeadsLoading } =
+    useQuery<LeadsResponse>({
+      queryKey: [`/api/businesses/${selectedBusinessId}/leads/all`],
+      queryFn: async () => {
+        if (!selectedBusinessId) throw new Error("No business selected");
+
+        const headers = getAuthHeaders();
+        if (!headers) throw new Error("No auth token");
+
+        const response = await fetch(
+          `${API_URL}/api/businesses/${selectedBusinessId}/leads?limit=1000`,
+          {
+            headers,
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            setLocation("/login");
+          }
+          throw new Error("Failed to fetch leads");
         }
-        throw new Error('Failed to fetch leads');
-      }
-      
-      const data = await response.json();
-      
-      // Filter by minimum probability and date on frontend
-      let filteredLeads = (data.leads || []).filter(
-        (lead: Lead) => lead.ai_score >= getMinProbability()
+
+        const data = await response.json();
+        return { leads: data.leads || [], total: (data.leads || []).length };
+      },
+      enabled: !!selectedBusinessId,
+      refetchInterval: 30000,
+    });
+
+  // Fetch filtered leads for display
+  const {
+    data: leadsData,
+    isLoading: leadsLoading,
+    error: leadsError,
+  } = useQuery<LeadsResponse>({
+    queryKey: [
+      `/api/businesses/${selectedBusinessId}/leads`,
+      selectedFilter,
+      dateFilter,
+    ],
+    queryFn: async () => {
+      if (!selectedBusinessId) throw new Error("No business selected");
+
+      const headers = getAuthHeaders();
+      if (!headers) throw new Error("No auth token");
+
+      const response = await fetch(
+        `${API_URL}/api/businesses/${selectedBusinessId}/leads?limit=100`,
+        {
+          headers,
+        }
       );
 
+      if (!response.ok) {
+        if (response.status === 401) {
+          setLocation("/login");
+        }
+        throw new Error("Failed to fetch leads");
+      }
+
+      const data = await response.json();
+
+      // Filter by score range and date on frontend
+      let filteredLeads = filterByScoreRange(data.leads || []);
+
       // Apply date filter
-      if (dateFilter !== 'all') {
+      if (dateFilter !== "all") {
         const now = new Date();
         const filterDate = new Date();
-        
+
         switch (dateFilter) {
-          case 'today':
+          case "today":
             filterDate.setHours(0, 0, 0, 0);
             break;
-          case 'week':
+          case "week":
             filterDate.setDate(now.getDate() - 7);
             break;
-          case 'month':
+          case "month":
             filterDate.setMonth(now.getMonth() - 1);
             break;
-          case '3months':
+          case "3months":
             filterDate.setMonth(now.getMonth() - 3);
             break;
         }
-        
+
         filteredLeads = filteredLeads.filter((lead: Lead) => {
           const leadDate = new Date(lead.processed_at);
           return leadDate >= filterDate;
         });
       }
-      
+
       return { leads: filteredLeads, total: filteredLeads.length };
     },
     enabled: !!selectedBusinessId,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const getProbabilityColor = (probability: number) => {
-    if (probability >= 80) return "bg-red-100 text-red-800 border-red-200";
-    if (probability >= 70) return "bg-orange-100 text-orange-800 border-orange-200";
-    if (probability >= 60) return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    if (probability >= 40) return "bg-blue-100 text-blue-800 border-blue-200";
-    return "bg-gray-100 text-gray-800 border-gray-200";
+  // Calculate dashboard metrics from ALL leads (not filtered)
+  const getDashboardMetrics = () => {
+    if (!allLeadsData?.leads)
+      return { today: 0, thisWeek: 0, highQuality: 0, platforms: {} };
+
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const weekAgo = new Date();
+    weekAgo.setDate(now.getDate() - 7);
+
+    let todayCount = 0;
+    let thisWeekCount = 0;
+    let highQualityCount = 0;
+    const platforms: Record<string, number> = {};
+
+    // Use ALL leads for metrics, not filtered leads
+    allLeadsData.leads.forEach((lead) => {
+      const leadDate = new Date(lead.processed_at);
+
+      // Count by date
+      if (leadDate >= today) todayCount++;
+      if (leadDate >= weekAgo) thisWeekCount++;
+
+      // Count high quality (80%+)
+      if (lead.ai_score >= 80) highQualityCount++;
+
+      // Count by platform
+      platforms[lead.platform] = (platforms[lead.platform] || 0) + 1;
+    });
+
+    return {
+      today: todayCount,
+      thisWeek: thisWeekCount,
+      highQuality: highQualityCount,
+      platforms,
+    };
   };
+
+  const metrics = getDashboardMetrics();
 
   const getProbabilityEmoji = (probability: number) => {
     if (probability >= 80) return "🔥";
@@ -172,15 +277,15 @@ export default function RedditLeads() {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}d ago`;
   };
-
-  const selectedBusiness = businesses.find(b => b.id === selectedBusinessId);
 
   if (leadsError) {
     return (
@@ -188,8 +293,12 @@ export default function RedditLeads() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Reddit Leads</h1>
-            <p className="text-gray-600">Failed to load Reddit leads data. Please try again.</p>
+            <h1 className="text-xl font-semibold text-gray-900 mb-2">
+              Error Loading Dashboard
+            </h1>
+            <p className="text-gray-600">
+              Failed to load leads data. Please try again.
+            </p>
           </div>
         </div>
       </PageLayout>
@@ -201,12 +310,14 @@ export default function RedditLeads() {
       <PageLayout>
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">🏢</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No businesses found</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            No businesses found
+          </h2>
           <p className="text-gray-600 mb-6">
             You need to create a business first to view leads.
           </p>
           <button
-            onClick={() => setLocation('/businesses')}
+            onClick={() => setLocation("/businesses")}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           >
             Create Your First Business
@@ -222,16 +333,22 @@ export default function RedditLeads() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Reddit Leads</h1>
-            <p className="text-gray-600">AI-powered lead discovery from Reddit conversations</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Lead Dashboard
+            </h1>
+            <p className="text-gray-600">
+              AI-powered lead discovery across multiple platforms
+            </p>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">Business:</label>
+            <label className="text-sm font-medium text-gray-700">
+              Business:
+            </label>
             <select
-              value={selectedBusinessId || ''}
+              value={selectedBusinessId || ""}
               onChange={(e) => setSelectedBusinessId(Number(e.target.value))}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
               {businesses.map((business) => (
                 <option key={business.id} value={business.id}>
@@ -242,70 +359,85 @@ export default function RedditLeads() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <SiReddit className="w-6 h-6 text-orange-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Leads</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {leadsLoading ? <Skeleton className="h-8 w-16" /> : leadsData?.total || 0}
-                  </p>
-                </div>
+        {/* Dashboard Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Leads Today */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Leads Today
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {allLeadsLoading ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  metrics.today
+                )}
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                New opportunities discovered
+              </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-red-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">High Quality</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {leadsLoading ? <Skeleton className="h-8 w-16" /> : 
-                     selectedFilter === "high" ? leadsData?.total || 0 : "N/A"}
-                  </p>
-                </div>
+          {/* Leads This Week */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Leads This Week
+              </CardTitle>
+              <BarChart3 className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {allLeadsLoading ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  metrics.thisWeek
+                )}
               </div>
+              <p className="text-xs text-gray-500 mt-1">Last 7 days activity</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Business</p>
-                  <p className="text-sm font-bold text-gray-900">
-                    {selectedBusiness?.name || 'None'}
-                  </p>
-                </div>
+          {/* High Quality Leads */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                High Quality (80%+)
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {allLeadsLoading ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  metrics.highQuality
+                )}
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Premium opportunities
+              </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Zap className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Filter</p>
-                  <p className="text-sm font-bold text-gray-900">
-                    {selectedFilter === 'high' ? '70%+' : selectedFilter === 'medium' ? '40%+' : 'All'}
-                  </p>
-                </div>
+          {/* All Replies Posted (Future Feature) */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                All Replies Posted
+              </CardTitle>
+              <MessageSquare className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                Coming Soon
               </div>
+              <p className="text-xs text-gray-500 mt-1">Track your responses</p>
             </CardContent>
           </Card>
         </div>
@@ -314,9 +446,9 @@ export default function RedditLeads() {
         <div className="flex items-center justify-between">
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
             {[
-              { key: "high", label: "High Quality (70%+)" },
-              { key: "medium", label: "Medium Quality (40%+)" },
-              { key: "all", label: "All Leads" }
+              { key: "high", label: "High Quality (80-100%)" },
+              { key: "medium", label: "Medium Quality (0-79%)" },
+              { key: "all", label: "All Leads" },
             ].map((filter) => (
               <button
                 key={filter.key}
@@ -332,118 +464,296 @@ export default function RedditLeads() {
             ))}
           </div>
 
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Date:</label>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm"
-            >
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="week">Last Week</option>
-              <option value="month">Last Month</option>
-              <option value="3months">Last 3 Months</option>
-            </select>
+          <div className="flex items-center space-x-4">
+            {/* View Mode Toggle */}
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">View:</label>
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "cards"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  title="Card View"
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "table"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  title="Table View"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Date Filter */}
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Date:</label>
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+              >
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">Last Week</option>
+                <option value="month">Last Month</option>
+                <option value="3months">Last 3 Months</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Leads Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {leadsLoading ? (
-            Array.from({ length: 12 }).map((_, i) => (
-              <Card key={i} className="h-80">
-                <CardContent className="p-4">
-                  <Skeleton className="h-4 w-16 mb-2" />
-                  <Skeleton className="h-5 w-full mb-3" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-3/4 mb-4" />
-                  <Skeleton className="h-20 w-full mb-3" />
-                  <Skeleton className="h-8 w-full" />
-                </CardContent>
-              </Card>
-            ))
-          ) : leadsData?.leads.length === 0 ? (
-            <div className="col-span-full">
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <SiReddit className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No leads found</h3>
-                  <p className="text-gray-600 mb-4">Try adjusting your filters or check back later.</p>
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            leadsData?.leads.map((lead) => (
-              <Card key={lead.id} className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1 h-fit">
-                <CardContent className="p-4">
-                  {/* Header with probability and subreddit */}
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge className={`${getProbabilityColor(lead.ai_score)} border text-xs`}>
-                      {getProbabilityEmoji(lead.ai_score)} {lead.ai_score}%
-                    </Badge>
-                    <Badge variant="outline" className="text-orange-600 border-orange-200 text-xs">
-                      r/{lead.subreddit}
-                    </Badge>
-                  </div>
-                  
-                  {/* Title */}
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                    {lead.title}
-                  </h3>
-                  
-                  {/* Meta info */}
-                  <div className="text-xs text-gray-500 mb-3">
-                    u/{lead.author} • {formatTimeAgo(lead.created_at)} • {lead.score} ↑
-                  </div>
-                  
-                  {/* Content preview */}
-                  {lead.content && (
-                    <p className="text-xs text-gray-600 mb-3 line-clamp-3 leading-relaxed">
-                      {lead.content}
+        {/* Leads Display */}
+        {viewMode === "cards" ? (
+          /* Cards View */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {leadsLoading ? (
+              Array.from({ length: 12 }).map((_, i) => (
+                <Card key={i} className="h-80">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-4 w-16 mb-2" />
+                    <Skeleton className="h-5 w-full mb-3" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-3/4 mb-4" />
+                    <Skeleton className="h-20 w-full mb-3" />
+                    <Skeleton className="h-8 w-full" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : leadsData?.leads.length === 0 ? (
+              <div className="col-span-full">
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <SiReddit className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No leads found
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Try adjusting your filters or check back later.
                     </p>
-                  )}
-                  
-                  {/* AI Analysis */}
-                  {lead.ai_reasoning && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-3">
-                      <p className="text-xs text-blue-800 line-clamp-2">
-                        <strong>AI:</strong> {lead.ai_reasoning}
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              leadsData?.leads.map((lead) => (
+                <Card
+                  key={lead.id}
+                  className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1 h-fit"
+                >
+                  <CardContent className="p-4">
+                    {/* Header with probability and subreddit */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center text-xs font-medium">
+                        <span className="mr-1">
+                          {getProbabilityEmoji(lead.ai_score)}
+                        </span>
+                        <span className="text-gray-900">{lead.ai_score}%</span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="text-orange-600 border-orange-200 text-xs"
+                      >
+                        r/{lead.subreddit}
+                      </Badge>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                      {lead.title}
+                    </h3>
+
+                    {/* Meta info */}
+                    <div className="text-xs text-gray-500 mb-3">
+                      u/{lead.author} • {formatTimeAgo(lead.created_at)} •{" "}
+                      {lead.score} ↑
+                    </div>
+
+                    {/* Content preview */}
+                    {lead.content && (
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-3 leading-relaxed">
+                        {lead.content}
                       </p>
+                    )}
+
+                    {/* AI Analysis */}
+                    {lead.ai_reasoning && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-3">
+                        <p className="text-xs text-blue-800 line-clamp-2">
+                          <strong>AI:</strong> {lead.ai_reasoning}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Keywords */}
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {lead.matched_keywords.slice(0, 3).map((keyword) => (
+                          <Badge
+                            key={keyword}
+                            variant="secondary"
+                            className="text-xs px-2 py-0"
+                          >
+                            {keyword}
+                          </Badge>
+                        ))}
+                        {lead.matched_keywords.length > 3 && (
+                          <Badge
+                            variant="secondary"
+                            className="text-xs px-2 py-0"
+                          >
+                            +{lead.matched_keywords.length - 3}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  
-                  {/* Keywords */}
-                  <div className="mb-3">
-                    <div className="flex flex-wrap gap-1">
-                      {lead.matched_keywords.slice(0, 3).map((keyword) => (
-                        <Badge key={keyword} variant="secondary" className="text-xs px-2 py-0">
-                          {keyword}
-                        </Badge>
-                      ))}
-                      {lead.matched_keywords.length > 3 && (
-                        <Badge variant="secondary" className="text-xs px-2 py-0">
-                          +{lead.matched_keywords.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Action button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(lead.url, '_blank')}
-                    className="w-full text-orange-600 border-orange-200 hover:bg-orange-50 text-xs"
-                  >
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                    View on Reddit
-                  </Button>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+
+                    {/* Action button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(lead.url, "_blank")}
+                      className="w-full text-orange-600 border-orange-200 hover:bg-orange-50 text-xs"
+                    >
+                      <ExternalLink className="w-3 h-3 mr-1" />
+                      View on Reddit
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        ) : (
+          /* Table View */
+          <Card>
+            <CardContent className="p-0">
+              {leadsLoading ? (
+                <div className="p-6">
+                  <Skeleton className="h-8 w-full mb-4" />
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full mb-2" />
+                  ))}
+                </div>
+              ) : leadsData?.leads.length === 0 ? (
+                <div className="p-12 text-center">
+                  <SiReddit className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No leads found
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Try adjusting your filters or check back later.
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16">Score</TableHead>
+                      <TableHead className="w-20">Subreddit</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead className="w-24">Author</TableHead>
+                      <TableHead className="w-20">Date</TableHead>
+                      <TableHead className="w-32">Keywords</TableHead>
+                      <TableHead className="w-32">AI Analysis</TableHead>
+                      <TableHead className="w-20">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leadsData?.leads.map((lead) => (
+                      <TableRow key={lead.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <div className="flex items-center text-xs font-medium">
+                            <span className="mr-1">
+                              {getProbabilityEmoji(lead.ai_score)}
+                            </span>
+                            <span className="text-gray-900">
+                              {lead.ai_score}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="text-orange-600 border-orange-200 text-xs"
+                          >
+                            r/{lead.subreddit}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-md">
+                          <div>
+                            <h4 className="font-medium text-sm text-gray-900 line-clamp-2 mb-1">
+                              {lead.title}
+                            </h4>
+                            {lead.content && (
+                              <p className="text-xs text-gray-600 line-clamp-2">
+                                {lead.content}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          u/{lead.author}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {formatTimeAgo(lead.created_at)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {lead.matched_keywords
+                              .slice(0, 2)
+                              .map((keyword) => (
+                                <Badge
+                                  key={keyword}
+                                  variant="secondary"
+                                  className="text-xs px-2 py-0"
+                                >
+                                  {keyword}
+                                </Badge>
+                              ))}
+                            {lead.matched_keywords.length > 2 && (
+                              <Badge
+                                variant="secondary"
+                                className="text-xs px-2 py-0"
+                              >
+                                +{lead.matched_keywords.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-xs">
+                          {lead.ai_reasoning && (
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {lead.ai_reasoning}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(lead.url, "_blank")}
+                            className="text-orange-600 border-orange-200 hover:bg-orange-50 text-xs"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PageLayout>
   );

@@ -5,10 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
-import RedditLeads from "@/pages/reddit-leads";
+import LeadsDashboard from "@/pages/reddit-leads";
 import Login from "@/pages/login";
 import Businesses from "@/pages/businesses";
 import BusinessEdit from "@/pages/business-edit";
+import Platforms from "@/pages/platforms";
+import Accounts from "@/pages/accounts";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,7 +21,9 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/businesses" component={Businesses} />
       <Route path="/businesses/:id/edit" component={BusinessEdit} />
-      <Route path="/reddit-leads" component={RedditLeads} />
+      <Route path="/leads" component={LeadsDashboard} />
+      <Route path="/platforms" component={Platforms} />
+      <Route path="/accounts" component={Accounts} />
       <Route component={NotFound} />
     </Switch>
   );

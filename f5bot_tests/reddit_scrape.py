@@ -2,16 +2,28 @@
 """
 Reddit scraper based on F5Bot approach from https://intoli.com/blog/f5bot/
 This implements the techniques described in the blog post for reliable Reddit scraping.
+Updated to save data to PostgreSQL database.
 """
 
 import requests
 import json
 import time
 import random
+import sys
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import urllib.parse
 from dataclasses import dataclass
+
+# Add server directory to path for database imports
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'server'))
+
+try:
+    from database import Database
+except ImportError:
+    print("❌ Could not import database module. Make sure you're running from the correct directory.")
+    sys.exit(1)
 
 @dataclass
 class RedditPost:
@@ -511,6 +523,52 @@ class F5BotRedditScraper:
         
         return [post for post, relevance in posts_with_relevance]
 
+def save_posts_to_database(posts: List[RedditPost]) -> int:
+    """Save Reddit posts to PostgreSQL database."""
+    if not posts:
+        return 0
+    
+    print(f"\n💾 Saving {len(posts)} posts to PostgreSQL database...")
+    
+    try:
+        db = Database()
+        saved_count = 0
+        
+        for post in posts:
+            try:
+                # Save to global_leads table
+                lead_id = db.add_global_lead(
+                    platform='reddit',
+                    platform_id=post.id,
+                    title=post.title,
+                    content=post.content,
+                    author=post.author,
+                    url=post.permalink,
+                    subreddit=post.subreddit,
+                    score=post.score
+                )
+                
+                if lead_id:
+                    saved_count += 1
+                    print(f"  ✅ Saved: {post.title[:50]}... (ID: {lead_id})")
+                else:
+                    print(f"  ⚠️  Duplicate: {post.title[:50]}...")
+                    
+            except Exception as e:
+                print(f"  ❌ Error saving post: {str(e)}")
+                continue
+        
+        print(f"\n📊 Database Save Results:")
+        print(f"  Total posts: {len(posts)}")
+        print(f"  Successfully saved: {saved_count}")
+        print(f"  Duplicates/errors: {len(posts) - saved_count}")
+        
+        return saved_count
+        
+    except Exception as e:
+        print(f"❌ Database error: {str(e)}")
+        return 0
+
 def test_f5bot_scraper():
     """Test the F5Bot scraper with multiple keywords."""
     print("🤖 F5BOT REDDIT SCRAPER TEST - MULTIPLE KEYWORDS")
@@ -582,6 +640,13 @@ def test_f5bot_scraper():
         print(f"✅ Keyword matching: Shows which keywords matched each post")
         print(f"✅ Relevance filtering: Applied")
         print(f"✅ Deduplication: Applied")
+        
+        # Save posts to PostgreSQL database
+        if posts:
+            saved_count = save_posts_to_database(posts)
+            print(f"\n💾 DATABASE INTEGRATION:")
+            print(f"✅ PostgreSQL connection: Working")
+            print(f"✅ Posts saved: {saved_count}/{len(posts)}")
         
         return len(posts) > 0
         
