@@ -121,6 +121,28 @@ def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(securit
 async def root():
     return {"message": "Reddit Lead Finder API v2", "status": "running"}
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker and Coolify"""
+    try:
+        # Test database connection
+        db.get_connection()
+        return {
+            "status": "healthy",
+            "service": "Reddit Lead Finder API v2",
+            "timestamp": datetime.utcnow().isoformat(),
+            "database": "connected"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=503, detail={
+            "status": "unhealthy",
+            "service": "Reddit Lead Finder API v2",
+            "timestamp": datetime.utcnow().isoformat(),
+            "database": "disconnected",
+            "error": str(e)
+        })
+
 # Authentication endpoints
 @app.post("/api/auth/register")
 async def register(user: UserRegister):

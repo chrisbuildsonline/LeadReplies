@@ -1,0 +1,104 @@
+# Coolify Deployment Configuration
+# This file defines how your Reddit Lead Finder app should be deployed on Coolify
+
+version: '3.8'
+
+# Environment variables that need to be set in Coolify
+# Go to your Coolify project settings and add these environment variables:
+environment:
+  # Required API Keys
+  ANTHROPIC_API_KEY: "your-anthropic-api-key-here"
+  DEEPSEEK_API_KEY: "your-deepseek-api-key-here"
+  DEEPSEEK_BASE_URL: "https://api.deepseek.com/v1"
+  
+  # Database Configuration (Coolify will provide these if using managed PostgreSQL)
+  DB_HOST: "postgres"
+  DB_NAME: "reddit_leads"
+  DB_USER: "postgres"
+  DB_PASSWORD: "your-secure-password-here"
+  DB_PORT: "5432"
+  
+  # Application Configuration
+  BACKEND_PORT: "8001"
+  FRONTEND_PORT: "3000"
+  SCRAPING_INTERVAL_MINUTES: "120"
+  
+  # Optional Reddit API (for enhanced scraping)
+  REDDIT_CLIENT_ID: "your-reddit-client-id"
+  REDDIT_CLIENT_SECRET: "your-reddit-client-secret"
+  REDDIT_USER_AGENT: "Chrome"
+  
+  # Optional OpenRouter (alternative to Anthropic)
+  OPENROUTER_KEY: "your-openrouter-key"
+
+# Services configuration
+services:
+  # PostgreSQL Database (use Coolify's managed PostgreSQL service)
+  database:
+    type: "postgresql"
+    version: "15"
+    persistent_storage: true
+    
+  # Main application (uses docker-compose.yml)
+  app:
+    type: "docker-compose"
+    source: "."
+    dockerfile: "docker-compose.yml"
+    
+    # Health checks
+    health_check:
+      frontend:
+        path: "/"
+        port: 3000
+        interval: 30
+      backend:
+        path: "/health"
+        port: 8001
+        interval: 30
+    
+    # Resource limits
+    resources:
+      memory: "2Gi"
+      cpu: "1000m"
+    
+    # Persistent volumes
+    volumes:
+      - name: "postgres-data"
+        mount_path: "/var/lib/postgresql/data"
+        size: "10Gi"
+      - name: "app-logs"
+        mount_path: "/app/logs"
+        size: "1Gi"
+
+# Deployment strategy
+deployment:
+  strategy: "rolling"
+  max_unavailable: 1
+  
+# Networking
+networking:
+  # Frontend will be accessible via Coolify's proxy
+  frontend:
+    port: 3000
+    public: true
+    domain: "your-domain.com"  # Set your domain in Coolify
+    
+  # Backend API (internal only, accessed through frontend)
+  backend:
+    port: 8001
+    public: false
+
+# Build configuration
+build:
+  # Build context
+  context: "."
+  
+  # Build args (if needed)
+  args:
+    NODE_ENV: "production"
+    
+# Backup configuration (for database)
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: "7d"
