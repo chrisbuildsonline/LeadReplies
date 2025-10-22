@@ -21,6 +21,10 @@ from supabase_auth import SupabaseAuth
 
 load_dotenv()
 
+# Also try to load from server/.env if we're in a Docker container
+if os.path.exists('/app/server/.env'):
+    load_dotenv('/app/server/.env')
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -472,8 +476,37 @@ async def get_business_leads(business_id: int, limit: int = 50, user_id: int = D
 
 if __name__ == "__main__":
     import uvicorn
+    import time
+    
     print("🚀 Starting Reddit Lead Finder API v2...")
+    
+    # Wait for database to be ready
+    max_retries = 30
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            print(f"🔍 Attempting to connect to database (attempt {retry_count + 1}/{max_retries})...")
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+            cursor.close()
+            conn.close()
+            print("✅ Database connection successful!")
+            break
+        except Exception as e:
+            print(f"❌ Database connection failed: {e}")
+            retry_count += 1
+            if retry_count < max_retries:
+                print(f"⏳ Waiting 2 seconds before retry...")
+                time.sleep(2)
+            else:
+                print("💥 Max retries reached. Exiting...")
+                exit(1)
     
     # Get port from environment or use default
     port = int(os.getenv("BACKEND_PORT", 6070))
+    print(f"🌐 Starting server on 0.0.0.0:{port}")
+    
     uvicorn.run(app, host="0.0.0.0", port=port)

@@ -7,10 +7,14 @@ WORKDIR /app
 COPY frontend/package*.json ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci
+# Use npm install instead of npm ci for better compatibility
+RUN npm install --frozen-lockfile || npm install
 
 # Copy source code
 COPY frontend/ ./
+
+# Copy environment file if it exists
+COPY frontend/.env* ./
 
 # Build the application (this creates dist/ and public/ directories)
 RUN npm run build
@@ -24,7 +28,7 @@ WORKDIR /app
 COPY frontend/package*.json ./
 
 # Install all dependencies (vite is needed for dynamic imports in production)
-RUN npm ci && npm cache clean --force
+RUN npm install --production --frozen-lockfile || npm install --production
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist

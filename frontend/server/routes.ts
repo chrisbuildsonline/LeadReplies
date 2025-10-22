@@ -5,21 +5,31 @@ import { redditStorage } from "./reddit-storage";
 import { insertCampaignSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Debug endpoint to check environment variables
+  app.get("/debug/env", (req, res) => {
+    res.json({
+      VITE_API_URL: process.env.VITE_API_URL,
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+    });
+  });
+
   // IMPORTANT: Proxy routes must come FIRST before any other API routes
-  
+
   // Proxy all auth endpoints to the new multi-tenant API
   app.use("/api/auth", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
+      console.log(`🔗 Auth proxy: ${req.method} ${backendUrl}${req.originalUrl}`);
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
-        body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
+        body: req.method !== "GET" ? JSON.stringify(req.body) : undefined,
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -31,16 +41,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy all business endpoints to the new multi-tenant API (catch-all for any business routes)
   app.use("/api/businesses", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
-        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+        body:
+          req.method !== "GET" && req.method !== "DELETE"
+            ? JSON.stringify(req.body)
+            : undefined,
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -52,16 +65,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy replies endpoints to the backend API
   app.use("/api/replies", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
-        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+        body:
+          req.method !== "GET" && req.method !== "DELETE"
+            ? JSON.stringify(req.body)
+            : undefined,
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -73,16 +89,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy platforms endpoints to the backend API
   app.use("/api/platforms", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
-        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+        body:
+          req.method !== "GET" && req.method !== "DELETE"
+            ? JSON.stringify(req.body)
+            : undefined,
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -94,16 +113,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Catch-all proxy for any other API endpoints that should go to the backend
   app.use("/api", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
-        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+        body:
+          req.method !== "GET" && req.method !== "DELETE"
+            ? JSON.stringify(req.body)
+            : undefined,
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -115,15 +137,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy dashboard endpoint to the backend API
   app.get("/api/dashboard", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -157,11 +179,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       const campaign = await storage.updateCampaign(id, updates);
-      
+
       if (!campaign) {
         return res.status(404).json({ message: "Campaign not found" });
       }
-      
+
       res.json(campaign);
     } catch (error) {
       res.status(400).json({ message: "Failed to update campaign" });
@@ -172,11 +194,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteCampaign(id);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "Campaign not found" });
       }
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete campaign" });
@@ -207,16 +229,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy accounts endpoints to the backend API (this should come before the old accounts endpoint)
   app.use("/api/accounts", async (req, res) => {
     try {
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
       const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.authorization || '',
+          "Content-Type": "application/json",
+          Authorization: req.headers.authorization || "",
         },
-        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+        body:
+          req.method !== "GET" && req.method !== "DELETE"
+            ? JSON.stringify(req.body)
+            : undefined,
       });
-      
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
@@ -224,8 +249,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Accounts service unavailable" });
     }
   });
-
-
 
   // Metrics
   app.get("/api/metrics", async (req, res) => {
@@ -251,12 +274,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reddit/leads", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const minProbability = req.query.min_probability ? parseInt(req.query.min_probability as string) : 0;
-      
-      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
-      const response = await fetch(`${backendUrl}/api/leads?limit=${limit}&min_probability=${minProbability}`);
+      const minProbability = req.query.min_probability
+        ? parseInt(req.query.min_probability as string)
+        : 0;
+
+      const backendUrl = process.env.VITE_API_URL || "http://localhost:6070";
+      const response = await fetch(
+        `${backendUrl}/api/leads?limit=${limit}&min_probability=${minProbability}`
+      );
       const data = await response.json();
-      
+
       res.json(data);
     } catch (error) {
       console.error("Reddit leads error:", error);

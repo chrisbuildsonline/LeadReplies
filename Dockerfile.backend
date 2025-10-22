@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir -r server/requirements.txt
 # Copy server code
 COPY server/ /app/server/
 
+# Copy environment file if it exists
+COPY server/.env* /app/server/
+
 # Create logs directory
 RUN mkdir -p /app/logs
 
