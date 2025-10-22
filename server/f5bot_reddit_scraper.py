@@ -56,6 +56,10 @@ class F5BotRedditScraper:
         self.max_delay = 7
         self.request_count = 0
         
+        # Keyword batching parameters for optimal performance
+        self.max_keywords_per_batch = 12  # Optimal batch size for Reddit API
+        self.max_query_length = 1800  # Conservative URL length limit
+        
     def _setup_session(self):
         """Setup session with headers that mimic a real browser."""
         self.session.headers.update({
@@ -92,6 +96,7 @@ class F5BotRedditScraper:
     def search_reddit_for_keywords(self, keywords: List[str], limit: int = 100, time_filter: str = 'week') -> List[RedditPost]:
         """
         Search Reddit for posts containing any of the keywords using F5Bot techniques.
+        Automatically splits large keyword lists into optimal batches.
         
         Args:
             keywords: List of search terms from database
@@ -106,7 +111,11 @@ class F5BotRedditScraper:
         print(f"📝 Keywords: {', '.join(keywords[:5])}{'...' if len(keywords) > 5 else ''}")
         print(f"📊 Limit: {limit}, Time filter: {time_filter}")
         
-        posts = []
+        # Split keywords into optimal batches for large lists
+        keyword_batches = self._split_keywords_into_batches(keywords)
+        print(f"📦 Split into {len(keyword_batches)} batches for optimal performance")
+        
+        all_posts = []
         
         # F5Bot uses multiple search strategies
         search_methods = [
@@ -114,28 +123,37 @@ class F5BotRedditScraper:
             self._search_via_rss_feeds
         ]
         
-        for i, search_method in enumerate(search_methods):
-            try:
-                print(f"\n🔄 Method {i+1}/{len(search_methods)}: {search_method.__name__}")
-                
-                method_posts = search_method(keywords, limit, time_filter)
-                
-                if method_posts:
-                    posts.extend(method_posts)
-                    print(f"  ✅ Found {len(method_posts)} posts")
-                else:
-                    print(f"  ℹ️  No results from this method")
+        for batch_num, keyword_batch in enumerate(keyword_batches, 1):
+            print(f"\n🔄 Processing batch {batch_num}/{len(keyword_batches)} ({len(keyword_batch)} keywords)")
+            
+            batch_posts = []
+            
+            for i, search_method in enumerate(search_methods):
+                try:
+                    print(f"  Method {i+1}/{len(search_methods)}: {search_method.__name__}")
                     
-                # Don't try other methods if we have enough results
-                if len(posts) >= limit:
-                    break
+                    method_posts = search_method(keyword_batch, limit // len(keyword_batches), time_filter)
                     
-            except Exception as e:
-                print(f"  ❌ Method failed: {str(e)}")
-                continue
+                    if method_posts:
+                        batch_posts.extend(method_posts)
+                        print(f"    ✅ Found {len(method_posts)} posts")
+                    else:
+                        print(f"    ℹ️  No results from this method")
+                        
+                except Exception as e:
+                    print(f"    ❌ Method failed: {str(e)}")
+                    continue
+            
+            all_posts.extend(batch_posts)
+            print(f"  📊 Batch {batch_num} total: {len(batch_posts)} posts")
+            
+            # Stop if we have enough results
+            if len(all_posts) >= limit:
+                print(f"  🎯 Reached target limit, stopping early")
+                break
         
         # Remove duplicates and sort by relevance
-        unique_posts = self._deduplicate_posts(posts)
+        unique_posts = self._deduplicate_posts(all_posts)
         unique_posts = self._filter_by_keywords_relevance(unique_posts, keywords)
         
         print(f"\n✅ Total unique posts found: {len(unique_posts)}")
@@ -163,7 +181,7 @@ class F5BotRedditScraper:
                 'type': 'link'
             }
             
-            print(f"  📡 Searching {len(keywords)} keywords via JSON API")
+            print(f"    📡 Searching {len(keywords)} keywords via JSON API")
             
             response = self.session.get(url, params=params, timeout=15)
             
@@ -203,15 +221,15 @@ class F5BotRedditScraper:
                             posts.append(post)
                         
             elif response.status_code == 429:
-                print(f"  ⚠️  Rate limited (429)")
+                print(f"    ⚠️  Rate limited (429)")
                 time.sleep(15)
             elif response.status_code == 403:
-                print(f"  ⚠️  Forbidden (403)")
+                print(f"    ⚠️  Forbidden (403)")
             else:
-                print(f"  ⚠️  HTTP {response.status_code}")
+                print(f"    ⚠️  HTTP {response.status_code}")
                 
         except Exception as e:
-            print(f"  ❌ JSON API error: {str(e)}")
+            print(f"    ❌ JSON API error: {str(e)}")
         
         # Smart delay between requests
         self._smart_delay()
@@ -238,7 +256,7 @@ class F5BotRedditScraper:
                 'limit': min(limit, 100)
             }
             
-            print(f"  📡 Searching {len(keywords)} keywords via RSS")
+            print(f"    📡 Searching {len(keywords)} keywords via RSS")
             
             response = self.session.get(url, params=params, timeout=15)
             
@@ -247,13 +265,13 @@ class F5BotRedditScraper:
                 posts = self._parse_rss_response(response.text, keywords)
                 
             elif response.status_code == 429:
-                print(f"  ⚠️  RSS Rate limited (429)")
+                print(f"    ⚠️  RSS Rate limited (429)")
                 time.sleep(15)
             else:
-                print(f"  ⚠️  RSS HTTP {response.status_code}")
+                print(f"    ⚠️  RSS HTTP {response.status_code}")
                 
         except Exception as e:
-            print(f"  ❌ RSS error: {str(e)}")
+            print(f"    ❌ RSS error: {str(e)}")
         
         # Smart delay
         self._smart_delay()
@@ -426,6 +444,42 @@ class F5BotRedditScraper:
         posts_with_relevance.sort(key=lambda x: x[1], reverse=True)
         
         return [post for post, relevance in posts_with_relevance]
+    
+    def _split_keywords_into_batches(self, keywords: List[str]) -> List[List[str]]:
+        """
+        Split keywords into optimal batches for Reddit API.
+        Considers both keyword count and URL length limits.
+        """
+        if len(keywords) <= self.max_keywords_per_batch:
+            return [keywords]
+        
+        batches = []
+        current_batch = []
+        current_query_length = 0
+        
+        for keyword in keywords:
+            # Estimate query length for this keyword (with quotes and OR operator)
+            keyword_length = len(f'"{keyword}" OR ')
+            
+            # Check if adding this keyword would exceed limits
+            would_exceed_count = len(current_batch) >= self.max_keywords_per_batch
+            would_exceed_length = current_query_length + keyword_length > self.max_query_length
+            
+            if (would_exceed_count or would_exceed_length) and current_batch:
+                # Start new batch
+                batches.append(current_batch)
+                current_batch = [keyword]
+                current_query_length = keyword_length
+            else:
+                # Add to current batch
+                current_batch.append(keyword)
+                current_query_length += keyword_length
+        
+        # Add the last batch if it has keywords
+        if current_batch:
+            batches.append(current_batch)
+        
+        return batches
 
 
 # Function to maintain compatibility with existing background service
