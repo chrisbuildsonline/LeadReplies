@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Background service that runs every hour to:
-1. Scrape Reddit for new leads using database keywords
+1. Scrape Reddit for new leads using database keywords (PostgreSQL)
 2. Process leads for all businesses
 3. Log results
 
 This should be run as a daemon/service to continuously fetch leads.
+Updated: Fixed PostgreSQL compatibility and keyword deduplication.
 """
 
 import sys
@@ -45,10 +46,12 @@ class LeadScrapingService:
         self.db = Database()
         self.ai = DeepSeekAnalyzer()
         self.last_run = None
+        self.version = "2.0-postgresql"  # Version identifier for debugging
         
     def scrape_and_process_leads(self):
         """Main function that scrapes Reddit using F5Bot and processes leads for all businesses."""
         logger.info("🚀 Starting F5Bot lead scraping and processing...")
+        logger.info(f"📋 Service version: {self.version}")
         logger.info("=" * 70)
         
         try:
@@ -80,6 +83,7 @@ class LeadScrapingService:
             if not keywords:
                 logger.warning("⚠️  No keywords found in database - skipping Reddit scraping")
                 logger.info("💡 Add keywords to your businesses to enable lead discovery")
+                logger.info("🚫 F5Bot NOT started - no keywords to search for")
                 return 0
             
             logger.info(f"🔍 F5Bot scraping with {len(keywords)} unique keywords from all businesses")
@@ -92,6 +96,7 @@ class LeadScrapingService:
                 
             if not keywords:
                 logger.warning("⚠️  No valid keywords after filtering - skipping Reddit scraping")
+                logger.info("🚫 F5Bot NOT started - no valid keywords remaining")
                 return 0
             
             # Get scraping interval to determine time range
@@ -99,6 +104,7 @@ class LeadScrapingService:
             days_back = max(1, interval_minutes / (60 * 24))  # Convert minutes to days
             
             # Scrape Reddit using F5Bot
+            logger.info("🤖 Starting F5Bot Reddit scraper...")
             leads = search_reddit_leads_efficient(
                 keywords=keywords,
                 subreddits=None,  # F5Bot searches all subreddits
