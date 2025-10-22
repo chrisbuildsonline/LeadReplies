@@ -6,13 +6,13 @@ WORKDIR /app
 # Copy package files
 COPY frontend/package*.json ./
 
-# Install dependencies
+# Install all dependencies (including dev dependencies for build)
 RUN npm ci
 
 # Copy source code
 COPY frontend/ ./
 
-# Build the application
+# Build the application (this creates dist/ and public/ directories)
 RUN npm run build
 
 # Production stage
@@ -28,6 +28,8 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
+# The vite build creates dist/public, but the server expects server/public
+RUN mkdir -p server && cp -r dist/public server/public
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -43,6 +45,10 @@ EXPOSE 3000
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
+# Set environment variable
+ENV NODE_ENV=production
+ENV PORT=3000
 
 # Start the application
 CMD ["npm", "start"]

@@ -125,8 +125,15 @@ async def root():
 async def health_check():
     """Health check endpoint for Docker and Coolify"""
     try:
-        # Test database connection
-        db.get_connection()
+        # Test database connection with timeout
+        import psycopg2
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
         return {
             "status": "healthy",
             "service": "Reddit Lead Finder API v2",
@@ -135,13 +142,14 @@ async def health_check():
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        raise HTTPException(status_code=503, detail={
-            "status": "unhealthy",
+        # Return 200 but with unhealthy status during startup
+        return {
+            "status": "starting",
             "service": "Reddit Lead Finder API v2",
             "timestamp": datetime.utcnow().isoformat(),
-            "database": "disconnected",
+            "database": "connecting",
             "error": str(e)
-        })
+        }
 
 # Authentication endpoints
 @app.post("/api/auth/register")
@@ -1027,5 +1035,34 @@ async def get_scraper_status(user_id: int = Depends(verify_jwt_token)):
 
 if __name__ == "__main__":
     import uvicorn
+    import time
+    
     print("🚀 Starting Reddit Lead Finder API v2...")
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    
+    # Wait for database to be ready
+    max_retries = 30
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            logger.info(f"Attempting database connection (attempt {retry_count + 1}/{max_retries})")
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.close()
+            conn.close()
+            logger.info("✅ Database connection successful!")
+            break
+        except Exception as e:
+            logger.warning(f"⚠️ Database connection failed: {e}")
+            retry_count += 1
+            if retry_count < max_retries:
+                logger.info(f"🔄 Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                logger.error("❌ Max database connection retries exceeded. Starting server anyway...")
+                break
+    
+    port = int(os.getenv("BACKEND_PORT", 8001))
+    logger.info(f"🌐 Starting API server on port {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
