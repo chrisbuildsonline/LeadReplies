@@ -10,7 +10,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy all auth endpoints to the new multi-tenant API
   app.use("/api/auth", async (req, res) => {
     try {
-      const response = await fetch(`http://localhost:6070${req.originalUrl}`, {
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
           'Content-Type': 'application/json',
@@ -30,7 +31,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy all business endpoints to the new multi-tenant API (catch-all for any business routes)
   app.use("/api/businesses", async (req, res) => {
     try {
-      const response = await fetch(`http://localhost:6070${req.originalUrl}`, {
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
         method: req.method,
         headers: {
           'Content-Type': 'application/json',
@@ -47,29 +49,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard data - use Reddit API
+  // Proxy replies endpoints to the backend API
+  app.use("/api/replies", async (req, res) => {
+    try {
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || '',
+        },
+        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+      });
+      
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (error) {
+      console.error("Replies proxy error:", error);
+      res.status(500).json({ message: "Replies service unavailable" });
+    }
+  });
+
+  // Proxy platforms endpoints to the backend API
+  app.use("/api/platforms", async (req, res) => {
+    try {
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || '',
+        },
+        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+      });
+      
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (error) {
+      console.error("Platforms proxy error:", error);
+      res.status(500).json({ message: "Platforms service unavailable" });
+    }
+  });
+
+  // Catch-all proxy for any other API endpoints that should go to the backend
+  app.use("/api", async (req, res) => {
+    try {
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || '',
+        },
+        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+      });
+      
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (error) {
+      console.error("API proxy error:", error);
+      res.status(500).json({ message: "API service unavailable" });
+    }
+  });
+
+  // Proxy dashboard endpoint to the backend API
   app.get("/api/dashboard", async (req, res) => {
     try {
-      const [metrics, platformStats, campaigns, replies, accounts, dailyStats] = await Promise.all([
-        redditStorage.getMetrics(),
-        redditStorage.getPlatformStats(),
-        redditStorage.getCampaigns(),
-        redditStorage.getReplies(4),
-        redditStorage.getAccounts(),
-        redditStorage.getDailyStats(),
-      ]);
-
-      res.json({
-        metrics,
-        platformStats,
-        campaigns,
-        replies,
-        accounts,
-        dailyStats,
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || '',
+        },
       });
+      
+      const data = await response.json();
+      res.status(response.status).json(data);
     } catch (error) {
-      console.error("Dashboard error:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard data" });
+      console.error("Dashboard proxy error:", error);
+      res.status(500).json({ message: "Dashboard service unavailable" });
     }
   });
 
@@ -145,30 +204,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Accounts
-  app.get("/api/accounts", async (req, res) => {
+  // Proxy accounts endpoints to the backend API (this should come before the old accounts endpoint)
+  app.use("/api/accounts", async (req, res) => {
     try {
-      const accounts = await storage.getAccounts();
-      res.json(accounts);
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}${req.originalUrl}`, {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || '',
+        },
+        body: req.method !== 'GET' && req.method !== 'DELETE' ? JSON.stringify(req.body) : undefined,
+      });
+      
+      const data = await response.json();
+      res.status(response.status).json(data);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch accounts" });
+      console.error("Accounts proxy error:", error);
+      res.status(500).json({ message: "Accounts service unavailable" });
     }
   });
 
-  app.post("/api/accounts/:id/purchase", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const success = await storage.purchaseAccount(id);
-      
-      if (!success) {
-        return res.status(400).json({ message: "Account not available or not found" });
-      }
-      
-      res.json({ message: "Account purchased successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to purchase account" });
-    }
-  });
+
 
   // Metrics
   app.get("/api/metrics", async (req, res) => {
@@ -196,7 +253,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const minProbability = req.query.min_probability ? parseInt(req.query.min_probability as string) : 0;
       
-      const response = await fetch(`http://localhost:6070/api/leads?limit=${limit}&min_probability=${minProbability}`);
+      const backendUrl = process.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${backendUrl}/api/leads?limit=${limit}&min_probability=${minProbability}`);
       const data = await response.json();
       
       res.json(data);
