@@ -21,11 +21,11 @@ COPY server/ /app/server/
 RUN mkdir -p /app/logs
 
 # Expose port
-EXPOSE 8001
+EXPOSE 6070
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8001/health || exit 1
+    CMD curl -f http://localhost:6070/health || exit 1
 
 # Default command
 CMD ["python3", "/app/server/api_server.py"]
