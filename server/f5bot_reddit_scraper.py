@@ -493,6 +493,33 @@ def search_reddit_leads_efficient(keywords: List[str],
     """
     print("🤖 Using F5Bot Reddit scraper...")
     
+    # Deduplicate and clean keywords
+    if not keywords:
+        print("⚠️  No keywords provided - skipping scraping")
+        return []
+    
+    # Remove duplicates (case-insensitive) and clean keywords
+    unique_keywords = []
+    seen_keywords = set()
+    
+    for keyword in keywords:
+        if keyword and isinstance(keyword, str):
+            cleaned = keyword.strip()
+            if cleaned and len(cleaned) >= 2:
+                cleaned_lower = cleaned.lower()
+                if cleaned_lower not in seen_keywords:
+                    seen_keywords.add(cleaned_lower)
+                    unique_keywords.append(cleaned)
+    
+    if not unique_keywords:
+        print("⚠️  No valid keywords after cleaning - skipping scraping")
+        return []
+    
+    if len(unique_keywords) != len(keywords):
+        print(f"🧹 Deduplicated keywords: {len(keywords)} → {len(unique_keywords)}")
+    
+    print(f"🔍 Scraping with {len(unique_keywords)} unique keywords")
+    
     try:
         scraper = F5BotRedditScraper()
         
@@ -506,7 +533,7 @@ def search_reddit_leads_efficient(keywords: List[str],
         else:
             time_filter = 'year'
         
-        posts = scraper.search_reddit_for_keywords(keywords, limit, time_filter)
+        posts = scraper.search_reddit_for_keywords(unique_keywords, limit, time_filter)
         
         # Convert to expected format for database storage
         leads = []

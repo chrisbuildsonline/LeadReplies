@@ -78,10 +78,21 @@ class LeadScrapingService:
             keywords = self._get_all_unique_keywords()
             
             if not keywords:
-                logger.warning("⚠️  No keywords found in database - skipping scraping")
+                logger.warning("⚠️  No keywords found in database - skipping Reddit scraping")
+                logger.info("💡 Add keywords to your businesses to enable lead discovery")
                 return 0
             
             logger.info(f"🔍 F5Bot scraping with {len(keywords)} unique keywords from all businesses")
+            
+            # Additional safety check for keyword quality
+            valid_keywords = [kw for kw in keywords if kw and len(kw.strip()) >= 2]
+            if len(valid_keywords) != len(keywords):
+                logger.info(f"🧹 Filtered out {len(keywords) - len(valid_keywords)} invalid keywords")
+                keywords = valid_keywords
+                
+            if not keywords:
+                logger.warning("⚠️  No valid keywords after filtering - skipping Reddit scraping")
+                return 0
             
             # Get scraping interval to determine time range
             interval_minutes = int(os.getenv('SCRAPING_INTERVAL_MINUTES', '120'))
@@ -140,24 +151,41 @@ class LeadScrapingService:
             return 0
     
     def _get_all_unique_keywords(self):
-        """Get all unique keywords from all businesses in the database."""
+        """Get all unique keywords from all businesses in the database with enhanced filtering."""
         try:
-            import sqlite3
-            conn = sqlite3.connect(self.db.db_path)
+            conn = self.db.get_connection()
             cursor = conn.cursor()
             
-            # Get all keywords from all businesses
+            # Get all keywords from all businesses with better filtering
             cursor.execute('''
-                SELECT DISTINCT keyword 
+                SELECT DISTINCT TRIM(LOWER(keyword)) as clean_keyword, keyword as original_keyword
                 FROM keywords 
-                WHERE keyword IS NOT NULL AND keyword != ""
+                WHERE keyword IS NOT NULL 
+                AND TRIM(keyword) != '' 
+                AND LENGTH(TRIM(keyword)) >= 2
+                ORDER BY clean_keyword
             ''')
             
-            keywords = [row[0] for row in cursor.fetchall()]
+            results = cursor.fetchall()
+            cursor.close()
             conn.close()
             
-            logger.info(f"📋 Loaded {len(keywords)} unique keywords from database")
-            return keywords
+            if not results:
+                logger.warning("⚠️  No valid keywords found in database")
+                return []
+            
+            # Use a set to ensure uniqueness (case-insensitive)
+            unique_keywords = {}
+            for clean_keyword, original_keyword in results:
+                if clean_keyword not in unique_keywords:
+                    unique_keywords[clean_keyword] = original_keyword
+            
+            final_keywords = list(unique_keywords.values())
+            
+            logger.info(f"📋 Loaded {len(final_keywords)} unique keywords from database")
+            logger.info(f"🔍 Sample keywords: {', '.join(final_keywords[:5])}{'...' if len(final_keywords) > 5 else ''}")
+            
+            return final_keywords
             
         except Exception as e:
             logger.error(f"❌ Error loading keywords: {str(e)}")
@@ -169,12 +197,12 @@ class LeadScrapingService:
         
         try:
             # Get all businesses
-            import sqlite3
-            conn = sqlite3.connect(self.db.db_path)
+            conn = self.db.get_connection()
             cursor = conn.cursor()
             
             cursor.execute('SELECT id, name, description FROM businesses')
             businesses = cursor.fetchall()
+            cursor.close()
             conn.close()
             
             if not businesses:
