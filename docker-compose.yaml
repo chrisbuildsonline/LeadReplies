@@ -80,6 +80,7 @@ services:
       dockerfile: Dockerfile.frontend
     environment:
       - NODE_ENV=production
+      - PORT=3000
       - VITE_API_URL=http://backend:8001
     ports:
       - "3000:3000"

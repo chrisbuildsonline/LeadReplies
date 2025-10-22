@@ -28,7 +28,8 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
-# The vite build creates dist/public, but the server expects server/public
+
+# Copy the built client assets to where the server expects them
 RUN mkdir -p server && cp -r dist/public server/public
 
 # Create non-root user
