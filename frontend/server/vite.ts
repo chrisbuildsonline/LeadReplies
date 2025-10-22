@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { type Server } from "http";
 
 
@@ -49,8 +50,9 @@ export async function setupVite(app: Express, server: Server) {
     const url = req.originalUrl;
 
     try {
+      const currentDir = import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        currentDir,
         "..",
         "client",
         "index.html",
@@ -72,11 +74,24 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // Use __dirname equivalent for ES modules, with fallback for bundled code
+  const currentDir = import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
+  const distPath = path.resolve(currentDir, "public");
 
   if (!fs.existsSync(distPath)) {
+    // Fallback: try relative to process.cwd()
+    const fallbackPath = path.resolve(process.cwd(), "server", "public");
+    if (fs.existsSync(fallbackPath)) {
+      console.log(`Using fallback static path: ${fallbackPath}`);
+      app.use(express.static(fallbackPath));
+      app.use("*", (_req, res) => {
+        res.sendFile(path.resolve(fallbackPath, "index.html"));
+      });
+      return;
+    }
+    
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find the build directory: ${distPath} or ${fallbackPath}, make sure to build the client first`,
     );
   }
 
