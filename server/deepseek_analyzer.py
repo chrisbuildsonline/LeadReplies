@@ -16,10 +16,16 @@ class DeepSeekAnalyzer:
         self.base_url = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1')
         
         if not self.api_key:
-            raise ValueError("DEEPSEEK_API_KEY not found in environment variables")
+            print("⚠️  WARNING: DEEPSEEK_API_KEY not found in environment variables")
+            print("   AI analysis features will be disabled until API key is provided")
+            self.api_key = None
     
     def _make_request(self, messages: List[Dict], max_tokens: int = 500) -> Optional[str]:
         """Make a request to DeepSeek API"""
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - skipping AI analysis")
+            return None
+            
         try:
             headers = {
                 'Authorization': f'Bearer {self.api_key}',
@@ -57,6 +63,9 @@ class DeepSeekAnalyzer:
         Analyze a website and extract relevant keywords for lead tracking
         Returns list of keywords with priority and source
         """
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - returning empty keywords list")
+            return []
         prompt = f"""
         Analyze this business and suggest 15-20 relevant keywords for finding potential customers on Reddit.
 
@@ -119,6 +128,9 @@ class DeepSeekAnalyzer:
         """
         Suggest relevant subreddits based on keywords and business type
         """
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - returning empty subreddits list")
+            return []
         keywords_str = ", ".join(keywords[:10])  # Use top 10 keywords
         
         prompt = f"""
@@ -182,6 +194,13 @@ class DeepSeekAnalyzer:
         Analyze if a lead is relevant for a specific business
         Returns probability score and analysis
         """
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - returning default analysis")
+            return {
+                "probability": 50,
+                "analysis": "AI analysis unavailable - API key not configured",
+                "matched_keywords": business_keywords[:3] if business_keywords else []
+            }
         keywords_str = ", ".join(business_keywords)
         
         prompt = f"""
@@ -256,6 +275,15 @@ class DeepSeekAnalyzer:
         """
         if not leads:
             return []
+            
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - returning default analysis for all leads")
+            return [{
+                **lead,
+                "probability": 50,
+                "analysis": "AI analysis unavailable - API key not configured",
+                "matched_keywords": business_keywords[:3] if business_keywords else []
+            } for lead in leads]
         
         keywords_str = ", ".join(business_keywords)
         
