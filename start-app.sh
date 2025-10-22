@@ -29,9 +29,9 @@ fi
 
 # Check if ports are available
 echo "🔍 Checking port availability..."
-if lsof -Pi :8001 -sTCP:LISTEN -t >/dev/null ; then
-    echo "⚠️  Port 8001 is already in use. Stopping existing process..."
-    kill $(lsof -t -i:8001) 2>/dev/null || true
+if lsof -Pi :6070 -sTCP:LISTEN -t >/dev/null ; then
+    echo "⚠️  Port 6070 is already in use. Stopping existing process..."
+    kill $(lsof -t -i:6070) 2>/dev/null || true
     sleep 2
 fi
 
@@ -84,13 +84,12 @@ echo ""
 echo "✅ Reddit Lead Finder is now running!"
 echo "=================================================="
 echo "🌐 Frontend: http://localhost:3050"
-echo "🔧 API Server: http://localhost:8001"
-echo "📚 API Docs: http://localhost:8001/docs"
+echo "🔧 API Server: http://localhost:6070"
+echo "📚 API Docs: http://localhost:6070/docs"
 echo "⏰ Background Service: Running (fetches leads every hour)"
 echo ""
-echo "📝 Sample login credentials:"
-echo "   Email: test@example.com"
-echo "   Password: password123"
+echo "🔐 Authentication: Powered by Supabase"
+echo "   Create an account or login at the frontend URL above"
 echo ""
 echo "Press Ctrl+C to stop all servers"
 

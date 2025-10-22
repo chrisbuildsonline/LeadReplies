@@ -86,7 +86,7 @@ if command_exists docker && command_exists docker-compose; then
         echo "🔍 Testing health endpoints..."
         
         # Test backend health
-        if curl -f http://localhost:8001/health >/dev/null 2>&1; then
+        if curl -f http://localhost:6070/health >/dev/null 2>&1; then
             echo "✅ Backend health check passed"
         else
             echo "❌ Backend health check failed"
@@ -106,8 +106,8 @@ if command_exists docker && command_exists docker-compose; then
         echo ""
         echo "🌐 Local test URLs:"
         echo "   Frontend: http://localhost:3000"
-        echo "   Backend API: http://localhost:8001"
-        echo "   API Health: http://localhost:8001/health"
+        echo "   Backend API: http://localhost:6070"
+        echo "   API Health: http://localhost:6070/health"
         echo ""
         
         read -p "Press Enter to stop local test and continue with deployment preparation..."

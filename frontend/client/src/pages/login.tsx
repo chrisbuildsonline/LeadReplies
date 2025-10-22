@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-
-const API_URL = '';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginForm {
   email: string;
@@ -22,30 +21,31 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [, setLocation] = useLocation();
+  const { signIn, signUp, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      setLocation('/dashboard');
+    }
+  }, [user, setLocation]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginForm),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setLocation('/dashboard');
+      const { error } = await signIn(loginForm.email, loginForm.password);
+      
+      if (error) {
+        setError(error.message || 'Login failed');
       } else {
-        setError(data.detail || 'Login failed');
+        setSuccess('Login successful! Redirecting...');
+        // The useEffect will handle the redirect when user state updates
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -58,6 +58,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     if (registerForm.password !== registerForm.confirmPassword) {
       setError('Passwords do not match');
@@ -65,25 +66,26 @@ export default function Login() {
       return;
     }
 
+    if (registerForm.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: registerForm.email,
-          password: registerForm.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        setLocation('/dashboard');
+      const { error } = await signUp(registerForm.email, registerForm.password);
+      
+      if (error) {
+        setError(error.message || 'Registration failed');
       } else {
-        setError(data.detail || 'Registration failed');
+        setSuccess('Registration successful! Please check your email to confirm your account.');
+        // Reset form
+        setRegisterForm({ email: '', password: '', confirmPassword: '' });
+        // Switch to login form after a delay
+        setTimeout(() => {
+          setIsLogin(true);
+          setSuccess('');
+        }, 3000);
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -113,6 +115,12 @@ export default function Login() {
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded">
+              {success}
             </div>
           )}
 

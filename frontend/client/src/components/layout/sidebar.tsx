@@ -6,11 +6,13 @@ import {
   Bell,
   Users,
   MessageSquare,
+  LogOut,
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../../contexts/AuthContext";
 
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -29,12 +31,12 @@ const favoriteItems = [
 
 export default function Sidebar() {
   const [location] = useLocation();
+  const { session } = useAuth();
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return undefined;
+    if (!session?.access_token) return undefined;
     return {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
     };
   };
@@ -46,7 +48,7 @@ export default function Sidebar() {
       if (!headers) return { unread_count: 0 };
 
       const response = await fetch(
-        "http://localhost:8001/api/notifications?limit=1&unread_only=true",
+        "http://localhost:6070/api/notifications?limit=1&unread_only=true",
         {
           headers,
         }
@@ -56,7 +58,23 @@ export default function Sidebar() {
       return response.json();
     },
     refetchInterval: 30000, // Refresh every 30 seconds
-    enabled: !!localStorage.getItem("token"),
+    enabled: !!session?.access_token,
+  });
+
+  const { data: userData } = useQuery({
+    queryKey: ["/api/auth/me"],
+    queryFn: async () => {
+      const headers = getAuthHeaders();
+      if (!headers) return null;
+
+      const response = await fetch("http://localhost:6070/api/auth/me", {
+        headers,
+      });
+
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!session?.access_token,
   });
 
   return (
@@ -154,11 +172,20 @@ export default function Sidebar() {
         <div className="p-6">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">M</span>
+              <span className="text-white text-sm font-bold">
+                {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+              </span>
             </div>
             <div className="flex-1">
-              <h2 className="font-semibold text-white">Margaret</h2>
-              <p className="text-xs text-gray-400">Sr. Marketing Manager</p>
+              <h2 className="font-semibold text-white text-sm">
+                {userData?.user?.name ||
+                 session?.user?.user_metadata?.full_name || 
+                 session?.user?.user_metadata?.name || 
+                 session?.user?.email?.split('@')[0] || 'User'}
+              </h2>
+              <p className="text-xs text-gray-400">
+                {userData?.user?.email || session?.user?.email || 'No email'}
+              </p>
             </div>
           </div>
 

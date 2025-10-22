@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { AlertCircle, Plus, Trash2, Eye, EyeOff, CheckCircle, XCircle, Clock, Users, Shield, Settings, Upload, FileText, Download } from "lucide-react";
 import { SiReddit, SiX, SiLinkedin } from "react-icons/si";
 
-const API_URL = 'http://localhost:8001';
+const API_URL = 'http://localhost:6070';
 
 interface SocialAccount {
   id: number;

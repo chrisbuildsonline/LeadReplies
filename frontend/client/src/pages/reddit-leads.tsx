@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 
-const API_URL = "";
+const API_URL = "http://localhost:6070";
 
 interface Lead {
   id: string;

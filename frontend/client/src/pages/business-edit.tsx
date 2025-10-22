@@ -26,7 +26,7 @@ import {
   Sliders
 } from "lucide-react";
 
-const API_URL = 'http://localhost:8001';
+const API_URL = 'http://localhost:6070';
 
 interface Business {
   id: number;

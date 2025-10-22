@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
 import PageLayout from "@/components/layout/page-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 
-const API_URL = "http://localhost:8001";
+const API_URL = "http://localhost:6070";
 
 interface DashboardMetrics {
   totalLeads: number;
@@ -66,17 +67,28 @@ interface DashboardData {
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const { session, signOut } = useAuth();
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLocation("/login");
+    if (!session?.access_token) {
+      console.log('🔐 No session token - redirecting to home');
+      setLocation('/');
       return undefined;
     }
     return {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
     };
+  };
+
+  const handleAuthError = async (response: Response) => {
+    if (response.status === 401) {
+      console.log('🔐 Authentication failed - signing out and redirecting to home');
+      await signOut();
+      setLocation('/');
+      return true;
+    }
+    return false;
   };
 
   const {
@@ -93,10 +105,12 @@ export default function Dashboard() {
         headers,
       });
 
+      // Check for auth errors first
+      if (await handleAuthError(response)) {
+        throw new Error("Authentication failed");
+      }
+
       if (!response.ok) {
-        if (response.status === 401) {
-          setLocation("/login");
-        }
         throw new Error("Failed to fetch dashboard data");
       }
 
@@ -117,6 +131,11 @@ export default function Dashboard() {
       const response = await fetch(`${API_URL}/api/scraper/status`, {
         headers,
       });
+
+      // Check for auth errors first
+      if (await handleAuthError(response)) {
+        throw new Error("Authentication failed");
+      }
 
       if (!response.ok) {
         throw new Error("Failed to fetch scraper status");

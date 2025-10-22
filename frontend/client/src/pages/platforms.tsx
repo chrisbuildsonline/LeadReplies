@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { AlertCircle, Settings, CheckCircle, Clock } from "lucide-react";
 import { SiReddit, SiX, SiLinkedin } from "react-icons/si";
 
-const API_URL = 'http://localhost:8001';
+const API_URL = 'http://localhost:6070';
 
 interface PlatformSettings {
   id: string;

@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 
-const API_URL = 'http://localhost:8001';
+const API_URL = 'http://localhost:6070';
 
 interface Reply {
   id: number;

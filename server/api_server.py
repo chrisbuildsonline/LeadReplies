@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 from database import Database
 from deepseek_analyzer import DeepSeekAnalyzer
 from notification_service import notification_service
+from supabase_auth import SupabaseAuth
 
 load_dotenv()
 
@@ -40,6 +41,7 @@ app.add_middleware(
 # Initialize services
 db = Database()
 ai_analyzer = DeepSeekAnalyzer()
+supabase_auth = SupabaseAuth()
 
 # JWT settings
 JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key-change-this")
@@ -106,15 +108,26 @@ def create_jwt_token(user_id: int) -> str:
 
 def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> int:
     try:
-        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user_id = payload.get("user_id")
-        if user_id is None:
+        # Verify Supabase token
+        user_data = supabase_auth.verify_token(credentials.credentials)
+        if not user_data:
             raise HTTPException(status_code=401, detail="Invalid token")
-        return user_id
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        
+        # Create or update user profile in local database
+        supabase_auth.create_or_update_user_profile(user_data)
+        
+        # Get local user ID
+        local_user_id = supabase_auth.get_local_user_id(user_data['user_id'])
+        if not local_user_id:
+            raise HTTPException(status_code=401, detail="User not found in local database")
+        
+        return local_user_id
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Token verification error: {e}")
+        raise HTTPException(status_code=401, detail="Token verification failed")
 
 # Routes
 @app.get("/")
@@ -151,25 +164,24 @@ async def health_check():
             "error": str(e)
         }
 
-# Authentication endpoints
+# Authentication endpoints (Supabase handles auth, these are for compatibility)
 @app.post("/api/auth/register")
 async def register(user: UserRegister):
-    user_id = db.create_user(user.email, user.password)
-    if user_id is None:
-        raise HTTPException(status_code=400, detail="Email already exists")
-    
-    token = create_jwt_token(user_id)
-    return {"token": token, "user_id": user_id}
+    # Supabase handles registration on the frontend
+    # This endpoint is kept for API compatibility but returns an error
+    raise HTTPException(
+        status_code=400, 
+        detail="Registration is handled by Supabase. Please use the frontend registration form."
+    )
 
 @app.post("/api/auth/login")
 async def login(user: UserLogin):
-    user_id = db.verify_user(user.email, user.password)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    token = create_jwt_token(user_id)
-    user_data = db.get_user(user_id)
-    return {"token": token, "user": user_data}
+    # Supabase handles login on the frontend
+    # This endpoint is kept for API compatibility but returns an error
+    raise HTTPException(
+        status_code=400, 
+        detail="Login is handled by Supabase. Please use the frontend login form."
+    )
 
 @app.get("/api/auth/me")
 async def get_current_user(user_id: int = Depends(verify_jwt_token)):

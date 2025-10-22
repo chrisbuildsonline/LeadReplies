@@ -10,7 +10,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy all auth endpoints to the new multi-tenant API
   app.use("/api/auth", async (req, res) => {
     try {
-      const response = await fetch(`http://localhost:8001${req.originalUrl}`, {
+      const response = await fetch(`http://localhost:6070${req.originalUrl}`, {
         method: req.method,
         headers: {
           'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy all business endpoints to the new multi-tenant API (catch-all for any business routes)
   app.use("/api/businesses", async (req, res) => {
     try {
-      const response = await fetch(`http://localhost:8001${req.originalUrl}`, {
+      const response = await fetch(`http://localhost:6070${req.originalUrl}`, {
         method: req.method,
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const minProbability = req.query.min_probability ? parseInt(req.query.min_probability as string) : 0;
       
-      const response = await fetch(`http://localhost:8001/api/leads?limit=${limit}&min_probability=${minProbability}`);
+      const response = await fetch(`http://localhost:6070/api/leads?limit=${limit}&min_probability=${minProbability}`);
       const data = await response.json();
       
       res.json(data);

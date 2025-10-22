@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { useAuth } from '../contexts/AuthContext';
 import PageLayout from '../components/layout/page-layout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Edit, Trash2, Globe, Calendar, Target, Hash, ExternalLink } from "lucide-react";
 
-const API_URL = '';
+const API_URL = 'http://localhost:6070';
 
 interface Business {
   id: number;
@@ -37,6 +38,7 @@ export default function Businesses() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [, setLocation] = useLocation();
+  const { session, signOut } = useAuth();
 
   const [newBusiness, setNewBusiness] = useState({
     name: '',
@@ -49,15 +51,25 @@ export default function Businesses() {
   }, []);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLocation('/login');
+    if (!session?.access_token) {
+      console.log('🔐 No session token - redirecting to home');
+      setLocation('/');
       return {};
     }
     return {
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
     };
+  };
+
+  const handleAuthError = async (response: Response) => {
+    if (response.status === 401) {
+      console.log('🔐 Authentication failed - signing out and redirecting to home');
+      await signOut();
+      setLocation('/');
+      return true;
+    }
+    return false;
   };
 
   const fetchBusinesses = async () => {
@@ -66,6 +78,11 @@ export default function Businesses() {
       const response = await fetch(`${API_URL}/api/businesses`, {
         headers: getAuthHeaders(),
       });
+
+      // Check for auth errors first
+      if (await handleAuthError(response)) {
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -110,6 +127,11 @@ export default function Businesses() {
         headers: getAuthHeaders(),
         body: JSON.stringify(newBusiness),
       });
+
+      // Check for auth errors first
+      if (await handleAuthError(response)) {
+        return;
+      }
 
       if (response.ok) {
         setNewBusiness({ name: '', website: '', description: '' });
