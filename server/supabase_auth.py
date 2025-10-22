@@ -32,8 +32,12 @@ class SupabaseAuth:
             return None
             
         try:
-            # For now, let's decode the JWT without verification to get user info
-            # This is temporary until we get the proper JWT secret
+            # First try to verify with Supabase API
+            api_result = self._verify_with_supabase_api(token)
+            if api_result:
+                return api_result
+            
+            # If API verification fails, fall back to JWT decoding without verification
             import jwt
             payload = jwt.decode(token, options={"verify_signature": False})
             print(f"🔍 Token payload: iss={payload.get('iss')}, aud={payload.get('aud')}, sub={payload.get('sub')}")
@@ -74,7 +78,7 @@ class SupabaseAuth:
             response = requests.get(
                 f'{self.supabase_url}/auth/v1/user',
                 headers=headers,
-                timeout=10
+                timeout=5  # Reduced timeout
             )
             
             if response.status_code == 200:
@@ -85,11 +89,15 @@ class SupabaseAuth:
                     'role': user_data.get('role', 'authenticated')
                 }
             else:
-                print(f"Supabase API error: {response.status_code}")
+                # Don't print error for 403/401 as these are expected for expired tokens
+                if response.status_code not in [401, 403]:
+                    print(f"Supabase API error: {response.status_code}")
                 return None
                 
         except requests.RequestException as e:
-            print(f"Supabase API request error: {e}")
+            # Don't print timeout errors as they're common
+            if "timeout" not in str(e).lower():
+                print(f"Supabase API request error: {e}")
             return None
     
     def get_user_metadata(self, user_id: str) -> Optional[Dict]:

@@ -31,7 +31,7 @@ const favoriteItems = [
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
 
   const getAuthHeaders = () => {
     if (!session?.access_token) return undefined;
@@ -41,25 +41,7 @@ export default function Sidebar() {
     };
   };
 
-  const { data: notificationData } = useQuery({
-    queryKey: ["/api/notifications/count"],
-    queryFn: async () => {
-      const headers = getAuthHeaders();
-      if (!headers) return { unread_count: 0 };
 
-      const response = await fetch(
-        "http://localhost:6070/api/notifications?limit=1&unread_only=true",
-        {
-          headers,
-        }
-      );
-
-      if (!response.ok) return { unread_count: 0 };
-      return response.json();
-    },
-    refetchInterval: 30000, // Refresh every 30 seconds
-    enabled: !!session?.access_token,
-  });
 
   const { data: userData } = useQuery({
     queryKey: ["/api/auth/me"],
@@ -198,20 +180,18 @@ export default function Sidebar() {
             </div>
           </div>
 
-          {/* Notifications and Settings */}
-          <div className="flex items-center space-x-1 bg-gray-800 rounded-lg p-1">
-            <Link href="/notifications">
-              <div className="flex items-center space-x-1 text-xs text-gray-300 hover:text-white px-2 py-1 rounded hover:bg-gray-700 cursor-pointer relative">
-                <Bell className="h-3 w-3" />
-                <span>Notifications</span>
-                <span className="text-gray-400">
-                  ({notificationData?.unread_count || 0})
-                </span>
-                {notificationData?.unread_count > 0 && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-                )}
-              </div>
-            </Link>
+          {/* Logout and Settings */}
+          <div className="flex items-center w-fit space-x-1 bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={async () => {
+                await signOut();
+                window.location.href = '/';
+              }}
+              className="flex items-center space-x-1 text-xs text-gray-300 hover:text-white px-2 py-1 rounded hover:bg-gray-700 cursor-pointer"
+            >
+              <LogOut className="h-3 w-3" />
+              <span>Logout</span>
+            </button>
 
             <div className="w-px h-4 bg-gray-600"></div>
 
