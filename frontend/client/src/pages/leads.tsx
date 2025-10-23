@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
 import PageLayout from "../components/layout/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,6 +72,7 @@ export default function LeadsDashboard() {
   const [dateFilter, setDateFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [, setLocation] = useLocation();
+  const { session, signOut } = useAuth();
 
   useEffect(() => {
     fetchBusinesses();
@@ -91,25 +93,37 @@ export default function LeadsDashboard() {
   };
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLocation("/login");
-      return undefined;
+    if (!session?.access_token) {
+      console.log('🔐 No session token - redirecting to home');
+      setLocation('/');
+      return {};
     }
     return {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
     };
+  };
+
+  const handleAuthError = async (response: Response) => {
+    if (response.status === 401) {
+      console.log('🔐 Authentication failed - signing out and redirecting to home');
+      await signOut();
+      setLocation('/');
+      return true;
+    }
+    return false;
   };
 
   const fetchBusinesses = async () => {
     try {
-      const headers = getAuthHeaders();
-      if (!headers) return;
-
       const response = await fetch(`${API_URL}/api/businesses`, {
-        headers,
+        headers: getAuthHeaders(),
       });
+
+      // Check for auth errors first
+      if (await handleAuthError(response)) {
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -117,8 +131,6 @@ export default function LeadsDashboard() {
         if (data.businesses.length > 0) {
           setSelectedBusinessId(data.businesses[0].id);
         }
-      } else if (response.status === 401) {
-        setLocation("/login");
       }
     } catch (err) {
       console.error("Failed to fetch businesses");
@@ -132,20 +144,18 @@ export default function LeadsDashboard() {
       queryFn: async () => {
         if (!selectedBusinessId) throw new Error("No business selected");
 
-        const headers = getAuthHeaders();
-        if (!headers) throw new Error("No auth token");
-
         const response = await fetch(
           `${API_URL}/api/businesses/${selectedBusinessId}/leads?limit=1000`,
           {
-            headers,
+            headers: getAuthHeaders(),
           }
         );
 
+        if (await handleAuthError(response)) {
+          throw new Error("Authentication failed");
+        }
+
         if (!response.ok) {
-          if (response.status === 401) {
-            setLocation("/login");
-          }
           throw new Error("Failed to fetch leads");
         }
 
@@ -170,20 +180,18 @@ export default function LeadsDashboard() {
     queryFn: async () => {
       if (!selectedBusinessId) throw new Error("No business selected");
 
-      const headers = getAuthHeaders();
-      if (!headers) throw new Error("No auth token");
-
       const response = await fetch(
         `${API_URL}/api/businesses/${selectedBusinessId}/leads?limit=100`,
         {
-          headers,
+          headers: getAuthHeaders(),
         }
       );
 
+      if (await handleAuthError(response)) {
+        throw new Error("Authentication failed");
+      }
+
       if (!response.ok) {
-        if (response.status === 401) {
-          setLocation("/login");
-        }
         throw new Error("Failed to fetch leads");
       }
 

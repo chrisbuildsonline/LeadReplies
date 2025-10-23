@@ -54,8 +54,16 @@ python3 server/setup.py
 
 # Start backend API server
 echo "🚀 Starting API server..."
-python3 server/api_server.py &
+cd server && python3 -c "
+import uvicorn
+from api_server import app
+import os
+port = int(os.getenv('BACKEND_PORT', 6070))
+print(f'Starting server on port {port}')
+uvicorn.run(app, host='0.0.0.0', port=port, reload=False)
+" &
 BACKEND_PID=$!
+cd ..
 
 # Start background service for hourly lead scraping
 echo "⏰ Starting background service (hourly lead scraping)..."

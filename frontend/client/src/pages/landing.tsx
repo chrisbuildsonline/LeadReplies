@@ -472,6 +472,9 @@ const LandingPage = () => (
           <nav className="hidden md:flex items-center space-x-8">
             <a href="#platforms" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" style={{fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif'}}>Platforms</a>
             <a href="#pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" style={{fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif'}}>Pricing</a>
+            <Link href="/api">
+              <a className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" style={{fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif'}}>API</a>
+            </Link>
             <a href="#benefits" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" style={{fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif'}}>Benefits</a>
           </nav>
 
@@ -908,6 +911,17 @@ export default function Landing() {
               >
                 Pricing
               </a>
+              <Link href="/api">
+                <a
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  style={{
+                    fontFamily:
+                      '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+                  }}
+                >
+                  API
+                </a>
+              </Link>
               <a
                 href="#faq"
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"

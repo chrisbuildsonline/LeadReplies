@@ -29,7 +29,7 @@ if os.path.exists('/app/server/.env'):
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Reddit Lead Finder API v2")
+app = FastAPI(title="Lead Finder API v2")
 security = HTTPBearer()
 
 # CORS middleware
@@ -156,7 +156,7 @@ def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(securit
 @app.get("/")
 async def root():
     return {
-        "message": "Reddit Lead Finder API v2", 
+        "message": "Lead Finder API v2", 
         "status": "running",
         "version": "2.1.0-uuid-fix",
         "timestamp": datetime.utcnow().isoformat()
@@ -201,7 +201,7 @@ async def health_check():
         
         return {
             "status": "healthy",
-            "service": "Reddit Lead Finder API v2",
+            "service": "Lead Finder API v2",
             "timestamp": datetime.utcnow().isoformat(),
             "database": "connected"
         }
@@ -210,7 +210,7 @@ async def health_check():
         # Return 200 but with unhealthy status during startup
         return {
             "status": "starting",
-            "service": "Reddit Lead Finder API v2",
+            "service": "Lead Finder API v2",
             "timestamp": datetime.utcnow().isoformat(),
             "database": "connecting",
             "error": str(e)
@@ -604,7 +604,7 @@ if __name__ == "__main__":
     import uvicorn
     import time
     
-    print("🚀 Starting Reddit Lead Finder API v2 (Development)...")
+    print("🚀 Starting Lead Finder API v2 (Development)...")
     
     # Wait for database to be ready
     max_retries = 30

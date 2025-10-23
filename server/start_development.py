@@ -13,7 +13,7 @@ sys.path.insert(0, str(server_dir))
 
 def main():
     """Main startup function for development"""
-    print("🚀 Starting Reddit Lead Finder API v2 (Development)")
+    print("🚀 Starting Lead Finder API v2 (Development)")
     print("=" * 60)
     
     # Set environment variables for development

@@ -47,7 +47,7 @@ def wait_for_database():
 
 def main():
     """Main startup function"""
-    print("🚀 Starting Reddit Lead Finder API v2 (Production)")
+    print("🚀 Starting Lead Finder API v2 (Production)")
     print("=" * 60)
     print(f"📁 Working directory: {os.getcwd()}")
     print(f"📁 Server directory: {server_dir}")

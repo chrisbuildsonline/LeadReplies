@@ -7,7 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
-import LeadsDashboard from "@/pages/reddit-leads";
+import LeadsDashboard from "@/pages/leads";
 import Login from "@/pages/login";
 import Businesses from "@/pages/businesses";
 import BusinessEdit from "@/pages/business-edit";
@@ -15,6 +15,8 @@ import Platforms from "@/pages/platforms";
 import Accounts from "@/pages/accounts";
 import Notifications from "@/pages/notifications";
 import Replies from "@/pages/replies";
+import ApiPage from "@/pages/api";
+import ApiPricingPage from "@/pages/api-pricing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -62,6 +64,8 @@ function Router() {
           <Accounts />
         </ProtectedRoute>
       </Route>
+      <Route path="/api" component={ApiPage} />
+      <Route path="/api/pricing" component={ApiPricingPage} />
       <Route component={NotFound} />
     </Switch>
   );
