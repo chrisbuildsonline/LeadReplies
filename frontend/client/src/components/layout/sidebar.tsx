@@ -49,7 +49,8 @@ export default function Sidebar() {
       const headers = getAuthHeaders();
       if (!headers) return null;
 
-      const response = await fetch("http://localhost:6070/api/auth/me", {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6070';
+      const response = await fetch(`${API_URL}/api/auth/me`, {
         headers,
       });
 

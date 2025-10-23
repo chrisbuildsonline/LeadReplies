@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Edit, Trash2, Globe, Calendar, Target, Hash, ExternalLink } from "lucide-react";
 
-const API_URL = 'http://localhost:6070';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6070';
 
 interface Business {
   id: number;

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { SiReddit } from "react-icons/si";
 
-const API_URL = "http://localhost:6070";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:6070";
 
 interface DashboardMetrics {
   totalLeads: number;

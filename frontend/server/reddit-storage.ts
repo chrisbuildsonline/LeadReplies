@@ -8,7 +8,7 @@ import {
 } from "@shared/schema";
 import { IStorage } from "./storage";
 
-const REDDIT_API_BASE = "http://localhost:6070/api";
+const REDDIT_API_BASE = `${process.env.VITE_API_URL || "http://localhost:6070"}/api`;
 
 export class RedditAPIStorage implements IStorage {
   
