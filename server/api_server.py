@@ -33,9 +33,25 @@ app = FastAPI(title="Reddit Lead Finder API v2")
 security = HTTPBearer()
 
 # CORS middleware
+# CORS configuration
+cors_origins_env = os.getenv("CORS_ORIGINS")
+if cors_origins_env:
+    # Use environment variable if set (comma-separated list)
+    cors_origins = [origin.strip() for origin in cors_origins_env.split(",")]
+elif os.getenv("NODE_ENV") == "production":
+    # Allow all origins in production
+    cors_origins = ["*"]
+else:
+    # Local development origins
+    cors_origins = [
+        "http://localhost:3000", 
+        "http://localhost:3050", 
+        "http://localhost:5173"
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
