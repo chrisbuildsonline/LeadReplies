@@ -374,7 +374,7 @@ async def add_keyword(business_id: str, keyword: KeywordAdd, user_id: int = Depe
     # Verify business ownership
     business = get_business_by_public_id_or_404(business_id, user_id)
     
-    db.add_keyword(business['id'], keyword.keyword, keyword.source)
+    db.add_business_keyword(business['id'], keyword.keyword, keyword.source)
     return {"success": True}
 
 @app.get("/api/businesses/{business_id}/keywords")
@@ -390,7 +390,7 @@ async def remove_keyword(business_id: str, keyword_id: int, user_id: int = Depen
     # Verify business ownership
     business = get_business_by_public_id_or_404(business_id, user_id)
     
-    db.remove_keyword(keyword_id, business['id'])
+    db.delete_business_keyword(keyword_id, business['id'])
     return {"success": True}
 
 
