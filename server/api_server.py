@@ -93,6 +93,14 @@ class WebsiteAnalyze(BaseModel):
     website_url: str
 
 # Helper functions
+def get_business_by_public_id_or_404(public_id: str, user_id: int):
+    """Helper function to get business by public_id and raise 404 if not found"""
+    business = db.get_business_by_public_id(public_id, user_id)
+    if business is None:
+        logger.warning(f"❌ Business {public_id} not found for user {user_id}")
+        raise HTTPException(status_code=404, detail="Business not found")
+    return business
+
 def create_jwt_token(user_id: int) -> str:
     payload = {
         "user_id": user_id,
@@ -133,7 +141,12 @@ def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(securit
 # Routes
 @app.get("/")
 async def root():
-    return {"message": "Reddit Lead Finder API v2", "status": "running"}
+    return {
+        "message": "Reddit Lead Finder API v2", 
+        "status": "running",
+        "version": "2.1.0-uuid-fix",
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 @app.get("/health")
 async def health_check():
@@ -163,6 +176,34 @@ async def health_check():
             "timestamp": datetime.utcnow().isoformat(),
             "database": "connecting",
             "error": str(e)
+        }
+
+@app.get("/api/scraper/status")
+async def get_scraper_status(user_id: int = Depends(verify_jwt_token)):
+    """Get the status of the background scraping service"""
+    try:
+        # Import here to avoid circular imports
+        from background_service import LeadScrapingService
+        
+        # Create a service instance to get status
+        service = LeadScrapingService()
+        status = service.get_status()
+        
+        # Transform to match frontend interface
+        return {
+            "is_active": status.get("status") == "running",
+            "last_scrape": status.get("last_run"),
+            "recent_activity": status.get("last_run") is not None,
+            "status_message": f"Service {status.get('status', 'unknown')} - Next run in {status.get('interval_minutes', 120)} minutes"
+        }
+        
+    except Exception as e:
+        logger.error(f"Scraper status error: {e}")
+        return {
+            "is_active": False,
+            "last_scrape": None,
+            "recent_activity": False,
+            "status_message": f"Service unavailable: {str(e)}"
         }
 
 # Authentication endpoints
@@ -195,42 +236,78 @@ async def get_current_user(user_id: int = Depends(verify_jwt_token)):
 # Business management
 @app.post("/api/businesses")
 async def create_business(business: BusinessCreate, user_id: int = Depends(verify_jwt_token)):
-    business_id = db.create_business(user_id, business.name, business.website, business.description)
-    return {"business_id": business_id}
+    result = db.create_business(user_id, business.name, business.website, business.description)
+    return {"business_id": result["public_id"], "id": result["public_id"]}
 
 @app.get("/api/businesses")
 async def get_businesses(user_id: int = Depends(verify_jwt_token)):
     businesses = db.get_user_businesses(user_id)
+    # Transform to use public_id as the main id for frontend
+    for business in businesses:
+        business['id'] = str(business['public_id'])  # Use public_id as the main id
     return {"businesses": businesses}
 
 @app.get("/api/businesses/{business_id}")
-async def get_business(business_id: int, user_id: int = Depends(verify_jwt_token)):
-    business = db.get_business(business_id, user_id)
+async def get_business(business_id: str, user_id: int = Depends(verify_jwt_token)):
+    logger.info(f"🏢 Getting business {business_id} for user {user_id}")
+    business = db.get_business_by_public_id(business_id, user_id)
     if business is None:
+        logger.warning(f"❌ Business {business_id} not found for user {user_id}")
         raise HTTPException(status_code=404, detail="Business not found")
+    logger.info(f"✅ Found business: {business['name']}")
     return {"business": business}
 
 @app.put("/api/businesses/{business_id}")
-async def update_business(business_id: int, business: BusinessCreate, user_id: int = Depends(verify_jwt_token)):
+async def update_business(business_id: str, business: BusinessCreate, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    existing_business = db.get_business(business_id, user_id)
-    if existing_business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    existing_business = get_business_by_public_id_or_404(business_id, user_id)
     
-    # Update business (we'll need to add this method to the database)
-    success = db.update_business(business_id, business.name, business.website, business.description)
+    # Update business using internal ID
+    success = db.update_business(existing_business['id'], business.name, business.website, business.description)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update business")
     
     return {"success": True}
 
+@app.get("/api/businesses/{business_id}/ai-settings")
+async def get_business_ai_settings(business_id: str, user_id: int = Depends(verify_jwt_token)):
+    """Get AI reply settings for a business"""
+    # Verify business ownership
+    business = get_business_by_public_id_or_404(business_id, user_id)
+    
+    # Return default AI settings for now
+    return {
+        "ai_settings": {
+            "persona": None,
+            "instructions": None,
+            "bad_words": [],
+            "service_links": {},
+            "tone": "professional",
+            "max_reply_length": 500,
+            "include_links": True,
+            "auto_reply_enabled": False,
+            "confidence_threshold": 80.0
+        }
+    }
+
+@app.put("/api/businesses/{business_id}/ai-settings")
+async def update_business_ai_settings(
+    business_id: str,
+    settings: dict,
+    user_id: int = Depends(verify_jwt_token)
+):
+    """Update AI reply settings for a business"""
+    # Verify business ownership
+    business = get_business_by_public_id_or_404(business_id, user_id)
+    
+    # For now, just return success (implement actual storage later)
+    return {"message": "AI settings updated successfully"}
+
 # Website analysis
 @app.post("/api/businesses/{business_id}/analyze-website")
-async def analyze_website(business_id: int, data: WebsiteAnalyze, user_id: int = Depends(verify_jwt_token)):
+async def analyze_website(business_id: str, data: WebsiteAnalyze, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
     try:
         # Analyze website for keywords
@@ -249,64 +326,52 @@ async def analyze_website(business_id: int, data: WebsiteAnalyze, user_id: int =
 
 # Keywords management
 @app.post("/api/businesses/{business_id}/keywords")
-async def add_keyword(business_id: int, keyword: KeywordAdd, user_id: int = Depends(verify_jwt_token)):
+async def add_keyword(business_id: str, keyword: KeywordAdd, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    db.add_keyword(business_id, keyword.keyword, keyword.source)
+    db.add_keyword(business['id'], keyword.keyword, keyword.source)
     return {"success": True}
 
 @app.get("/api/businesses/{business_id}/keywords")
-async def get_keywords(business_id: int, user_id: int = Depends(verify_jwt_token)):
+async def get_keywords(business_id: str, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    keywords = db.get_business_keywords(business_id)
+    keywords = db.get_business_keywords(business['id'])
     return {"keywords": keywords}
 
 @app.delete("/api/businesses/{business_id}/keywords/{keyword_id}")
-async def remove_keyword(business_id: int, keyword_id: int, user_id: int = Depends(verify_jwt_token)):
+async def remove_keyword(business_id: str, keyword_id: int, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    db.remove_keyword(keyword_id, business_id)
+    db.remove_keyword(keyword_id, business['id'])
     return {"success": True}
 
 # Subreddits management
 @app.post("/api/businesses/{business_id}/subreddits")
-async def add_subreddit(business_id: int, subreddit: SubredditAdd, user_id: int = Depends(verify_jwt_token)):
+async def add_subreddit(business_id: str, subreddit: SubredditAdd, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    db.add_subreddit(business_id, subreddit.subreddit, subreddit.source)
+    db.add_subreddit(business['id'], subreddit.subreddit, subreddit.source)
     return {"success": True}
 
 @app.get("/api/businesses/{business_id}/subreddits")
-async def get_subreddits(business_id: int, user_id: int = Depends(verify_jwt_token)):
+async def get_subreddits(business_id: str, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    subreddits = db.get_business_subreddits(business_id)
+    subreddits = db.get_business_subreddits(business['id'])
     return {"subreddits": subreddits}
 
 @app.delete("/api/businesses/{business_id}/subreddits/{subreddit_id}")
-async def remove_subreddit(business_id: int, subreddit_id: int, user_id: int = Depends(verify_jwt_token)):
+async def remove_subreddit(business_id: str, subreddit_id: int, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    db.remove_subreddit(subreddit_id, business_id)
+    db.remove_subreddit(subreddit_id, business['id'])
     return {"success": True}
 
 # Dashboard endpoint
@@ -428,16 +493,18 @@ async def get_dashboard_data(user_id: int = Depends(verify_jwt_token)):
             business_id = business['id']
             business_name = business['name']
             
-            # Get counts for this specific business
+            # Get counts for this specific business using PostgreSQL syntax
+            logger.info(f"🔍 Executing business stats query for business_id: {business_id}")
             cursor.execute('''
                 SELECT 
                     COUNT(*) as total,
-                    SUM(CASE WHEN DATE(processed_at) = DATE('now') THEN 1 ELSE 0 END) as today,
-                    SUM(CASE WHEN DATE(processed_at) >= DATE('now', '-7 days') THEN 1 ELSE 0 END) as week,
+                    SUM(CASE WHEN DATE(processed_at) = CURRENT_DATE THEN 1 ELSE 0 END) as today,
+                    SUM(CASE WHEN processed_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 ELSE 0 END) as week,
                     SUM(CASE WHEN ai_score >= 80 THEN 1 ELSE 0 END) as high_quality
                 FROM business_leads 
-                WHERE business_id = ?
+                WHERE business_id = %s
             ''', (business_id,))
+            logger.info(f"✅ Business stats query executed successfully")
             
             result = cursor.fetchone()
             business_stats.append({
@@ -481,13 +548,11 @@ async def get_dashboard_data(user_id: int = Depends(verify_jwt_token)):
 
 # Leads management
 @app.get("/api/businesses/{business_id}/leads")
-async def get_business_leads(business_id: int, limit: int = 50, user_id: int = Depends(verify_jwt_token)):
+async def get_business_leads(business_id: str, limit: int = 50, user_id: int = Depends(verify_jwt_token)):
     # Verify business ownership
-    business = db.get_business(business_id, user_id)
-    if business is None:
-        raise HTTPException(status_code=404, detail="Business not found")
+    business = get_business_by_public_id_or_404(business_id, user_id)
     
-    leads = db.get_business_leads(business_id, limit)
+    leads = db.get_business_leads(business['id'], limit)
     return {"leads": leads, "total": len(leads)}
 
 if __name__ == "__main__":

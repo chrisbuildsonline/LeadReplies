@@ -211,7 +211,7 @@ class Database:
         conn.close()
     
     def _migrate_for_supabase(self, cursor):
-        """Migrate database for Supabase authentication"""
+        """Migrate database for Supabase authentication and add public IDs"""
         try:
             print("🔄 Running Supabase migration...")
             
@@ -241,8 +241,30 @@ class Database:
             
             print("✅ Supabase migration completed!")
             
+            # Add public_id to businesses table
+            print("🔄 Adding public_id to businesses...")
+            cursor.execute("""
+                ALTER TABLE businesses 
+                ADD COLUMN IF NOT EXISTS public_id UUID UNIQUE DEFAULT gen_random_uuid();
+            """)
+            
+            # Create index on public_id for faster lookups
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_businesses_public_id 
+                ON businesses(public_id);
+            """)
+            
+            # Update existing businesses that don't have public_id
+            cursor.execute("""
+                UPDATE businesses 
+                SET public_id = gen_random_uuid() 
+                WHERE public_id IS NULL;
+            """)
+            
+            print("✅ Business public_id migration completed!")
+            
         except Exception as e:
-            print(f"⚠️ Supabase migration error (might be expected): {e}")
+            print(f"⚠️ Migration error (might be expected): {e}")
             # Don't fail if migration has issues - table might already be migrated
     
     # User management
@@ -296,22 +318,25 @@ class Database:
         cursor = conn.cursor()
         
         cursor.execute('''
-            INSERT INTO businesses (user_id, name, website, description) 
-            VALUES (%s, %s, %s, %s) RETURNING id
+            INSERT INTO businesses (user_id, name, website, description, public_id) 
+            VALUES (%s, %s, %s, %s, gen_random_uuid()) RETURNING id, public_id
         ''', (user_id, name, website, description))
         
-        business_id = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        business_id = result[0]
+        public_id = result[1]
+        
         conn.commit()
         cursor.close()
         conn.close()
-        return business_id
+        return {"id": business_id, "public_id": str(public_id)}
     
     def get_user_businesses(self, user_id):
         conn = self.get_connection()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cursor.execute('''
-            SELECT id, name, website, description, created_at 
+            SELECT id, public_id, name, website, description, created_at 
             FROM businesses WHERE user_id = %s
         ''', (user_id,))
         
@@ -326,9 +351,27 @@ class Database:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cursor.execute('''
-            SELECT id, name, website, description, created_at 
+            SELECT id, public_id, name, website, description, created_at 
             FROM businesses WHERE id = %s AND user_id = %s
         ''', (business_id, user_id))
+        
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if result:
+            return dict(result)
+        return None
+    
+    def get_business_by_public_id(self, public_id, user_id):
+        """Get business by public_id instead of internal ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cursor.execute('''
+            SELECT id, public_id, name, website, description, created_at 
+            FROM businesses WHERE public_id = %s AND user_id = %s
+        ''', (public_id, user_id))
         
         result = cursor.fetchone()
         cursor.close()
