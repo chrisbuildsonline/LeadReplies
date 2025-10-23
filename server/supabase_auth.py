@@ -120,6 +120,8 @@ class SupabaseAuth:
             from database import Database
             db = Database()
             
+            print(f"🔄 Creating/updating user profile for: {user_data.get('email')} (ID: {user_data.get('user_id')})")
+            
             # Check if user exists in local database
             conn = db.get_connection()
             cursor = conn.cursor()
@@ -132,6 +134,7 @@ class SupabaseAuth:
             existing_user = cursor.fetchone()
             
             if existing_user:
+                print(f"✅ Updating existing user: {existing_user[0]}")
                 # Update existing user
                 cursor.execute(
                     """UPDATE users 
@@ -140,6 +143,7 @@ class SupabaseAuth:
                     (user_data['email'], user_data['user_id'])
                 )
             else:
+                print(f"➕ Creating new user for Supabase ID: {user_data['user_id']}")
                 # Create new user
                 cursor.execute(
                     """INSERT INTO users (supabase_id, email, created_at, last_login) 
@@ -151,10 +155,13 @@ class SupabaseAuth:
             cursor.close()
             conn.close()
             
+            print(f"✅ User profile created/updated successfully")
             return True
             
         except Exception as e:
-            print(f"Error creating/updating user profile: {e}")
+            print(f"❌ Error creating/updating user profile: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def get_local_user_id(self, supabase_user_id: str) -> Optional[int]:
@@ -164,6 +171,8 @@ class SupabaseAuth:
         try:
             from database import Database
             db = Database()
+            
+            print(f"🔍 Looking up local user ID for Supabase ID: {supabase_user_id}")
             
             conn = db.get_connection()
             cursor = conn.cursor()
@@ -177,8 +186,15 @@ class SupabaseAuth:
             cursor.close()
             conn.close()
             
-            return result[0] if result else None
+            if result:
+                print(f"✅ Found local user ID: {result[0]}")
+                return result[0]
+            else:
+                print(f"❌ No local user found for Supabase ID: {supabase_user_id}")
+                return None
             
         except Exception as e:
-            print(f"Error getting local user ID: {e}")
+            print(f"❌ Error getting local user ID: {e}")
+            import traceback
+            traceback.print_exc()
             return None

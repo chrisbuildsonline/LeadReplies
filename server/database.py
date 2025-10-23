@@ -28,6 +28,9 @@ class Database:
         conn = self.get_connection()
         cursor = conn.cursor()
         
+        # Run Supabase migration first
+        self._migrate_for_supabase(cursor)
+        
         # Users table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -206,6 +209,41 @@ class Database:
         conn.commit()
         cursor.close()
         conn.close()
+    
+    def _migrate_for_supabase(self, cursor):
+        """Migrate database for Supabase authentication"""
+        try:
+            print("🔄 Running Supabase migration...")
+            
+            # Add supabase_id column if it doesn't exist
+            cursor.execute("""
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS supabase_id UUID UNIQUE;
+            """)
+            
+            # Make password_hash nullable (since Supabase handles auth)
+            cursor.execute("""
+                ALTER TABLE users 
+                ALTER COLUMN password_hash DROP NOT NULL;
+            """)
+            
+            # Add last_login column if it doesn't exist
+            cursor.execute("""
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+            """)
+            
+            # Create index on supabase_id for faster lookups
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_users_supabase_id 
+                ON users(supabase_id);
+            """)
+            
+            print("✅ Supabase migration completed!")
+            
+        except Exception as e:
+            print(f"⚠️ Supabase migration error (might be expected): {e}")
+            # Don't fail if migration has issues - table might already be migrated
     
     # User management
     def create_user(self, email, password):
