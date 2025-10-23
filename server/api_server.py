@@ -577,10 +577,11 @@ async def get_business_leads(business_id: str, limit: int = 50, user_id: int = D
     return {"leads": leads, "total": len(leads)}
 
 if __name__ == "__main__":
+    # Development server - use uvicorn directly
     import uvicorn
     import time
     
-    print("🚀 Starting Reddit Lead Finder API v2...")
+    print("🚀 Starting Reddit Lead Finder API v2 (Development)...")
     
     # Wait for database to be ready
     max_retries = 30
@@ -609,6 +610,7 @@ if __name__ == "__main__":
     
     # Get port from environment or use default
     port = int(os.getenv("BACKEND_PORT", 6070))
-    print(f"🌐 Starting server on 0.0.0.0:{port}")
+    print(f"🌐 Starting development server on 0.0.0.0:{port}")
+    print("⚠️  For production, use: python3 start_production.py")
     
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)

@@ -30,5 +30,8 @@ EXPOSE 6070
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:6070/health || exit 1
 
-# Default command
-CMD ["python3", "/app/server/api_server.py"]
+# Make startup script executable
+RUN chmod +x /app/server/start_production.py
+
+# Default command - use Gunicorn for production
+CMD ["python3", "/app/server/start_production.py"]
