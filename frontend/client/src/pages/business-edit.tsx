@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useLocation, useRoute } from 'wouter';
-import PageLayout from '../components/layout/page-layout';
+import { useState, useEffect } from "react";
+import { useLocation, useRoute } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
+import PageLayout from "../components/layout/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,26 +11,26 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft, 
-  Plus, 
-  X, 
-  Hash, 
-  Target, 
-  Sparkles, 
-  Trash2, 
+import {
+  ArrowLeft,
+  Plus,
+  X,
+  Hash,
+  Target,
+  Sparkles,
+  Trash2,
   Bot,
   Settings,
   MessageSquare,
   Shield,
   Link as LinkIcon,
-  Sliders
+  Sliders,
 } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6070';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:6070";
 
 interface Business {
-  id: string;  // Changed to string for UUID
+  id: string; // Changed to string for UUID
   name: string;
   website: string;
   description: string;
@@ -41,8 +42,6 @@ interface Keyword {
   keyword: string;
   source: string;
 }
-
-
 
 interface AISettings {
   persona: string;
@@ -57,19 +56,20 @@ interface AISettings {
 }
 
 export default function BusinessEdit() {
-  const [, params] = useRoute('/businesses/:id/edit');
+  const [, params] = useRoute("/businesses/:id/edit");
   const [, setLocation] = useLocation();
+  const { session } = useAuth();
   const businessId = params?.id || null;
 
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
   const [business, setBusiness] = useState<Business | null>(null);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [aiSettings, setAiSettings] = useState<AISettings>({
-    persona: '',
-    instructions: '',
+    persona: "",
+    instructions: "",
     bad_words: [],
     service_links: {},
-    tone: 'professional',
+    tone: "professional",
     max_reply_length: 500,
     include_links: true,
     auto_reply_enabled: false,
@@ -78,91 +78,113 @@ export default function BusinessEdit() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [editedBusiness, setEditedBusiness] = useState({
-    name: '',
-    website: '',
-    description: ''
+    name: "",
+    website: "",
+    description: "",
   });
 
-  const [newKeyword, setNewKeyword] = useState('');
-  const [newBadWord, setNewBadWord] = useState('');
-  const [newServiceName, setNewServiceName] = useState('');
-  const [newServiceUrl, setNewServiceUrl] = useState('');
+  const [newKeyword, setNewKeyword] = useState("");
+  const [newBadWord, setNewBadWord] = useState("");
+  const [newServiceName, setNewServiceName] = useState("");
+  const [newServiceUrl, setNewServiceUrl] = useState("");
 
   useEffect(() => {
-    if (businessId) {
+    if (businessId && session?.access_token) {
       fetchBusinessData();
     }
-  }, [businessId]);
+  }, [businessId, session?.access_token]);
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLocation('/login');
+    if (!session?.access_token) {
+      console.log("🔐 No session token - redirecting to home");
+      setLocation("/");
       return {};
     }
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
     };
   };
 
   const fetchBusinessData = async () => {
-    if (!businessId) return;
+    if (!businessId || !session?.access_token) return;
 
     try {
       setLoading(true);
-      console.log('🔍 Fetching business data for ID:', businessId);
-      
+      console.log("🔍 Fetching business data for ID:", businessId);
+      console.log(
+        "🔐 Using session token:",
+        session.access_token.substring(0, 20) + "..."
+      );
+
       const [businessRes, keywordsRes, aiSettingsRes] = await Promise.all([
-        fetch(`${API_URL}/api/businesses/${businessId}`, { headers: getAuthHeaders() }),
-        fetch(`${API_URL}/api/businesses/${businessId}/keywords`, { headers: getAuthHeaders() }),
-        fetch(`${API_URL}/api/businesses/${businessId}/ai-settings`, { headers: getAuthHeaders() })
+        fetch(`${API_URL}/api/businesses/${businessId}`, {
+          headers: getAuthHeaders(),
+        }),
+        fetch(`${API_URL}/api/businesses/${businessId}/keywords`, {
+          headers: getAuthHeaders(),
+        }),
+        fetch(`${API_URL}/api/businesses/${businessId}/ai-settings`, {
+          headers: getAuthHeaders(),
+        }),
       ]);
 
-      console.log('📊 API Response Status:', {
+      console.log("📊 API Response Status:", {
         business: businessRes.status,
         keywords: keywordsRes.status,
-        aiSettings: aiSettingsRes.status
+        aiSettings: aiSettingsRes.status,
       });
 
       if (businessRes.ok) {
         const businessData = await businessRes.json();
-        console.log('✅ Business data:', businessData);
+        console.log("✅ Business data:", businessData);
         setBusiness(businessData.business);
         setEditedBusiness({
           name: businessData.business.name,
-          website: businessData.business.website || '',
-          description: businessData.business.description || ''
+          website: businessData.business.website || "",
+          description: businessData.business.description || "",
         });
       } else {
-        console.error('❌ Business fetch failed:', businessRes.status, await businessRes.text());
+        console.error(
+          "❌ Business fetch failed:",
+          businessRes.status,
+          await businessRes.text()
+        );
       }
 
       if (keywordsRes.ok) {
         const keywordsData = await keywordsRes.json();
-        console.log('✅ Keywords data:', keywordsData);
+        console.log("✅ Keywords data:", keywordsData);
         setKeywords(keywordsData.keywords || []);
       } else {
-        console.error('❌ Keywords fetch failed:', keywordsRes.status, await keywordsRes.text());
+        console.error(
+          "❌ Keywords fetch failed:",
+          keywordsRes.status,
+          await keywordsRes.text()
+        );
       }
 
       if (aiSettingsRes.ok) {
         const aiSettingsData = await aiSettingsRes.json();
-        console.log('✅ AI Settings data:', aiSettingsData);
+        console.log("✅ AI Settings data:", aiSettingsData);
         setAiSettings(aiSettingsData.ai_settings);
       } else {
-        console.error('❌ AI Settings fetch failed:', aiSettingsRes.status, await aiSettingsRes.text());
+        console.error(
+          "❌ AI Settings fetch failed:",
+          aiSettingsRes.status,
+          await aiSettingsRes.text()
+        );
       }
 
       if (!businessRes.ok && businessRes.status === 401) {
-        setLocation('/login');
+        setLocation("/login");
       }
     } catch (err) {
-      console.error('❌ Fetch error:', err);
-      setError('Failed to load business data');
+      console.error("❌ Fetch error:", err);
+      setError("Failed to load business data");
     } finally {
       setLoading(false);
     }
@@ -172,11 +194,11 @@ export default function BusinessEdit() {
     if (!businessId) return;
 
     setSaving(true);
-    setError('');
+    setError("");
 
     try {
       const response = await fetch(`${API_URL}/api/businesses/${businessId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: getAuthHeaders(),
         body: JSON.stringify(editedBusiness),
       });
@@ -185,10 +207,10 @@ export default function BusinessEdit() {
         setBusiness({ ...business!, ...editedBusiness });
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to save business');
+        setError(data.error || "Failed to save business");
       }
     } catch (err) {
-      setError('Network error');
+      setError("Network error");
     } finally {
       setSaving(false);
     }
@@ -196,130 +218,139 @@ export default function BusinessEdit() {
 
   const analyzeWebsite = async () => {
     if (!businessId || !editedBusiness.website) {
-      setError('Please add a website URL first');
+      setError("Please add a website URL first");
       return;
     }
 
     setAnalyzing(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/businesses/${businessId}/analyze-website`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          website_url: editedBusiness.website,
-          business_name: editedBusiness.name,
-          business_description: editedBusiness.description
-        }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/businesses/${businessId}/analyze-website`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            website_url: editedBusiness.website,
+            business_name: editedBusiness.name,
+            business_description: editedBusiness.description,
+          }),
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Add suggested keywords
         if (data.keywords && data.keywords.length > 0) {
           for (const kw of data.keywords) {
-            await addKeyword(kw.keyword, 'ai_website');
+            await addKeyword(kw.keyword, "ai_website");
           }
         }
-
-
 
         fetchBusinessData();
       } else {
         const data = await response.json();
-        setError(data.error || 'Website analysis failed');
+        setError(data.error || "Website analysis failed");
       }
     } catch (err) {
-      setError('Analysis failed');
+      setError("Analysis failed");
     } finally {
       setAnalyzing(false);
     }
   };
 
-  const addKeyword = async (keyword: string, source: string = 'manual') => {
+  const addKeyword = async (keyword: string, source: string = "manual") => {
     if (!businessId || !keyword.trim()) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/businesses/${businessId}/keywords`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ keyword: keyword.trim(), source }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/businesses/${businessId}/keywords`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ keyword: keyword.trim(), source }),
+        }
+      );
 
       if (response.ok) {
-        if (source === 'manual') {
-          setNewKeyword('');
+        if (source === "manual") {
+          setNewKeyword("");
           fetchBusinessData();
         }
       }
     } catch (err) {
-      console.error('Failed to add keyword');
+      console.error("Failed to add keyword");
     }
   };
-
-
 
   const removeKeyword = async (keywordId: number) => {
     if (!businessId) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/businesses/${businessId}/keywords/${keywordId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${API_URL}/api/businesses/${businessId}/keywords/${keywordId}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (response.ok) {
         fetchBusinessData();
       }
     } catch (err) {
-      console.error('Failed to remove keyword');
+      console.error("Failed to remove keyword");
     }
   };
-
-
 
   const saveAISettings = async () => {
     if (!businessId) return;
 
     setSaving(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/businesses/${businessId}/ai-settings`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(aiSettings),
-      });
+      const response = await fetch(
+        `${API_URL}/api/businesses/${businessId}/ai-settings`,
+        {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(aiSettings),
+        }
+      );
 
       if (response.ok) {
         // Settings saved successfully
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to save AI settings');
+        setError(data.error || "Failed to save AI settings");
       }
     } catch (err) {
-      setError('Network error');
+      setError("Network error");
     } finally {
       setSaving(false);
     }
   };
 
   const addBadWord = () => {
-    if (newBadWord.trim() && !aiSettings.bad_words.includes(newBadWord.trim())) {
+    if (
+      newBadWord.trim() &&
+      !aiSettings.bad_words.includes(newBadWord.trim())
+    ) {
       setAiSettings({
         ...aiSettings,
-        bad_words: [...aiSettings.bad_words, newBadWord.trim()]
+        bad_words: [...aiSettings.bad_words, newBadWord.trim()],
       });
-      setNewBadWord('');
+      setNewBadWord("");
     }
   };
 
   const removeBadWord = (word: string) => {
     setAiSettings({
       ...aiSettings,
-      bad_words: aiSettings.bad_words.filter(w => w !== word)
+      bad_words: aiSettings.bad_words.filter((w) => w !== word),
     });
   };
 
@@ -329,11 +360,11 @@ export default function BusinessEdit() {
         ...aiSettings,
         service_links: {
           ...aiSettings.service_links,
-          [newServiceName.trim()]: newServiceUrl.trim()
-        }
+          [newServiceName.trim()]: newServiceUrl.trim(),
+        },
       });
-      setNewServiceName('');
-      setNewServiceUrl('');
+      setNewServiceName("");
+      setNewServiceUrl("");
     }
   };
 
@@ -342,9 +373,26 @@ export default function BusinessEdit() {
     delete newLinks[serviceName];
     setAiSettings({
       ...aiSettings,
-      service_links: newLinks
+      service_links: newLinks,
     });
   };
+
+  // Show loading while waiting for session
+  if (!session) {
+    return (
+      <PageLayout>
+        <div className="space-y-6">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-8 w-48" />
+          </div>
+          <div className="text-center text-gray-500 mt-8">
+            Loading session...
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   if (loading) {
     return (
@@ -379,9 +427,13 @@ export default function BusinessEdit() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Business not found</h2>
-          <p className="text-gray-600 mb-6">The business you're looking for doesn't exist.</p>
-          <Button onClick={() => setLocation('/businesses')}>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Business not found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            The business you're looking for doesn't exist.
+          </p>
+          <Button onClick={() => setLocation("/businesses")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Businesses
           </Button>
@@ -391,14 +443,14 @@ export default function BusinessEdit() {
   }
 
   const tabs = [
-    { id: 'general', name: 'General', icon: Target },
-    { id: 'targeting', name: 'Targeting', icon: Hash },
-    { id: 'ai-replies', name: 'AI Replies', icon: Bot },
+    { id: "general", name: "General", icon: Target },
+    { id: "targeting", name: "Targeting", icon: Hash },
+    { id: "ai-replies", name: "AI Replies", icon: Bot },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'general':
+      case "general":
         return (
           <div className="space-y-6">
             <Card>
@@ -414,7 +466,12 @@ export default function BusinessEdit() {
                   <Input
                     id="name"
                     value={editedBusiness.name}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditedBusiness({
+                        ...editedBusiness,
+                        name: e.target.value,
+                      })
+                    }
                     placeholder="Enter business name"
                   />
                 </div>
@@ -425,7 +482,12 @@ export default function BusinessEdit() {
                     id="website"
                     type="url"
                     value={editedBusiness.website}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, website: e.target.value })}
+                    onChange={(e) =>
+                      setEditedBusiness({
+                        ...editedBusiness,
+                        website: e.target.value,
+                      })
+                    }
                     placeholder="https://example.com"
                   />
                 </div>
@@ -435,7 +497,12 @@ export default function BusinessEdit() {
                   <Textarea
                     id="description"
                     value={editedBusiness.description}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, description: e.target.value })}
+                    onChange={(e) =>
+                      setEditedBusiness({
+                        ...editedBusiness,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Describe your business..."
                     rows={4}
                   />
@@ -449,15 +516,15 @@ export default function BusinessEdit() {
                     className="text-purple-600 border-purple-200 hover:bg-purple-50"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {analyzing ? 'Analyzing...' : 'AI Analyze Website'}
+                    {analyzing ? "Analyzing..." : "AI Analyze Website"}
                   </Button>
-                  
+
                   <Button
                     onClick={saveBusiness}
                     disabled={saving}
                     className="bg-purple-600 hover:bg-blue-700"
                   >
-                    {saving ? 'Saving...' : 'Save Changes'}
+                    {saving ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
               </CardContent>
@@ -465,7 +532,7 @@ export default function BusinessEdit() {
           </div>
         );
 
-      case 'targeting':
+      case "targeting":
         return (
           <div className="space-y-6">
             {/* Keywords */}
@@ -484,7 +551,9 @@ export default function BusinessEdit() {
                     value={newKeyword}
                     onChange={(e) => setNewKeyword(e.target.value)}
                     placeholder="Add keyword..."
-                    onKeyPress={(e) => e.key === 'Enter' && addKeyword(newKeyword)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && addKeyword(newKeyword)
+                    }
                   />
                   <Button
                     onClick={() => addKeyword(newKeyword)}
@@ -500,13 +569,15 @@ export default function BusinessEdit() {
                     <Badge
                       key={keyword.id}
                       className={`inline-flex items-center gap-1 ${
-                        keyword.source === 'ai_website'
-                          ? 'bg-purple-100 text-purple-800 border-purple-200'
-                          : 'bg-blue-100 text-blue-800 border-blue-200'
+                        keyword.source === "ai_website"
+                          ? "bg-purple-100 text-purple-800 border-purple-200"
+                          : "bg-blue-100 text-blue-800 border-blue-200"
                       }`}
                     >
                       {keyword.keyword}
-                      {keyword.source === 'ai_website' && <Sparkles className="w-3 h-3" />}
+                      {keyword.source === "ai_website" && (
+                        <Sparkles className="w-3 h-3" />
+                      )}
                       <button
                         onClick={() => removeKeyword(keyword.id)}
                         className="ml-1 text-red-500 hover:text-red-700"
@@ -518,12 +589,10 @@ export default function BusinessEdit() {
                 </div>
               </CardContent>
             </Card>
-
-
           </div>
         );
 
-      case 'ai-replies':
+      case "ai-replies":
         return (
           <div className="space-y-6">
             {/* AI Configuration */}
@@ -539,11 +608,19 @@ export default function BusinessEdit() {
                 <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
                   <div>
                     <Label className="text-base font-medium">Auto Reply</Label>
-                    <p className="text-sm text-gray-600">Automatically post AI-generated replies to high-quality leads</p>
+                    <p className="text-sm text-gray-600">
+                      Automatically post AI-generated replies to high-quality
+                      leads
+                    </p>
                   </div>
                   <Switch
                     checked={aiSettings.auto_reply_enabled}
-                    onCheckedChange={(checked) => setAiSettings({ ...aiSettings, auto_reply_enabled: checked })}
+                    onCheckedChange={(checked) =>
+                      setAiSettings({
+                        ...aiSettings,
+                        auto_reply_enabled: checked,
+                      })
+                    }
                   />
                 </div>
 
@@ -553,7 +630,9 @@ export default function BusinessEdit() {
                   <Textarea
                     id="persona"
                     value={aiSettings.persona}
-                    onChange={(e) => setAiSettings({ ...aiSettings, persona: e.target.value })}
+                    onChange={(e) =>
+                      setAiSettings({ ...aiSettings, persona: e.target.value })
+                    }
                     placeholder="Describe how the AI should present itself (e.g., 'You are a helpful software consultant with 10 years of experience...')"
                     rows={3}
                   />
@@ -565,7 +644,12 @@ export default function BusinessEdit() {
                   <Textarea
                     id="instructions"
                     value={aiSettings.instructions}
-                    onChange={(e) => setAiSettings({ ...aiSettings, instructions: e.target.value })}
+                    onChange={(e) =>
+                      setAiSettings({
+                        ...aiSettings,
+                        instructions: e.target.value,
+                      })
+                    }
                     placeholder="Specific instructions for generating replies (e.g., 'Always mention our free trial', 'Keep responses under 200 words', etc.)"
                     rows={4}
                   />
@@ -577,7 +661,9 @@ export default function BusinessEdit() {
                   <select
                     id="tone"
                     value={aiSettings.tone}
-                    onChange={(e) => setAiSettings({ ...aiSettings, tone: e.target.value })}
+                    onChange={(e) =>
+                      setAiSettings({ ...aiSettings, tone: e.target.value })
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="professional">Professional</option>
@@ -596,7 +682,12 @@ export default function BusinessEdit() {
                       id="maxLength"
                       type="number"
                       value={aiSettings.max_reply_length}
-                      onChange={(e) => setAiSettings({ ...aiSettings, max_reply_length: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setAiSettings({
+                          ...aiSettings,
+                          max_reply_length: parseInt(e.target.value),
+                        })
+                      }
                       min="100"
                       max="1000"
                     />
@@ -611,7 +702,12 @@ export default function BusinessEdit() {
                       min="0.1"
                       max="1.0"
                       value={aiSettings.confidence_threshold}
-                      onChange={(e) => setAiSettings({ ...aiSettings, confidence_threshold: parseFloat(e.target.value) })}
+                      onChange={(e) =>
+                        setAiSettings({
+                          ...aiSettings,
+                          confidence_threshold: parseFloat(e.target.value),
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -620,11 +716,15 @@ export default function BusinessEdit() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Include Service Links</Label>
-                    <p className="text-sm text-gray-600">Allow AI to include links to your services in replies</p>
+                    <p className="text-sm text-gray-600">
+                      Allow AI to include links to your services in replies
+                    </p>
                   </div>
                   <Switch
                     checked={aiSettings.include_links}
-                    onCheckedChange={(checked) => setAiSettings({ ...aiSettings, include_links: checked })}
+                    onCheckedChange={(checked) =>
+                      setAiSettings({ ...aiSettings, include_links: checked })
+                    }
                   />
                 </div>
               </CardContent>
@@ -662,22 +762,27 @@ export default function BusinessEdit() {
                 </div>
 
                 <div className="space-y-2">
-                  {Object.entries(aiSettings.service_links).map(([name, url]) => (
-                    <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <span className="font-medium">{name}</span>
-                        <p className="text-sm text-gray-600">{url}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeServiceLink(name)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  {Object.entries(aiSettings.service_links).map(
+                    ([name, url]) => (
+                      <div
+                        key={name}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        <div>
+                          <span className="font-medium">{name}</span>
+                          <p className="text-sm text-gray-600">{url}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeServiceLink(name)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -696,7 +801,7 @@ export default function BusinessEdit() {
                     value={newBadWord}
                     onChange={(e) => setNewBadWord(e.target.value)}
                     placeholder="Add word/phrase to avoid..."
-                    onKeyPress={(e) => e.key === 'Enter' && addBadWord()}
+                    onKeyPress={(e) => e.key === "Enter" && addBadWord()}
                   />
                   <Button
                     onClick={addBadWord}
@@ -730,7 +835,7 @@ export default function BusinessEdit() {
                     disabled={saving}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
-                    {saving ? 'Saving...' : 'Save AI Settings'}
+                    {saving ? "Saving..." : "Save AI Settings"}
                   </Button>
                 </div>
               </CardContent>
@@ -751,14 +856,18 @@ export default function BusinessEdit() {
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
-              onClick={() => setLocation('/businesses')}
+              onClick={() => setLocation("/businesses")}
               className="p-2"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Edit Business</h1>
-              <p className="text-gray-600">Configure your business settings and AI automation</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Edit Business
+              </h1>
+              <p className="text-gray-600">
+                Configure your business settings and AI automation
+              </p>
             </div>
           </div>
         </div>
@@ -780,8 +889,8 @@ export default function BusinessEdit() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
                   <Icon className="w-5 h-5 mr-2" />
@@ -806,9 +915,13 @@ export default function BusinessEdit() {
           </div>
         ) : !business ? (
           <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Business not found</h2>
-            <p className="text-gray-600 mb-6">The business you're looking for doesn't exist.</p>
-            <Button onClick={() => setLocation('/businesses')}>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Business not found
+            </h2>
+            <p className="text-gray-600 mb-6">
+              The business you're looking for doesn't exist.
+            </p>
+            <Button onClick={() => setLocation("/businesses")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Businesses
             </Button>

@@ -54,13 +54,7 @@ class KeywordData(BaseModel):
 class KeywordsRequest(BaseModel):
     keywords: List[KeywordData]
 
-class SubredditData(BaseModel):
-    subreddit: str
-    source: str = "manual"
-    reason: Optional[str] = ""
 
-class SubredditsRequest(BaseModel):
-    subreddits: List[SubredditData]
 
 # Lead models
 class BusinessLead(BaseModel):

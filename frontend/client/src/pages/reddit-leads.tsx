@@ -42,7 +42,7 @@ interface Lead {
   content: string;
   author: string;
   url: string;
-  subreddit: string;
+
   score: number;
   created_at: string;
 }
@@ -550,7 +550,7 @@ export default function LeadsDashboard() {
                   className="bg-white/50 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-md transition-all duration-200 hover:-translate-y-1 h-fit"
                 >
                   <CardContent className="p-4">
-                    {/* Header with probability and subreddit */}
+                    {/* Header with probability */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center text-xs font-medium">
                         <span className="mr-1">
@@ -558,12 +558,7 @@ export default function LeadsDashboard() {
                         </span>
                         <span className="text-gray-900">{lead.ai_score}%</span>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="text-orange-600 border-orange-200 text-xs"
-                      >
-                        r/{lead.subreddit}
-                      </Badge>
+
                     </div>
 
                     {/* Title */}
@@ -662,7 +657,7 @@ export default function LeadsDashboard() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-16">Score</TableHead>
-                      <TableHead className="w-20">Subreddit</TableHead>
+
                       <TableHead>Title</TableHead>
                       <TableHead className="w-24">Author</TableHead>
                       <TableHead className="w-20">Date</TableHead>
@@ -684,14 +679,7 @@ export default function LeadsDashboard() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className="text-orange-600 border-orange-200 text-xs"
-                          >
-                            r/{lead.subreddit}
-                          </Badge>
-                        </TableCell>
+
                         <TableCell className="max-w-md">
                           <div>
                             <h4 className="font-medium text-sm text-gray-900 line-clamp-2 mb-1">

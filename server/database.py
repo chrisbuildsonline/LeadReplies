@@ -66,17 +66,7 @@ class Database:
             )
         ''')
         
-        # Subreddits table
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS subreddits (
-                id SERIAL PRIMARY KEY,
-                business_id INTEGER NOT NULL,
-                subreddit VARCHAR(255) NOT NULL,
-                source VARCHAR(50) DEFAULT 'manual',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE
-            )
-        ''')
+
         
         # Global leads table (all scraped leads)
         cursor.execute('''
@@ -88,7 +78,7 @@ class Database:
                 content TEXT,
                 author VARCHAR(255),
                 url TEXT,
-                subreddit VARCHAR(255),
+
                 score INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -188,7 +178,7 @@ class Database:
         indexes = [
             "CREATE INDEX IF NOT EXISTS idx_businesses_user_id ON businesses(user_id)",
             "CREATE INDEX IF NOT EXISTS idx_keywords_business_id ON keywords(business_id)",
-            "CREATE INDEX IF NOT EXISTS idx_subreddits_business_id ON subreddits(business_id)",
+
             "CREATE INDEX IF NOT EXISTS idx_global_leads_platform ON global_leads(platform, platform_id)",
             "CREATE INDEX IF NOT EXISTS idx_business_leads_business_id ON business_leads(business_id)",
             "CREATE INDEX IF NOT EXISTS idx_business_leads_processed_at ON business_leads(processed_at)",
@@ -443,62 +433,18 @@ class Database:
         conn.close()
         return success
     
-    # Subreddits management
-    def add_business_subreddit(self, business_id, subreddit, source='manual'):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            INSERT INTO subreddits (business_id, subreddit, source) 
-            VALUES (%s, %s, %s) RETURNING id
-        ''', (business_id, subreddit, source))
-        
-        subreddit_id = cursor.fetchone()[0]
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return subreddit_id
-    
-    def get_business_subreddits(self, business_id):
-        conn = self.get_connection()
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        
-        cursor.execute('''
-            SELECT id, subreddit, source, created_at 
-            FROM subreddits WHERE business_id = %s
-        ''', (business_id,))
-        
-        results = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        
-        return [dict(row) for row in results]
-    
-    def delete_business_subreddit(self, subreddit_id, business_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            DELETE FROM subreddits 
-            WHERE id = %s AND business_id = %s
-        ''', (subreddit_id, business_id))
-        
-        success = cursor.rowcount > 0
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return success
+
     
     # Global leads management
-    def add_global_lead(self, platform, platform_id, title, content, author, url, subreddit=None, score=0):
+    def add_global_lead(self, platform, platform_id, title, content, author, url, score=0):
         conn = self.get_connection()
         cursor = conn.cursor()
         
         try:
             cursor.execute('''
-                INSERT INTO global_leads (platform, platform_id, title, content, author, url, subreddit, score) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
-            ''', (platform, platform_id, title, content, author, url, subreddit, score))
+                INSERT INTO global_leads (platform, platform_id, title, content, author, url, score) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+            ''', (platform, platform_id, title, content, author, url, score))
             
             lead_id = cursor.fetchone()[0]
             conn.commit()
@@ -560,7 +506,7 @@ class Database:
         
         cursor.execute('''
             SELECT bl.*, gl.platform, gl.platform_id, gl.title, gl.content, gl.author, 
-                   gl.url, gl.subreddit, gl.score, gl.created_at
+                   gl.url, gl.score, gl.created_at
             FROM business_leads bl
             JOIN global_leads gl ON bl.global_lead_id = gl.id
             WHERE bl.business_id = %s
@@ -645,7 +591,7 @@ class Database:
         base_query = '''
             SELECT r.*, bl.ai_score, 
                    gl.title as lead_title, gl.platform as lead_platform, gl.url as lead_url,
-                   gl.subreddit as lead_subreddit, gl.author as lead_author,
+                   gl.author as lead_author,
                    b.name as business_name
             FROM replies r
             JOIN business_leads bl ON r.business_lead_id = bl.id
@@ -1187,7 +1133,7 @@ class Database:
         
         cursor.execute('''
             SELECT r.*, bl.business_id, gl.title as lead_title, gl.url as lead_url, 
-                   gl.platform as lead_platform, gl.subreddit as lead_subreddit, 
+                   gl.platform as lead_platform, 
                    gl.author as lead_author, bl.ai_score
             FROM replies r
             JOIN business_leads bl ON r.business_lead_id = bl.id

@@ -107,7 +107,7 @@ class LeadScrapingService:
             logger.info("🤖 Starting F5Bot Reddit scraper...")
             leads = search_reddit_leads_efficient(
                 keywords=keywords,
-                subreddits=None,  # F5Bot searches all subreddits
+
                 days_back=days_back,
                 limit=100  # Reasonable limit for F5Bot scraping
             )
@@ -134,7 +134,7 @@ class LeadScrapingService:
                         content=lead.get('content', ''),
                         author=lead.get('author', ''),
                         url=lead.get('url', ''),
-                        subreddit=lead.get('subreddit', ''),
+
                         score=lead.get('upvotes', 0)
                     )
                     

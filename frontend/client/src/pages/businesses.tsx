@@ -24,15 +24,11 @@ interface Keyword {
   source: string;
 }
 
-interface Subreddit {
-  id: number;
-  subreddit: string;
-  source: string;
-}
+
 
 export default function Businesses() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [businessStats, setBusinessStats] = useState<{[key: number]: {keywords: number, subreddits: number}}>({});
+  const [businessStats, setBusinessStats] = useState<{[key: number]: {keywords: number}}>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -89,19 +85,14 @@ export default function Businesses() {
         setBusinesses(data.businesses);
         
         // Fetch stats for each business
-        const stats: {[key: number]: {keywords: number, subreddits: number}} = {};
+        const stats: {[key: number]: {keywords: number}} = {};
         for (const business of data.businesses) {
-          const [keywordsRes, subredditsRes] = await Promise.all([
-            fetch(`${API_URL}/api/businesses/${business.id}/keywords`, { headers: getAuthHeaders() }),
-            fetch(`${API_URL}/api/businesses/${business.id}/subreddits`, { headers: getAuthHeaders() })
-          ]);
+          const keywordsRes = await fetch(`${API_URL}/api/businesses/${business.id}/keywords`, { headers: getAuthHeaders() });
           
-          if (keywordsRes.ok && subredditsRes.ok) {
+          if (keywordsRes.ok) {
             const keywordsData = await keywordsRes.json();
-            const subredditsData = await subredditsRes.json();
             stats[business.id] = {
-              keywords: keywordsData.keywords?.length || 0,
-              subreddits: subredditsData.subreddits?.length || 0
+              keywords: keywordsData.keywords?.length || 0
             };
           }
         }
@@ -228,13 +219,7 @@ export default function Businesses() {
                 <div className="p-2 bg-orange-100 rounded-lg">
                   <Globe className="w-6 h-6 text-orange-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Subreddits</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {loading ? <Skeleton className="h-8 w-16" /> : 
-                     Object.values(businessStats).reduce((sum, stats) => sum + stats.subreddits, 0)}
-                  </p>
-                </div>
+
               </div>
             </CardContent>
           </Card>
@@ -336,9 +321,7 @@ export default function Businesses() {
                           <Badge variant="secondary" className="text-xs">
                             {businessStats[business.id]?.keywords || 0} keywords
                           </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {businessStats[business.id]?.subreddits || 0} subreddits
-                          </Badge>
+
                         </div>
                         
                         <Button

@@ -85,9 +85,7 @@ class KeywordAdd(BaseModel):
     keyword: str
     source: str = "manual"
 
-class SubredditAdd(BaseModel):
-    subreddit: str
-    source: str = "manual"
+
 
 class WebsiteAnalyze(BaseModel):
     website_url: str
@@ -317,13 +315,8 @@ async def analyze_website(business_id: str, data: WebsiteAnalyze, user_id: int =
         # Analyze website for keywords
         keywords = ai_analyzer.analyze_website_for_keywords(data.website_url, business['name'])
         
-        # Suggest subreddits
-        keyword_list = [kw['keyword'] for kw in keywords]
-        subreddits = ai_analyzer.suggest_subreddits_for_keywords(keyword_list, business['name'])
-        
         return {
-            "keywords": keywords,
-            "subreddits": subreddits
+            "keywords": keywords
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
@@ -353,30 +346,7 @@ async def remove_keyword(business_id: str, keyword_id: int, user_id: int = Depen
     db.remove_keyword(keyword_id, business['id'])
     return {"success": True}
 
-# Subreddits management
-@app.post("/api/businesses/{business_id}/subreddits")
-async def add_subreddit(business_id: str, subreddit: SubredditAdd, user_id: int = Depends(verify_jwt_token)):
-    # Verify business ownership
-    business = get_business_by_public_id_or_404(business_id, user_id)
-    
-    db.add_subreddit(business['id'], subreddit.subreddit, subreddit.source)
-    return {"success": True}
 
-@app.get("/api/businesses/{business_id}/subreddits")
-async def get_subreddits(business_id: str, user_id: int = Depends(verify_jwt_token)):
-    # Verify business ownership
-    business = get_business_by_public_id_or_404(business_id, user_id)
-    
-    subreddits = db.get_business_subreddits(business['id'])
-    return {"subreddits": subreddits}
-
-@app.delete("/api/businesses/{business_id}/subreddits/{subreddit_id}")
-async def remove_subreddit(business_id: str, subreddit_id: int, user_id: int = Depends(verify_jwt_token)):
-    # Verify business ownership
-    business = get_business_by_public_id_or_404(business_id, user_id)
-    
-    db.remove_subreddit(subreddit_id, business['id'])
-    return {"success": True}
 
 # Dashboard endpoint
 @app.get("/api/dashboard")

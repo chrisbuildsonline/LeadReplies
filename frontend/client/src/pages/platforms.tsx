@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from 'wouter';
+import { useAuth } from '../contexts/AuthContext';
 import PageLayout from "@/components/layout/page-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ interface PlatformSettings {
 
 export default function Platforms() {
   const [, setLocation] = useLocation();
+  const { session } = useAuth();
   const [platforms, setPlatforms] = useState<PlatformSettings[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -56,13 +58,13 @@ export default function Platforms() {
   };
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLocation('/login');
+    if (!session?.access_token) {
+      console.log('🔐 No session token - redirecting to home');
+      setLocation('/');
       return undefined;
     }
     return {
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
     };
   };

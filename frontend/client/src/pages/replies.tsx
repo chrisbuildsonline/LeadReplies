@@ -40,7 +40,7 @@ interface Reply {
   lead_title: string;
   lead_url: string;
   lead_platform: string;
-  lead_subreddit?: string;
+
   lead_author: string;
   ai_score: number;
 }
@@ -389,9 +389,7 @@ export default function Replies() {
                         
                         <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                           <span>u/{reply.lead_author}</span>
-                          {reply.lead_subreddit && (
-                            <span>r/{reply.lead_subreddit}</span>
-                          )}
+
                           <span>AI Score: {reply.ai_score}%</span>
                           <span>{formatTimeAgo(reply.created_at)}</span>
                         </div>
