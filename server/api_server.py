@@ -482,9 +482,10 @@ async def get_dashboard_data(user_id: int = Depends(verify_jwt_token)):
         platform_results = cursor.fetchall()
         
         for platform, count in platform_results:
+            logger.info(f"🔍 Processing platform {platform} with count {count}, businesses type: {type(businesses)}")
             platform_stats[platform] = {
                 'leads': count,
-                'businesses': len([b for b in businesses])  # All businesses could potentially have this platform
+                'businesses': len(businesses)  # All businesses could potentially have this platform
             }
         
         # Get recent activity (last 10 leads)
@@ -541,27 +542,49 @@ async def get_dashboard_data(user_id: int = Depends(verify_jwt_token)):
         
         # Format platform stats
         formatted_platform_stats = []
-        for platform, stats in platform_stats.items():
-            formatted_platform_stats.append({
-                'platform': platform,
-                'leads': stats['leads'],
-                'businesses': len(stats['businesses'])
-            })
+        logger.info(f"🔍 Platform stats before formatting: {platform_stats}")
         
-        # Sort recent activity by processed_at
-        recent_activity.sort(key=lambda x: x['processed_at'], reverse=True)
+        try:
+            for platform, stats in platform_stats.items():
+                logger.info(f"🔍 Formatting platform {platform}, stats: {stats}, stats type: {type(stats)}")
+                
+                # Ensure we have the right data types
+                leads_count = stats.get('leads', 0) if isinstance(stats, dict) else 0
+                business_count = stats.get('businesses', 0) if isinstance(stats, dict) else 0
+                
+                formatted_platform_stats.append({
+                    'platform': platform,
+                    'leads': leads_count,
+                    'businesses': business_count
+                })
+        except Exception as e:
+            logger.error(f"❌ Error formatting platform stats: {e}")
+            # Fallback to empty list
+            formatted_platform_stats = []
         
-        return {
+        # Sort recent activity by processed_at (safely)
+        try:
+            if recent_activity and isinstance(recent_activity, list):
+                recent_activity.sort(key=lambda x: x.get('processed_at', ''), reverse=True)
+        except Exception as e:
+            logger.error(f"❌ Error sorting recent activity: {e}")
+            recent_activity = []
+        
+        # Ensure all data is properly formatted and safe
+        result = {
             "metrics": {
-                "totalLeads": total_leads,
-                "leadsToday": leads_today,
-                "leadsThisWeek": leads_this_week,
-                "highQualityLeads": high_quality_leads
+                "totalLeads": int(total_leads or 0),
+                "leadsToday": int(leads_today or 0),
+                "leadsThisWeek": int(leads_this_week or 0),
+                "highQualityLeads": int(high_quality_leads or 0)
             },
-            "platformStats": formatted_platform_stats,
-            "recentActivity": recent_activity[:10],
-            "businessStats": business_stats
+            "platformStats": formatted_platform_stats if formatted_platform_stats else [],
+            "recentActivity": recent_activity[:10] if recent_activity else [],
+            "businessStats": business_stats if business_stats else []
         }
+        
+        logger.info(f"✅ Dashboard data prepared successfully with {len(result['platformStats'])} platforms")
+        return result
         
     except Exception as e:
         logger.error(f"Dashboard error: {str(e)}")
