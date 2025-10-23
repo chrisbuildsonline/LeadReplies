@@ -29,7 +29,7 @@ import {
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6070';
 
 interface Business {
-  id: number;
+  id: string;  // Changed to string for UUID
   name: string;
   website: string;
   description: string;
@@ -59,7 +59,7 @@ interface AISettings {
 export default function BusinessEdit() {
   const [, params] = useRoute('/businesses/:id/edit');
   const [, setLocation] = useLocation();
-  const businessId = params?.id ? parseInt(params.id) : null;
+  const businessId = params?.id || null;
 
   const [activeTab, setActiveTab] = useState('general');
   const [business, setBusiness] = useState<Business | null>(null);
@@ -114,36 +114,54 @@ export default function BusinessEdit() {
 
     try {
       setLoading(true);
+      console.log('🔍 Fetching business data for ID:', businessId);
+      
       const [businessRes, keywordsRes, aiSettingsRes] = await Promise.all([
         fetch(`${API_URL}/api/businesses/${businessId}`, { headers: getAuthHeaders() }),
         fetch(`${API_URL}/api/businesses/${businessId}/keywords`, { headers: getAuthHeaders() }),
         fetch(`${API_URL}/api/businesses/${businessId}/ai-settings`, { headers: getAuthHeaders() })
       ]);
 
+      console.log('📊 API Response Status:', {
+        business: businessRes.status,
+        keywords: keywordsRes.status,
+        aiSettings: aiSettingsRes.status
+      });
+
       if (businessRes.ok) {
         const businessData = await businessRes.json();
+        console.log('✅ Business data:', businessData);
         setBusiness(businessData.business);
         setEditedBusiness({
           name: businessData.business.name,
           website: businessData.business.website || '',
           description: businessData.business.description || ''
         });
+      } else {
+        console.error('❌ Business fetch failed:', businessRes.status, await businessRes.text());
       }
 
       if (keywordsRes.ok) {
         const keywordsData = await keywordsRes.json();
+        console.log('✅ Keywords data:', keywordsData);
         setKeywords(keywordsData.keywords || []);
+      } else {
+        console.error('❌ Keywords fetch failed:', keywordsRes.status, await keywordsRes.text());
       }
 
       if (aiSettingsRes.ok) {
         const aiSettingsData = await aiSettingsRes.json();
+        console.log('✅ AI Settings data:', aiSettingsData);
         setAiSettings(aiSettingsData.ai_settings);
+      } else {
+        console.error('❌ AI Settings fetch failed:', aiSettingsRes.status, await aiSettingsRes.text());
       }
 
       if (!businessRes.ok && businessRes.status === 401) {
         setLocation('/login');
       }
     } catch (err) {
+      console.error('❌ Fetch error:', err);
       setError('Failed to load business data');
     } finally {
       setLoading(false);

@@ -48,7 +48,7 @@ interface Lead {
 }
 
 interface Business {
-  id: number;
+  id: string;  // Changed to string for UUID
   name: string;
   website: string;
   description: string;

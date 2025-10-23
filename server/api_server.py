@@ -254,6 +254,10 @@ async def get_business(business_id: str, user_id: int = Depends(verify_jwt_token
     if business is None:
         logger.warning(f"❌ Business {business_id} not found for user {user_id}")
         raise HTTPException(status_code=404, detail="Business not found")
+    
+    # Transform response to use public_id as the main id
+    business['id'] = str(business['public_id'])
+    
     logger.info(f"✅ Found business: {business['name']}")
     return {"business": business}
 

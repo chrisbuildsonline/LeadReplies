@@ -43,7 +43,7 @@ interface RecentActivity {
 }
 
 interface BusinessStat {
-  id: number;
+  id: string;  // Changed to string for UUID
   name: string;
   totalLeads: number;
   leadsToday: number;

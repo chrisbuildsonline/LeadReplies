@@ -11,7 +11,7 @@ import { Plus, Edit, Trash2, Globe, Calendar, Target, Hash, ExternalLink } from 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6070';
 
 interface Business {
-  id: number;
+  id: string;  // Changed to string for UUID
   name: string;
   website: string;
   description: string;
