@@ -55,7 +55,7 @@ Once started, access your app at:
 
 ## 🎯 What It Does
 
-1. **Scrapes Reddit** - Monitors 27 subreddits for 30 keywords
+1. **Scrapes Reddit** - Monitors Reddit for relevant keywords
 2. **AI Analysis** - Claude 3 analyzes each post (0-100% probability)
 3. **Database Storage** - PostgreSQL stores all leads with metadata
 4. **Web Interface** - React dashboard to view and manage leads

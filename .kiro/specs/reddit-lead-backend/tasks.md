@@ -38,7 +38,7 @@
 - [ ] 4. Enhance and refactor existing scraping lead finder
 - [ ] 4.1 Refactor reddit_scrape.py into ScrapingLeadFinder class
   - Convert existing script into a proper class structure
-  - Add support for multiple subreddit filtering
+
   - Implement configurable keyword lists and matching logic
   - Write unit tests with mocked Reddit API responses
   - _Requirements: 2.1, 2.2, 2.4, 4.2, 4.3_

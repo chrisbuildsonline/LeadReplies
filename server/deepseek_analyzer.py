@@ -123,69 +123,7 @@ class DeepSeekAnalyzer:
         
         return []
     
-    def suggest_subreddits_for_keywords(self, keywords: List[str], business_name: str, 
-                                      industry: str = "") -> List[Dict]:
-        """
-        Suggest relevant subreddits based on keywords and business type
-        """
-        if not self.api_key:
-            print("⚠️  DeepSeek API key not available - returning empty subreddits list")
-            return []
-        keywords_str = ", ".join(keywords[:10])  # Use top 10 keywords
-        
-        prompt = f"""
-        Suggest 15-20 relevant subreddits where potential customers for this business might be active.
 
-        Business: {business_name}
-        Industry: {industry}
-        Keywords: {keywords_str}
-
-        Focus on subreddits where people:
-        1. Ask for help with problems your business solves
-        2. Discuss industry-related topics
-        3. Seek recommendations for tools/services
-        4. Share pain points and challenges
-
-        Return ONLY a JSON array of objects:
-        [
-            {{"subreddit": "entrepreneur", "reason": "business owners seeking solutions"}},
-            {{"subreddit": "smallbusiness", "reason": "SMB owners with common pain points"}}
-        ]
-
-        Use subreddit names WITHOUT the 'r/' prefix.
-        """
-        
-        messages = [
-            {"role": "system", "content": "You are an expert at identifying relevant Reddit communities for business lead generation."},
-            {"role": "user", "content": prompt}
-        ]
-        
-        response = self._make_request(messages, max_tokens=600)
-        
-        if response:
-            try:
-                json_start = response.find('[')
-                json_end = response.rfind(']') + 1
-                if json_start != -1 and json_end != -1:
-                    json_str = response[json_start:json_end]
-                    subreddits_data = json.loads(json_str)
-                    
-                    formatted_subreddits = []
-                    for sub in subreddits_data:
-                        subreddit_name = sub.get('subreddit', '').strip().replace('r/', '')
-                        if subreddit_name:
-                            formatted_subreddits.append({
-                                'subreddit': subreddit_name,
-                                'source': 'ai_suggested',
-                                'reason': sub.get('reason', '')
-                            })
-                    
-                    return formatted_subreddits
-                    
-            except json.JSONDecodeError as e:
-                print(f"Failed to parse subreddits JSON: {e}")
-        
-        return []
     
     def analyze_lead_for_business(self, lead_title: str, lead_content: str, 
                                  business_keywords: List[str], business_name: str,

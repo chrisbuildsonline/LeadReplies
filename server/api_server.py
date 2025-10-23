@@ -93,10 +93,26 @@ class WebsiteAnalyze(BaseModel):
 # Helper functions
 def get_business_by_public_id_or_404(public_id: str, user_id: int):
     """Helper function to get business by public_id and raise 404 if not found"""
+    logger.info(f"🔍 Looking for business {public_id} for user {user_id}")
     business = db.get_business_by_public_id(public_id, user_id)
     if business is None:
         logger.warning(f"❌ Business {public_id} not found for user {user_id}")
+        
+        # Debug: Check if business exists for any user
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id FROM businesses WHERE public_id = %s", (public_id,))
+        result = cursor.fetchone()
+        if result:
+            logger.warning(f"❌ Business {public_id} exists but belongs to user {result[0]}, not {user_id}")
+        else:
+            logger.warning(f"❌ Business {public_id} does not exist at all")
+        cursor.close()
+        conn.close()
+        
         raise HTTPException(status_code=404, detail="Business not found")
+    
+    logger.info(f"✅ Found business {business['name']} (ID: {business['id']}) for user {user_id}")
     return business
 
 def create_jwt_token(user_id: int) -> str:

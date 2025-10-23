@@ -24,7 +24,7 @@ graph TB
     subgraph "Configuration Layer"
         L[Config Manager]
         M[Keyword Lists]
-        N[Subreddit Filters]
+
         O[Time Ranges]
     end
     
@@ -44,14 +44,14 @@ graph TB
 **Key Methods:**
 - `generate_leads(method='both', config=None)` - Main orchestration method
 - `get_ai_leads(keywords, days, limit)` - AI-powered lead generation
-- `get_scraped_leads(keywords, subreddits, limit)` - Traditional scraping
+- `get_scraped_leads(keywords, limit)` - Traditional scraping
 - `merge_and_dedupe(ai_leads, scraped_leads)` - Combine results
 
 **Configuration Interface:**
 ```python
 class LeadConfig:
     keywords: List[str]
-    subreddits: List[str] = ['all']
+
     days_back: int = 30
     limit: int = 100
     method: str = 'both'  # 'ai', 'scrape', 'both'
@@ -77,14 +77,14 @@ class LeadConfig:
 **Purpose:** Enhanced version of your current reddit_scrape.py following F5Bot methodology
 
 **Key Features:**
-- Multiple subreddit support
+
 - Real-time monitoring capabilities
 - Keyword matching with context analysis
 - Rate limiting compliance
 - Robust error handling
 
 **Methods:**
-- `fetch_subreddit_content(subreddit, content_type, limit)` - Get posts/comments
+
 - `filter_by_keywords(content, keywords)` - Keyword matching
 - `extract_lead_data(reddit_item)` - Structure extraction
 - `monitor_continuous(interval_minutes)` - Real-time monitoring
@@ -113,7 +113,7 @@ class Lead:
     id: str  # Generated unique identifier
     source_method: str  # 'ai' or 'scrape'
     author: str
-    subreddit: str
+
     title: str
     content: str
     permalink: str

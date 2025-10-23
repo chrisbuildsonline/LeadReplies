@@ -4,7 +4,7 @@ A complete system that automatically finds potential customers on Reddit, analyz
 
 ## 🚀 What It Does
 
-1. **Scrapes Reddit** - Uses efficient search queries to find posts across multiple subreddits
+1. **Scrapes Reddit** - Uses efficient keyword-based search queries to find relevant posts
 2. **AI Analysis** - Claude analyzes each post and assigns a probability score (0-100%)
 3. **Database Storage** - Stores leads with full metadata and AI analysis
 4. **Hourly Schedule** - Automatically runs every hour to find new opportunities
@@ -21,7 +21,7 @@ A complete system that automatically finds potential customers on Reddit, analyz
          │                        │                       │
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Scheduler     │    │   Keywords &     │    │   Lead Viewer   │
-│  (Every Hour)   │    │   Subreddits     │    │     (CLI)       │
+│  (Every Hour)   │    │   Keywords       │    │     (CLI)       │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
@@ -108,9 +108,7 @@ leads (
 ## 🔍 How It Works
 
 ### 1. Efficient Scraping
-Instead of making individual requests to each subreddit (which causes rate limiting), the system:
-- Uses Reddit's search API with subreddit filters: `"keyword" (subreddit:entrepreneur+subreddit:startups)`
-- Makes one request per keyword across ALL monitored subreddits
+The system uses efficient keyword-based search across Reddit without needing to specify individual subreddits.
 - Dramatically reduces API calls and avoids rate limits
 
 ### 2. AI Analysis
@@ -129,7 +127,7 @@ Each found post is analyzed by Claude 3 Haiku:
 
 ### Database Setup
 ```bash
-python3 setup_database.py          # Initialize database and add default keywords/subreddits
+python3 setup_database.py          # Initialize database and add default keywords
 ```
 
 ### Running the System
@@ -157,11 +155,7 @@ db.add_keyword("email automation")
 db.add_keyword("struggling with CRM")
 ```
 
-### Adding Subreddits
-```python
-db.add_subreddit("entrepreneur")
-db.add_subreddit("startups")
-```
+
 
 ### Customizing AI Analysis
 Edit `ai_analyzer.py` to customize the business context:

@@ -97,11 +97,11 @@ export default function BusinessEdit() {
     }
   }, [businessId, session?.access_token]);
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (): Record<string, string> => {
     if (!session?.access_token) {
       console.log("🔐 No session token - redirecting to home");
       setLocation("/");
-      return {};
+      throw new Error('No auth token');
     }
     return {
       Authorization: `Bearer ${session.access_token}`,
