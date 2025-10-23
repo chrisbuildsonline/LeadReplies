@@ -39,8 +39,8 @@ services:
       - SCRAPING_INTERVAL_MINUTES=${SCRAPING_INTERVAL_MINUTES:-120}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-    expose:
-      - "6070"
+    ports:
+      - "6070:6070"
     depends_on:
       postgres:
         condition: service_healthy
@@ -90,6 +90,18 @@ services:
     ports:
       - "3050:3050"
     depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
       - backend
     restart: unless-stopped
 
