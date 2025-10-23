@@ -49,6 +49,9 @@ def main():
     """Main startup function"""
     print("🚀 Starting Reddit Lead Finder API v2 (Production)")
     print("=" * 60)
+    print(f"📁 Working directory: {os.getcwd()}")
+    print(f"📁 Server directory: {server_dir}")
+    print(f"🐍 Python path: {sys.path[:3]}...")  # Show first 3 entries
     
     # Wait for database
     if not wait_for_database():
@@ -63,18 +66,63 @@ def main():
     print(f"📍 Server will be available on port {os.getenv('BACKEND_PORT', '6070')}")
     print("=" * 60)
     
-    # Import and run Gunicorn
-    from gunicorn.app.wsgiapp import WSGIApplication
+    # Import and configure Gunicorn directly
+    from gunicorn.app.base import BaseApplication
+    import multiprocessing
     
-    # Gunicorn arguments
-    sys.argv = [
-        "gunicorn",
-        "--config", "gunicorn.conf.py",
-        "api_server:app"
-    ]
+    class StandaloneApplication(BaseApplication):
+        def __init__(self, app, options=None):
+            self.options = options or {}
+            self.application = app
+            super().__init__()
+
+        def load_config(self):
+            config = {key: value for key, value in self.options.items()
+                     if key in self.cfg.settings and value is not None}
+            for key, value in config.items():
+                self.cfg.set(key.lower(), value)
+
+        def load(self):
+            return self.application
+    
+    # Import the FastAPI app
+    from api_server import app
+    
+    # Gunicorn configuration
+    port = int(os.getenv('BACKEND_PORT', '6070'))
+    options = {
+        'bind': f'0.0.0.0:{port}',
+        'workers': multiprocessing.cpu_count() * 2 + 1,
+        'worker_class': 'uvicorn.workers.UvicornWorker',
+        'worker_connections': 1000,
+        'timeout': 30,
+        'keepalive': 2,
+        'max_requests': 1000,
+        'max_requests_jitter': 50,
+        'preload_app': True,
+        'accesslog': '-',
+        'errorlog': '-',
+        'loglevel': 'info',
+        'proc_name': 'reddit-lead-finder-api'
+    }
     
     # Start Gunicorn
-    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]").run()
+    try:
+        print("🚀 Starting with Gunicorn...")
+        StandaloneApplication(app, options).run()
+    except Exception as e:
+        print(f"❌ Gunicorn failed to start: {e}")
+        print("🔄 Falling back to Uvicorn...")
+        
+        # Fallback to Uvicorn
+        import uvicorn
+        uvicorn.run(
+            app,
+            host="0.0.0.0",
+            port=port,
+            log_level="info",
+            access_log=True
+        )
 
 if __name__ == "__main__":
     main()
