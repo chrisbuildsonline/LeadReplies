@@ -162,6 +162,30 @@ async def root():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.get("/debug/businesses")
+async def debug_businesses():
+    """Debug endpoint to check all businesses"""
+    try:
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, public_id, user_id, name FROM businesses LIMIT 10")
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        businesses = []
+        for row in results:
+            businesses.append({
+                "internal_id": row[0],
+                "public_id": str(row[1]) if row[1] else None,
+                "user_id": row[2],
+                "name": row[3]
+            })
+        
+        return {"businesses": businesses}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Docker and Coolify"""
@@ -255,10 +279,17 @@ async def create_business(business: BusinessCreate, user_id: int = Depends(verif
 
 @app.get("/api/businesses")
 async def get_businesses(user_id: int = Depends(verify_jwt_token)):
+    logger.info(f"📋 Getting businesses for user {user_id}")
     businesses = db.get_user_businesses(user_id)
+    logger.info(f"📋 Found {len(businesses)} businesses: {[b.get('name', 'Unknown') for b in businesses]}")
+    
     # Transform to use public_id as the main id for frontend
     for business in businesses:
-        business['id'] = str(business['public_id'])  # Use public_id as the main id
+        if business.get('public_id'):
+            business['id'] = str(business['public_id'])  # Use public_id as the main id
+        else:
+            logger.warning(f"⚠️ Business {business.get('name')} has no public_id!")
+    
     return {"businesses": businesses}
 
 @app.get("/api/businesses/{business_id}")
