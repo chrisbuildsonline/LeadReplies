@@ -93,19 +93,13 @@ keywords (
 )
 ```
 
-### Subreddits Table
-Tracks which subreddits to monitor:
-```sql
-subreddits (
-  id, name, active, last_checked, created_at
-)
-```
+
 
 ### Leads Table
 Stores found leads with AI analysis:
 ```sql
 leads (
-  id, reddit_id, service, title, content, url, author, subreddit,
+  id, reddit_id, service, title, content, url, author,
   type, keywords_matched, ai_probability, ai_analysis,
   hotness_score, upvotes, num_comments, created_date, processed_at, raw_data
 )
