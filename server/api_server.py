@@ -80,6 +80,7 @@ class BusinessCreate(BaseModel):
     name: str
     website: Optional[str] = None
     description: Optional[str] = None
+    buying_intent: Optional[str] = None
 
 class KeywordAdd(BaseModel):
     keyword: str
@@ -274,7 +275,7 @@ async def get_current_user(user_id: int = Depends(verify_jwt_token)):
 # Business management
 @app.post("/api/businesses")
 async def create_business(business: BusinessCreate, user_id: int = Depends(verify_jwt_token)):
-    result = db.create_business(user_id, business.name, business.website, business.description)
+    result = db.create_business(user_id, business.name, business.website, business.description, business.buying_intent)
     return {"business_id": result["public_id"], "id": result["public_id"]}
 
 @app.get("/api/businesses")
@@ -312,7 +313,7 @@ async def update_business(business_id: str, business: BusinessCreate, user_id: i
     existing_business = get_business_by_public_id_or_404(business_id, user_id)
     
     # Update business using internal ID
-    success = db.update_business(existing_business['id'], business.name, business.website, business.description)
+    success = db.update_business(existing_business['id'], business.name, business.website, business.description, business.buying_intent)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update business")
     

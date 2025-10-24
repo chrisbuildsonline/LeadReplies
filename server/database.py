@@ -49,6 +49,7 @@ class Database:
                 name VARCHAR(255) NOT NULL,
                 website TEXT,
                 description TEXT,
+                buying_intent TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
             )
@@ -251,6 +252,12 @@ class Database:
                 WHERE public_id IS NULL;
             """)
             
+            # Add buying_intent column if it doesn't exist
+            cursor.execute("""
+                ALTER TABLE businesses 
+                ADD COLUMN IF NOT EXISTS buying_intent TEXT;
+            """)
+            
             print("✅ Business public_id migration completed!")
             
         except Exception as e:
@@ -303,14 +310,14 @@ class Database:
         return None
     
     # Business management
-    def create_business(self, user_id, name, website=None, description=None):
+    def create_business(self, user_id, name, website=None, description=None, buying_intent=None):
         conn = self.get_connection()
         cursor = conn.cursor()
         
         cursor.execute('''
-            INSERT INTO businesses (user_id, name, website, description, public_id) 
-            VALUES (%s, %s, %s, %s, gen_random_uuid()) RETURNING id, public_id
-        ''', (user_id, name, website, description))
+            INSERT INTO businesses (user_id, name, website, description, buying_intent, public_id) 
+            VALUES (%s, %s, %s, %s, %s, gen_random_uuid()) RETURNING id, public_id
+        ''', (user_id, name, website, description, buying_intent))
         
         result = cursor.fetchone()
         business_id = result[0]
@@ -326,7 +333,7 @@ class Database:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cursor.execute('''
-            SELECT id, public_id, name, website, description, created_at 
+            SELECT id, public_id, name, website, description, buying_intent, created_at 
             FROM businesses WHERE user_id = %s
         ''', (user_id,))
         
@@ -359,7 +366,7 @@ class Database:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cursor.execute('''
-            SELECT id, public_id, name, website, description, created_at 
+            SELECT id, public_id, name, website, description, buying_intent, created_at 
             FROM businesses WHERE public_id = %s AND user_id = %s
         ''', (public_id, user_id))
         
@@ -371,15 +378,15 @@ class Database:
             return dict(result)
         return None
     
-    def update_business(self, business_id, name, website=None, description=None):
+    def update_business(self, business_id, name, website=None, description=None, buying_intent=None):
         conn = self.get_connection()
         cursor = conn.cursor()
         
         cursor.execute('''
             UPDATE businesses 
-            SET name = %s, website = %s, description = %s 
+            SET name = %s, website = %s, description = %s, buying_intent = %s 
             WHERE id = %s
-        ''', (name, website, description, business_id))
+        ''', (name, website, description, buying_intent, business_id))
         
         success = cursor.rowcount > 0
         conn.commit()

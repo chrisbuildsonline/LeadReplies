@@ -206,7 +206,7 @@ class LeadScrapingService:
             conn = self.db.get_connection()
             cursor = conn.cursor()
             
-            cursor.execute('SELECT id, name, description FROM businesses')
+            cursor.execute('SELECT id, name, description, buying_intent FROM businesses')
             businesses = cursor.fetchall()
             cursor.close()
             conn.close()
@@ -220,7 +220,7 @@ class LeadScrapingService:
             total_processed = 0
             total_matched = 0
             
-            for business_id, business_name, business_description in businesses:
+            for business_id, business_name, business_description, buying_intent in businesses:
                 logger.info(f"  📋 Processing: {business_name} (ID: {business_id})")
                 
                 # Log business description for context
@@ -276,7 +276,8 @@ class LeadScrapingService:
                                     leads=batch,
                                     business_keywords=keyword_list,
                                     business_name=business_name,
-                                    business_description=business_description or "No description available"
+                                    business_description=business_description or "No description available",
+                                    buying_intent=buying_intent or ""
                                 )
                                 break  # Success, exit retry loop
                             except Exception as e:

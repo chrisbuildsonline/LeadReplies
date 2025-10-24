@@ -127,7 +127,7 @@ class DeepSeekAnalyzer:
     
     def analyze_lead_for_business(self, lead_title: str, lead_content: str, 
                                  business_keywords: List[str], business_name: str,
-                                 business_description: str = "") -> Dict:
+                                 business_description: str = "", buying_intent: str = "") -> Dict:
         """
         Analyze if a lead is relevant for a specific business
         Returns probability score and analysis
@@ -141,6 +141,16 @@ class DeepSeekAnalyzer:
             }
         keywords_str = ", ".join(business_keywords)
         
+        # Build the buying intent section
+        buying_intent_section = ""
+        if buying_intent and buying_intent.strip():
+            buying_intent_section = f"""
+        QUALIFIED LEAD CRITERIA:
+        {buying_intent}
+        
+        IMPORTANT: A lead is only HIGH QUALITY (80%+) if they match the buying intent criteria above. 
+        If they don't match the specific buying intent, score them lower even if they mention keywords."""
+        
         prompt = f"""
         Analyze this Reddit post to determine if the person would be interested in our business solution.
 
@@ -148,6 +158,7 @@ class DeepSeekAnalyzer:
         Name: {business_name}
         Description: {business_description}
         Target Keywords: {keywords_str}
+        {buying_intent_section}
 
         REDDIT POST:
         Title: {lead_title}
@@ -159,6 +170,7 @@ class DeepSeekAnalyzer:
         3. Do they seem to be a decision maker with budget?
         4. Is this a genuine business need vs casual discussion?
         5. How well do they match our target customer profile?
+        6. MOST IMPORTANT: Do they match the specific buying intent criteria defined above?
 
         Return ONLY a JSON object:
         {{
@@ -166,10 +178,12 @@ class DeepSeekAnalyzer:
             "analysis": "User is actively seeking CRM solutions for their growing startup and mentions budget concerns, indicating they're a qualified prospect ready to purchase.",
             "matched_keywords": ["CRM", "startup", "budget"],
             "decision_maker_likelihood": "high",
-            "urgency_level": "medium"
+            "urgency_level": "medium",
+            "buying_intent_match": "high"
         }}
 
         Probability: 0-100 (0=not relevant, 100=perfect match)
+        Use 80%+ ONLY if they clearly match the buying intent criteria.
         """
         
         messages = [
@@ -192,7 +206,8 @@ class DeepSeekAnalyzer:
                         'analysis': analysis_data.get('analysis', 'Analysis failed'),
                         'matched_keywords': analysis_data.get('matched_keywords', []),
                         'decision_maker_likelihood': analysis_data.get('decision_maker_likelihood', 'unknown'),
-                        'urgency_level': analysis_data.get('urgency_level', 'unknown')
+                        'urgency_level': analysis_data.get('urgency_level', 'unknown'),
+                        'buying_intent_match': analysis_data.get('buying_intent_match', 'unknown')
                     }
                     
             except json.JSONDecodeError as e:
@@ -207,7 +222,7 @@ class DeepSeekAnalyzer:
         }
     
     def batch_analyze_leads_for_business(self, leads: List[Dict], business_keywords: List[str], 
-                                       business_name: str, business_description: str = "") -> List[Dict]:
+                                       business_name: str, business_description: str = "", buying_intent: str = "") -> List[Dict]:
         """
         Analyze multiple leads in batch for efficiency (up to 10 at a time).
         """
@@ -232,8 +247,16 @@ class DeepSeekAnalyzer:
             content = lead.get('content', 'No content')[:200]
             leads_text += f"LEAD {i}: {title} | {content}\n"
         
+        # Build the buying intent section
+        buying_intent_section = ""
+        if buying_intent and buying_intent.strip():
+            buying_intent_section = f"""
+QUALIFIED LEAD CRITERIA: {buying_intent}
+IMPORTANT: Score 80%+ ONLY if they match the buying intent criteria above."""
+        
         prompt = f"""Business: {business_name} - {business_description[:100]}
 Keywords: {keywords_str}
+{buying_intent_section}
 
 Analyze these {len(leads)} Reddit posts for business relevance:
 {leads_text}
