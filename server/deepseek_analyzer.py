@@ -320,3 +320,197 @@ Return JSON array with probability (0-100) and brief analysis:
             'decision_maker_likelihood': 'unknown',
             'urgency_level': 'unknown'
         } for lead in leads]
+    
+    def comprehensive_business_setup(self, website_url: str, business_name: str) -> Dict:
+        """
+        Comprehensive AI analysis to set up entire business profile
+        """
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - returning default setup")
+            return {
+                "business_info": {
+                    "description": "AI analysis unavailable - API key not configured",
+                    "buying_intent": "AI analysis unavailable - API key not configured"
+                },
+                "keywords": [],
+                "ai_settings": {}
+            }
+        
+        prompt = f"""
+        Analyze this business website and create a comprehensive setup for lead generation and AI replies.
+
+        Current Business Name: {business_name}
+        Website: {website_url}
+
+        IMPORTANT: Carefully analyze the website to find the actual business name. Look for:
+        - Company name in the title, header, or about section
+        - Brand name displayed prominently
+        - Business name in contact information
+        - Logo text or company branding
+        
+        If you find a better/more professional business name on the website, use that instead of the current name.
+
+        Please provide a complete business analysis and setup. Return ONLY a JSON object with this structure:
+
+        {{
+            "business_info": {{
+                "name": "Extract the actual business name from the website, or improve the current name to be more professional",
+                "description": "Clear, professional 2-3 sentence description of what this business does",
+                "buying_intent": "Specific description of what constitutes a qualified lead (e.g., 'Someone looking to buy a car', 'Business owners needing web development services')"
+            }},
+            "keywords": [
+                {{"keyword": "relevant keyword 1", "priority": 1}},
+                {{"keyword": "relevant keyword 2", "priority": 2}}
+            ],
+            "ai_settings": {{
+                "persona": "Professional AI persona for this business (e.g., 'You are an experienced car sales consultant...')",
+                "instructions": "Specific reply instructions (e.g., 'Always mention our free consultation', 'Keep responses helpful and under 200 words')",
+                "tone": "professional",
+                "service_links": {{
+                    "Learn More": "{website_url}",
+                    "Contact Us": "{website_url}/contact",
+                    "Get Started": "{website_url}/get-started",
+                    "Free Quote": "{website_url}/quote"
+                }}
+            }}
+        }}
+
+        Focus on:
+        1. EXTRACT THE REAL BUSINESS NAME from the website (check title tags, headers, about pages, contact info)
+        2. Understanding the business model and target customers
+        3. Identifying pain points customers express online
+        4. Creating natural, helpful AI reply strategies
+        5. Suggesting 15-20 relevant keywords for lead discovery
+        6. Professional but approachable AI persona
+        7. Generate realistic service links (try common pages like /contact, /services, /pricing, /about)
+        """
+        
+        messages = [
+            {"role": "system", "content": "You are an expert business analyst and marketing strategist. Analyze websites thoroughly and create comprehensive lead generation setups."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        response = self._make_request(messages, max_tokens=1500)
+        
+        if response:
+            try:
+                json_start = response.find('{')
+                json_end = response.rfind('}') + 1
+                if json_start != -1 and json_end != -1:
+                    json_str = response[json_start:json_end]
+                    setup_data = json.loads(json_str)
+                    return setup_data
+                    
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse comprehensive setup JSON: {e}")
+        
+        # Return fallback setup
+        return {
+            "business_info": {
+                "name": business_name,
+                "description": f"Professional {business_name} services",
+                "buying_intent": "Someone actively looking for our services"
+            },
+            "keywords": [
+                {"keyword": business_name.lower(), "priority": 1}
+            ],
+            "ai_settings": {
+                "persona": f"You are a helpful representative from {business_name}",
+                "instructions": "Provide helpful information about our services",
+                "tone": "professional",
+                "service_links": {
+                    "Learn More": website_url,
+                    "Contact Us": f"{website_url}/contact",
+                    "Get Started": f"{website_url}/get-started"
+                }
+            }
+        }
+    
+    def text_based_business_setup(self, business_prompt: str, business_name: str) -> Dict:
+        """
+        AI analysis based on text description only (no website)
+        """
+        if not self.api_key:
+            print("⚠️  DeepSeek API key not available - returning default setup")
+            return {
+                "business_info": {
+                    "description": "AI analysis unavailable - API key not configured",
+                    "buying_intent": "AI analysis unavailable - API key not configured"
+                },
+                "keywords": [],
+                "ai_settings": {}
+            }
+        
+        prompt = f"""
+        Based on this business description, create a comprehensive setup for lead generation and AI replies.
+
+        Current Business Name: {business_name}
+        Business Description: {business_prompt}
+
+        IMPORTANT: Based on the business description, suggest a more professional/catchy business name if the current one can be improved.
+
+        Please provide a complete business analysis and setup. Return ONLY a JSON object with this structure:
+
+        {{
+            "business_info": {{
+                "name": "Suggest a professional, catchy business name based on the description (improve current name if possible)",
+                "description": "Clear, professional 2-3 sentence description based on the provided information",
+                "buying_intent": "Specific description of what constitutes a qualified lead for this business"
+            }},
+            "keywords": [
+                {{"keyword": "relevant keyword 1", "priority": 1}},
+                {{"keyword": "relevant keyword 2", "priority": 2}}
+            ],
+            "ai_settings": {{
+                "persona": "Professional AI persona for this business type",
+                "instructions": "Specific reply instructions for this business",
+                "tone": "professional"
+            }}
+        }}
+
+        Focus on:
+        1. CREATE A BETTER BUSINESS NAME based on the description (make it professional, memorable, and catchy)
+        2. Understanding the business model from the description
+        3. Identifying what customers would be searching for
+        4. Creating natural, helpful AI reply strategies
+        5. Suggesting 15-20 relevant keywords for lead discovery
+        6. Professional but approachable AI persona
+
+        Note: Do NOT include service_links since no website was provided.
+        """
+        
+        messages = [
+            {"role": "system", "content": "You are an expert business analyst. Create comprehensive lead generation setups based on business descriptions."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        response = self._make_request(messages, max_tokens=1200)
+        
+        if response:
+            try:
+                json_start = response.find('{')
+                json_end = response.rfind('}') + 1
+                if json_start != -1 and json_end != -1:
+                    json_str = response[json_start:json_end]
+                    setup_data = json.loads(json_str)
+                    return setup_data
+                    
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse text-based setup JSON: {e}")
+        
+        # Return fallback setup
+        return {
+            "business_info": {
+                "name": business_name,
+                "description": f"Professional {business_name} services based on: {business_prompt[:100]}...",
+                "buying_intent": "Someone actively looking for our services"
+            },
+            "keywords": [
+                {"keyword": business_name.lower(), "priority": 1}
+            ],
+            "ai_settings": {
+                "persona": f"You are a helpful representative from {business_name}",
+                "instructions": "Provide helpful information about our services",
+                "tone": "professional"
+            }
+        }

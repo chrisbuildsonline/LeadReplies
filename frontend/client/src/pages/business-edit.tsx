@@ -12,6 +12,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   ArrowLeft,
   Plus,
   X,
@@ -26,6 +36,7 @@ import {
   Link as LinkIcon,
   Sliders,
 } from "lucide-react";
+import { ClipLoader } from "react-spinners";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:6070";
 
@@ -80,6 +91,10 @@ export default function BusinessEdit() {
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [websiteUrlForSetup, setWebsiteUrlForSetup] = useState("");
+  const [setupMode, setSetupMode] = useState<"website" | "text">("website");
+  const [businessPrompt, setBusinessPrompt] = useState("");
 
   const [editedBusiness, setEditedBusiness] = useState({
     name: "",
@@ -99,11 +114,16 @@ export default function BusinessEdit() {
     }
   }, [businessId, session?.access_token]);
 
+  // Debug: Log when business name changes
+  useEffect(() => {
+    console.log("🏢 Business name changed to:", editedBusiness.name);
+  }, [editedBusiness.name]);
+
   const getAuthHeaders = (): Record<string, string> => {
     if (!session?.access_token) {
       console.log("🔐 No session token - redirecting to home");
       setLocation("/");
-      throw new Error('No auth token');
+      throw new Error("No auth token");
     }
     return {
       Authorization: `Bearer ${session.access_token}`,
@@ -380,6 +400,112 @@ export default function BusinessEdit() {
     });
   };
 
+  const handleAIAutoSetup = () => {
+    // Check if website URL is available for website mode
+    const websiteUrl = editedBusiness.website?.trim();
+
+    if (websiteUrl) {
+      setWebsiteUrlForSetup(websiteUrl);
+      setSetupMode("website");
+    } else {
+      // Default to text mode if no website
+      setSetupMode("text");
+    }
+
+    // Show confirmation dialog
+    setShowConfirmDialog(true);
+  };
+
+  const performAIAutoSetup = async () => {
+    if (!businessId) return;
+
+    setAnalyzing(true);
+    setError("");
+    setShowConfirmDialog(false);
+
+    try {
+      const requestBody =
+        setupMode === "website"
+          ? {
+              mode: "website",
+              website_url: websiteUrlForSetup,
+              business_name: editedBusiness.name,
+            }
+          : {
+              mode: "text",
+              business_prompt: businessPrompt,
+              business_name: editedBusiness.name,
+            };
+
+      const response = await fetch(
+        `${API_URL}/api/businesses/${businessId}/ai-auto-setup`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Debug logging
+        console.log("🔍 AI Setup Response:", data);
+        if (data.business_info) {
+          console.log("📝 Business Name from AI:", data.business_info.name);
+          console.log("📝 Current Name:", editedBusiness.name);
+        }
+
+        // Update all fields with AI-generated data
+        if (data.business_info) {
+          const newBusinessData = {
+            ...editedBusiness,
+            name: data.business_info.name || editedBusiness.name,
+            description:
+              data.business_info.description || editedBusiness.description,
+            buying_intent:
+              data.business_info.buying_intent || editedBusiness.buying_intent,
+            website:
+              setupMode === "website"
+                ? websiteUrlForSetup
+                : editedBusiness.website,
+          };
+
+          console.log("🔄 Updating business data:", newBusinessData);
+          setEditedBusiness(newBusinessData);
+        }
+
+        if (data.ai_settings) {
+          setAiSettings({
+            ...aiSettings,
+            persona: data.ai_settings.persona || aiSettings.persona,
+            instructions:
+              data.ai_settings.instructions || aiSettings.instructions,
+            tone: data.ai_settings.tone || aiSettings.tone,
+            service_links:
+              setupMode === "website"
+                ? data.ai_settings.service_links || aiSettings.service_links
+                : aiSettings.service_links, // Don't overwrite service links in text mode
+          });
+        }
+
+        // Refresh data to get new keywords
+        await fetchBusinessData();
+
+        // Auto-save the business info
+        await saveBusiness();
+        await saveAISettings();
+      } else {
+        const data = await response.json();
+        setError(data.error || "AI Auto-Setup failed");
+      }
+    } catch (err) {
+      setError("AI Auto-Setup failed");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   // Show loading while waiting for session
   if (!session) {
     return (
@@ -465,7 +591,10 @@ export default function BusinessEdit() {
               </CardHeader>
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="name"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Business Name
                   </Label>
                   <Input
@@ -478,12 +607,16 @@ export default function BusinessEdit() {
                       })
                     }
                     placeholder="Enter business name"
-                    className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400"
+                    disabled={analyzing}
+                    className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="website" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="website"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Website URL
                   </Label>
                   <Input
@@ -497,12 +630,16 @@ export default function BusinessEdit() {
                       })
                     }
                     placeholder="https://example.com"
-                    className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400"
+                    disabled={analyzing}
+                    className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="description"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Description
                   </Label>
                   <Textarea
@@ -516,13 +653,17 @@ export default function BusinessEdit() {
                     }
                     placeholder="Describe your business..."
                     rows={4}
-                    className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 resize-none"
+                    disabled={analyzing}
+                    className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="buying_intent" className="text-sm font-semibold text-gray-700">
-                    Buying Intent 
+                  <Label
+                    htmlFor="buying_intent"
+                    className="text-sm font-semibold text-gray-700"
+                  >
+                    Buying Intent
                     <span className="text-xs text-blue-600 font-normal ml-2 bg-blue-50 px-2 py-1 rounded-full">
                       Recommended for better AI scoring
                     </span>
@@ -538,30 +679,24 @@ export default function BusinessEdit() {
                     }
                     placeholder="Describe what constitutes a qualified lead for your business. Examples: 'Someone wanting to buy a car', 'Someone looking for help switching an exhaust pipe on their car', 'People seeking web development services for their startup'..."
                     rows={3}
-                    className="border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 resize-none"
+                    disabled={analyzing}
+                    className="border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3">
                     <p className="text-xs text-purple-700 leading-relaxed">
-                      💡 This helps AI better identify high-quality leads by understanding what type of customer intent you're looking for. Be specific about the problems your customers are trying to solve.
+                      💡 This helps AI better identify high-quality leads by
+                      understanding what type of customer intent you're looking
+                      for. Be specific about the problems your customers are
+                      trying to solve.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex justify-between pt-4 border-t border-gray-200">
-                  <Button
-                    onClick={analyzeWebsite}
-                    disabled={analyzing || !editedBusiness.website}
-                    variant="outline"
-                    className="text-purple-600 border-2 border-purple-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 transition-all duration-200 shadow-sm"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {analyzing ? "Analyzing..." : "AI Analyze Website"}
-                  </Button>
-
+                <div className="flex justify-end pt-4 border-t border-gray-200">
                   <Button
                     onClick={saveBusiness}
-                    disabled={saving}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105"
+                    disabled={saving || analyzing}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     {saving ? "Saving..." : "Save Changes"}
                   </Button>
@@ -599,7 +734,9 @@ export default function BusinessEdit() {
                     onClick={() => addKeyword(newKeyword)}
                     size="sm"
                     className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105"
-                  > <Plus className="w-4 h-4" />
+                  >
+                    {" "}
+                    <Plus className="w-4 h-4" />
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -647,9 +784,12 @@ export default function BusinessEdit() {
                 {/* Auto Reply Toggle */}
                 <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200 shadow-sm">
                   <div>
-                    <Label className="text-base font-semibold text-gray-800">Auto Reply</Label>
+                    <Label className="text-base font-semibold text-gray-800">
+                      Auto Reply
+                    </Label>
                     <p className="text-sm text-gray-600">
-                      Automatically post AI-generated replies to high-quality leads
+                      Automatically post AI-generated replies to high-quality
+                      leads
                     </p>
                   </div>
                   <Switch
@@ -665,7 +805,10 @@ export default function BusinessEdit() {
 
                 {/* Persona */}
                 <div className="space-y-2">
-                  <Label htmlFor="persona" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="persona"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     AI Persona
                   </Label>
                   <Textarea
@@ -682,7 +825,10 @@ export default function BusinessEdit() {
 
                 {/* Instructions */}
                 <div className="space-y-2">
-                  <Label htmlFor="instructions" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="instructions"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Reply Instructions
                   </Label>
                   <Textarea
@@ -702,7 +848,10 @@ export default function BusinessEdit() {
 
                 {/* Tone Selection */}
                 <div className="space-y-2">
-                  <Label htmlFor="tone" className="text-sm font-semibold text-gray-700">
+                  <Label
+                    htmlFor="tone"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Reply Tone
                   </Label>
                   <select
@@ -724,7 +873,10 @@ export default function BusinessEdit() {
                 {/* Settings Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="maxLength" className="text-sm font-semibold text-gray-700">
+                    <Label
+                      htmlFor="maxLength"
+                      className="text-sm font-semibold text-gray-700"
+                    >
                       Max Reply Length
                     </Label>
                     <Input
@@ -744,7 +896,10 @@ export default function BusinessEdit() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confidence" className="text-sm font-semibold text-gray-700">
+                    <Label
+                      htmlFor="confidence"
+                      className="text-sm font-semibold text-gray-700"
+                    >
                       Confidence Threshold
                     </Label>
                     <Input
@@ -766,9 +921,11 @@ export default function BusinessEdit() {
                 </div>
 
                 {/* Include Links Toggle */}
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 shadow-sm">
+                <div className="flex items-center justify-between p-4rounded-lg shadow-sm">
                   <div>
-                    <Label className="text-base font-semibold text-gray-800">Include Service Links</Label>
+                    <Label className="text-base font-semibold text-gray-800">
+                      Include Service Links
+                    </Label>
                     <p className="text-sm text-gray-600">
                       Allow AI to include links to your services in replies
                     </p>
@@ -785,7 +942,7 @@ export default function BusinessEdit() {
 
             {/* Service Links */}
             <Card className="bg-gradient-to-br from-white to-blue-50/30 border-gray-200 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-200">
+              <CardHeader className=" border-b border-gray-200">
                 <CardTitle className="flex items-center text-gray-800">
                   <LinkIcon className="w-5 h-5 text-blue-600 mr-2" />
                   Service Links
@@ -824,8 +981,12 @@ export default function BusinessEdit() {
                         className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200 shadow-sm"
                       >
                         <div>
-                          <span className="font-semibold text-gray-800">{name}</span>
-                          <p className="text-sm text-gray-600 break-all">{url}</p>
+                          <span className="font-semibold text-gray-800">
+                            {name}
+                          </span>
+                          <p className="text-sm text-gray-600 break-all">
+                            {url}
+                          </p>
                         </div>
                         <Button
                           variant="ghost"
@@ -844,7 +1005,7 @@ export default function BusinessEdit() {
 
             {/* Bad Words Filter */}
             <Card className="bg-gradient-to-br from-white to-red-50/30 border-gray-200 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-gray-200">
+              <CardHeader className="border-b border-gray-200">
                 <CardTitle className="flex items-center text-gray-800">
                   <Shield className="w-5 h-5 text-red-600 mr-2" />
                   Content Filter
@@ -906,7 +1067,27 @@ export default function BusinessEdit() {
 
   return (
     <PageLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 relative">
+        {/* Loading Overlay */}
+        {analyzing && (
+          <div className="absolute inset-0 bg-white/90 z-50 flex items-center justify-center">
+            <div className="bg-white p-8 text-center">
+              <ClipLoader
+                color="#7c3aed"
+                loading={analyzing}
+                size={40}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-4">
+                AI Setting Up Your Business
+              </h3>
+              <p className="text-sm text-gray-600">
+                Analyzing and generating your complete setup...
+              </p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -925,6 +1106,17 @@ export default function BusinessEdit() {
                 Configure your business settings and AI automation
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <Button
+              onClick={handleAIAutoSetup}
+              disabled={analyzing}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {analyzing ? "AI Setting Up..." : "AI Auto-Setup"}
+            </Button>
           </div>
         </div>
 
@@ -985,6 +1177,132 @@ export default function BusinessEdit() {
         ) : (
           renderTabContent()
         )}
+
+        {/* AI Auto-Setup Confirmation Dialog */}
+        <AlertDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+        >
+          <AlertDialogContent className="max-w-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center">
+                <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
+                AI Auto-Setup Configuration
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-4">
+                {/* Setup Mode Toggle */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-700">
+                    Setup Method:
+                  </Label>
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                    <button
+                      onClick={() => setSetupMode("website")}
+                      className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        setupMode === "website"
+                          ? "bg-white text-purple-600 shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Website Analysis
+                    </button>
+                    <button
+                      onClick={() => setSetupMode("text")}
+                      className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        setupMode === "text"
+                          ? "bg-white text-purple-600 shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Text Description
+                    </button>
+                  </div>
+                </div>
+
+                {/* Website Mode */}
+                {setupMode === "website" && (
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="website-url"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Website URL:
+                    </Label>
+                    <Input
+                      id="website-url"
+                      value={websiteUrlForSetup}
+                      onChange={(e) => setWebsiteUrlForSetup(e.target.value)}
+                      placeholder="https://example.com"
+                      className="border-2 border-gray-300 focus:border-purple-500"
+                    />
+                    <p className="text-xs text-gray-600">
+                      AI will analyze your website and populate all fields
+                      including service links.
+                    </p>
+                  </div>
+                )}
+
+                {/* Text Mode */}
+                {setupMode === "text" && (
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="business-prompt"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Describe Your Business:
+                    </Label>
+                    <Textarea
+                      id="business-prompt"
+                      value={businessPrompt}
+                      onChange={(e) => setBusinessPrompt(e.target.value)}
+                      placeholder="e.g., I sell fishing gear and equipment for recreational anglers..."
+                      rows={3}
+                      className="border-2 border-gray-300 focus:border-purple-500 resize-none"
+                    />
+                    <p className="text-xs text-gray-600">
+                      AI will generate setup based on your description (no
+                      website or service links).
+                    </p>
+                  </div>
+                )}
+
+                {/* What will be populated */}
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800 mb-2">
+                    AI will automatically populate:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-xs text-blue-700">
+                    <li>Business description and buying intent</li>
+                    <li>Relevant targeting keywords (15-20)</li>
+                    <li>AI reply persona and instructions</li>
+                    {setupMode === "website" && (
+                      <li>Service links and website URL</li>
+                    )}
+                  </ul>
+                </div>
+
+                <p className="text-red-600 font-medium text-sm">
+                  ⚠️ This will overwrite your current data. Continue?
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={performAIAutoSetup}
+                disabled={
+                  (setupMode === "website" && !websiteUrlForSetup.trim()) ||
+                  (setupMode === "text" && !businessPrompt.trim())
+                }
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
+              >
+                {setupMode === "website"
+                  ? "Analyze & Setup"
+                  : "Generate & Setup"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </PageLayout>
   );

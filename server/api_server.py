@@ -369,6 +369,87 @@ async def analyze_website(business_id: str, data: WebsiteAnalyze, user_id: int =
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
+# AI Auto-Setup endpoint
+@app.post("/api/businesses/{business_id}/ai-auto-setup")
+async def ai_auto_setup(business_id: str, data: dict, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = get_business_by_public_id_or_404(business_id, user_id)
+    
+    try:
+        mode = data.get('mode', 'website')
+        business_name = data.get('business_name', business['name'])
+        
+        if mode == 'website':
+            website_url = data.get('website_url')
+            if not website_url:
+                raise HTTPException(status_code=400, detail="Website URL is required for website mode")
+            
+            # Perform comprehensive AI analysis with website
+            setup_data = ai_analyzer.comprehensive_business_setup(
+                website_url=website_url,
+                business_name=business_name
+            )
+            
+            # Update business with website URL
+            if setup_data.get('business_info'):
+                info = setup_data['business_info']
+                new_name = info.get('name', business_name)
+                logger.info(f"🏢 Updating business name from '{business_name}' to '{new_name}'")
+                db.update_business(
+                    business['id'], 
+                    new_name,  # Use AI-generated name if available
+                    website_url,
+                    info.get('description'),
+                    info.get('buying_intent')
+                )
+        
+        elif mode == 'text':
+            business_prompt = data.get('business_prompt')
+            if not business_prompt:
+                raise HTTPException(status_code=400, detail="Business prompt is required for text mode")
+            
+            # Perform AI analysis with text prompt only
+            setup_data = ai_analyzer.text_based_business_setup(
+                business_prompt=business_prompt,
+                business_name=business_name
+            )
+            
+            # Update business without changing website URL
+            if setup_data.get('business_info'):
+                info = setup_data['business_info']
+                new_name = info.get('name', business_name)
+                logger.info(f"🏢 Updating business name from '{business_name}' to '{new_name}'")
+                db.update_business(
+                    business['id'], 
+                    new_name,  # Use AI-generated name if available
+                    business.get('website'),  # Keep existing website
+                    info.get('description'),
+                    info.get('buying_intent')
+                )
+        
+        else:
+            raise HTTPException(status_code=400, detail="Invalid mode. Must be 'website' or 'text'")
+        
+        # Add AI-generated keywords
+        if setup_data.get('keywords'):
+            for keyword_data in setup_data['keywords']:
+                db.add_business_keyword(
+                    business['id'], 
+                    keyword_data['keyword'], 
+                    'ai_auto_setup'
+                )
+        
+        # Debug logging
+        logger.info(f"🔍 AI Setup Data: {setup_data}")
+        if setup_data.get('business_info'):
+            logger.info(f"📝 Business Name from AI: {setup_data['business_info'].get('name')}")
+        
+        return setup_data
+        
+    except Exception as e:
+        logger.error(f"❌ AI Auto-Setup failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI Auto-Setup failed: {str(e)}")
+
 # Keywords management
 @app.post("/api/businesses/{business_id}/keywords")
 async def add_keyword(business_id: str, keyword: KeywordAdd, user_id: int = Depends(verify_jwt_token)):
