@@ -440,7 +440,17 @@ class Database:
         conn.close()
         return success
     
-
+    def clear_all_business_keywords(self, business_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM keywords WHERE business_id = %s', (business_id,))
+        
+        success = cursor.rowcount > 0
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return success
     
     # Global leads management
     def add_global_lead(self, platform, platform_id, title, content, author, url, score=0):

@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
   Plus,
@@ -71,6 +72,7 @@ export default function BusinessEdit() {
   const [, params] = useRoute("/businesses/:id/edit");
   const [, setLocation] = useLocation();
   const { session } = useAuth();
+  const { toast } = useToast();
   const businessId = params?.id || null;
 
   const [activeTab, setActiveTab] = useState("general");
@@ -95,6 +97,7 @@ export default function BusinessEdit() {
   const [websiteUrlForSetup, setWebsiteUrlForSetup] = useState("");
   const [setupMode, setSetupMode] = useState<"website" | "text">("website");
   const [businessPrompt, setBusinessPrompt] = useState("");
+  const [clearingKeywords, setClearingKeywords] = useState(false);
 
   const [editedBusiness, setEditedBusiness] = useState({
     name: "",
@@ -286,6 +289,17 @@ export default function BusinessEdit() {
 
   const addKeyword = async (keyword: string, source: string = "manual") => {
     if (!businessId || !keyword.trim()) return;
+    
+    // Check keyword limit
+    if (keywords.length >= 10) {
+      toast({
+        title: "Keyword Limit Reached",
+        description: "Maximum 10 keywords allowed per business. Remove some keywords to add new ones.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -300,11 +314,65 @@ export default function BusinessEdit() {
       if (response.ok) {
         if (source === "manual") {
           setNewKeyword("");
+          toast({
+            title: "Keyword Added",
+            description: `"${keyword.trim()}" has been added to your keywords.`,
+            duration: 2000,
+          });
           fetchBusinessData();
         }
       }
     } catch (err) {
       console.error("Failed to add keyword");
+    }
+  };
+
+  const clearAllKeywords = async () => {
+    if (!businessId) return;
+    
+    if (!confirm("Are you sure you want to remove all keywords? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setClearingKeywords(true);
+      setError(""); // Clear any previous errors
+      
+      // Use the new bulk delete endpoint
+      const response = await fetch(
+        `${API_URL}/api/businesses/${businessId}/keywords`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (response.ok) {
+        // Immediately update the keywords state to show 0 keywords
+        setKeywords([]);
+        
+        // Show success toast
+        toast({
+          title: "Keywords Cleared",
+          description: "All keywords have been successfully removed!",
+          duration: 3000,
+        });
+        
+        // Refresh the data to ensure consistency
+        fetchBusinessData();
+      } else {
+        throw new Error("Failed to clear keywords");
+      }
+    } catch (err) {
+      console.error("Failed to clear keywords");
+      toast({
+        title: "Error",
+        description: "Failed to clear keywords. Please try again.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    } finally {
+      setClearingKeywords(false);
     }
   };
 
@@ -711,34 +779,57 @@ export default function BusinessEdit() {
           <div className="space-y-6">
             {/* Keywords */}
             <Card className="bg-gradient-to-br from-white to-green-50/30 border-gray-200 shadow-lg">
-              <CardHeader className="border-b border-gray-200">
+              <CardHeader className=" border-b border-gray-200">
                 <CardTitle className="flex items-center justify-between text-gray-800">
                   <div className="flex items-center">
                     <Hash className="w-5 h-5 text-green-600 mr-2" />
-                    Keywords ({keywords.length})
+                    Keywords ({keywords.length}/10)
                   </div>
+                  {keywords.length > 0 && (
+                    <Button
+                      onClick={clearAllKeywords}
+                      variant="outline"
+                      size="sm"
+                      disabled={clearingKeywords}
+                      className="text-red-600 border-red-200 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      {clearingKeywords ? "Clearing..." : "Clear All"}
+                    </Button>
+                  )}
                 </CardTitle>
-              </CardHeader>
+                </CardHeader>
               <CardContent className="space-y-4 p-6">
-                <div className="flex gap-2">
-                  <Input
-                    value={newKeyword}
-                    onChange={(e) => setNewKeyword(e.target.value)}
-                    placeholder="Add keyword..."
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && addKeyword(newKeyword)
-                    }
-                    className="border-2 border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400"
-                  />
-                  <Button
-                    onClick={() => addKeyword(newKeyword)}
-                    size="sm"
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105"
-                  >
-                    {" "}
-                    <Plus className="w-4 h-4" />
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={newKeyword}
+                      onChange={(e) => setNewKeyword(e.target.value)}
+                      placeholder={keywords.length >= 10 ? "Maximum keywords reached" : "Add keyword..."}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && addKeyword(newKeyword)
+                      }
+                      disabled={keywords.length >= 10}
+                      className="border-2 border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <Button
+                      onClick={() => addKeyword(newKeyword)}
+                      size="sm"
+                      disabled={keywords.length >= 10 || !newKeyword.trim()}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  {keywords.length >= 8 && (
+                    <p className={`text-xs ${keywords.length >= 10 ? 'text-red-600' : 'text-orange-600'}`}>
+                      {keywords.length >= 10 
+                        ? "Maximum of 10 keywords reached. Remove some keywords to add new ones."
+                        : `${10 - keywords.length} keywords remaining`
+                      }
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 bg-gradient-to-br from-gray-50 to-green-50/50 rounded-lg border border-gray-200">
@@ -1273,7 +1364,7 @@ export default function BusinessEdit() {
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-xs text-blue-700">
                     <li>Business description and buying intent</li>
-                    <li>Relevant targeting keywords (15-20)</li>
+                    <li>Relevant targeting keywords (10 max)</li>
                     <li>AI reply persona and instructions</li>
                     {setupMode === "website" && (
                       <li>Service links and website URL</li>

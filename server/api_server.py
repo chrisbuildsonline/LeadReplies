@@ -430,9 +430,14 @@ async def ai_auto_setup(business_id: str, data: dict, user_id: int = Depends(ver
         else:
             raise HTTPException(status_code=400, detail="Invalid mode. Must be 'website' or 'text'")
         
-        # Add AI-generated keywords
+        # Clear existing keywords and add AI-generated ones (max 10)
         if setup_data.get('keywords'):
-            for keyword_data in setup_data['keywords']:
+            # Clear all existing keywords first
+            db.clear_all_business_keywords(business['id'])
+            
+            # Add new keywords (limit to 10)
+            keywords_to_add = setup_data['keywords'][:10]  # Limit to 10
+            for keyword_data in keywords_to_add:
                 db.add_business_keyword(
                     business['id'], 
                     keyword_data['keyword'], 
@@ -473,6 +478,14 @@ async def remove_keyword(business_id: str, keyword_id: int, user_id: int = Depen
     business = get_business_by_public_id_or_404(business_id, user_id)
     
     db.delete_business_keyword(keyword_id, business['id'])
+    return {"success": True}
+
+@app.delete("/api/businesses/{business_id}/keywords")
+async def clear_all_keywords(business_id: str, user_id: int = Depends(verify_jwt_token)):
+    # Verify business ownership
+    business = get_business_by_public_id_or_404(business_id, user_id)
+    
+    db.clear_all_business_keywords(business['id'])
     return {"success": True}
 
 

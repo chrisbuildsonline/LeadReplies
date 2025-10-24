@@ -380,7 +380,7 @@ Return JSON array with probability (0-100) and brief analysis:
         2. Understanding the business model and target customers
         3. Identifying pain points customers express online
         4. Creating natural, helpful AI reply strategies
-        5. Suggesting 15-20 relevant keywords for lead discovery
+        5. Suggesting exactly 10 relevant keywords for lead discovery
         6. Professional but approachable AI persona
         7. Generate realistic service links (try common pages like /contact, /services, /pricing, /about)
         """
@@ -473,7 +473,7 @@ Return JSON array with probability (0-100) and brief analysis:
         2. Understanding the business model from the description
         3. Identifying what customers would be searching for
         4. Creating natural, helpful AI reply strategies
-        5. Suggesting 15-20 relevant keywords for lead discovery
+        5. Suggesting exactly 10 relevant keywords for lead discovery
         6. Professional but approachable AI persona
 
         Note: Do NOT include service_links since no website was provided.
